@@ -1,0 +1,32 @@
+{
+  "name": "hackathon-judgment-platform",
+  "version": "1.0.0",
+  "description": "A comprehensive hackathon judgment and submission platform with strict RBAC, deadline enforcement, and multi-criterion evaluation.",
+  "private": true,
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install && npm install",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "test": "node --test tests/**/*.test.js",
+    "test:auth": "node --test tests/auth/**/*.test.js",
+    "test:events": "node --test tests/events/**/*.test.js",
+    "test:teams": "node --test tests/teams/**/*.test.js",
+    "test:submissions": "node --test tests/submissions/**/*.test.js",
+    "test:integration": "node --test tests/integration/**/*.test.js",
+    "seed": "node backend/prisma/seed.js",
+    "prisma:studio": "npm --prefix backend run prisma:studio",
+    "prisma:generate": "npm --prefix backend run prisma:generate",
+    "prisma:push": "npm --prefix backend run prisma:push"
+  },
+  "keywords": [
+    "hackathon",
+    "judging",
+    "platform",
+    "express",
+    "react",
+    "prisma",
+    "sqlite"
+  ],
+  "author": "",
+  "license": "ISC"
+}
