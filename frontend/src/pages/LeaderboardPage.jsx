@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Trophy, Medal, Award, ArrowLeft, Globe, Github, Lock, CheckCircle2 } from 'lucide-react';
+import NeoCard from '../components/neo/NeoCard';
+import NeoButton from '../components/neo/NeoButton';
+import { Trophy, Medal, Award, ArrowLeft, Lock } from 'lucide-react';
 
 export const LeaderboardPage = ({ eventId, onBack }) => {
   const { user, isOrganizer } = useAuth();
@@ -44,177 +46,185 @@ export const LeaderboardPage = ({ eventId, onBack }) => {
   };
 
   if (loading) {
-    return <div className="py-20 text-center text-slate-400">Synthesizing leaderboard rankings...</div>;
+    return <div className="py-20 text-center font-bold text-2xl text-neo-ink/50">Synthesizing leaderboard rankings...</div>;
   }
 
   if (error) {
     return (
-      <div className="py-20 text-center space-y-4">
-        <div className="w-12 h-12 mx-auto rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-          <Lock className="w-6 h-6" />
+      <div className="py-32 text-center space-y-6 flex flex-col items-center">
+        <div className="w-20 h-20 rounded-full bg-neo-pastel-orange border-4 border-neo-ink flex items-center justify-center neo-shadow">
+          <Lock className="w-10 h-10 text-neo-ink" />
         </div>
-        <h3 className="text-lg font-bold text-white">Leaderboard Not Available</h3>
-        <p className="text-xs text-slate-400 max-w-md mx-auto">{error}</p>
-        <button
-          onClick={onBack}
-          className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-200 hover:bg-slate-700"
-        >
-          ← Back to Hackathon
-        </button>
+        <h3 className="text-4xl font-black text-neo-ink">Leaderboard Hidden</h3>
+        <p className="text-xl font-bold text-neo-ink/60 max-w-md mx-auto">{error}</p>
+        <NeoButton onClick={onBack} color="bg-white" textColor="text-neo-ink">
+          <ArrowLeft className="w-5 h-5 mr-2" /> Back to Hackathon
+        </NeoButton>
       </div>
     );
   }
 
   const rankings = leaderboard.rankings || [];
-  const topThree = rankings.slice(0, 3);
 
   return (
-    <div className="space-y-8 pb-16">
+    <div className="max-w-7xl mx-auto px-4 space-y-12 pb-24 pt-8">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <button
             onClick={onBack}
-            className="text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1 mb-2 transition-colors"
+            className="flex items-center gap-2 font-bold text-neo-ink hover:underline decoration-3 underline-offset-4 mb-4 w-max"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Hackathon</span>
+            <ArrowLeft className="w-5 h-5" /> Back to Hackathon
           </button>
-          <div className="flex items-center gap-2">
-            <Trophy className="w-6 h-6 text-amber-400" />
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              {leaderboard.eventTitle} — Official Standings
+          
+          <div className="flex items-center gap-4">
+            <h1 className="text-4xl md:text-6xl font-black text-neo-ink tracking-tight leading-tight">
+              {leaderboard.eventTitle} <br/> <span className="text-neo-pastel-purple drop-shadow-[2px_2px_0_rgba(26,26,26,1)]">Rankings</span>
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Rankings computed via normalized multi-criteria judge weighting algorithms.
-          </p>
         </div>
 
         {isOrganizer && (
-          <div className="flex items-center gap-3">
-            <button
+          <div className="flex flex-col gap-3">
+             <div className="text-sm font-black text-neo-ink uppercase tracking-widest px-2">Organizer Controls</div>
+             <NeoButton
               onClick={handleTogglePublish}
               disabled={publishing}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                leaderboard.isLeaderboardPublished
-                  ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border-rose-500/30'
-                  : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-emerald-500/30 shadow-lg shadow-emerald-500/20'
-              }`}
+              color={leaderboard.isLeaderboardPublished ? 'bg-neo-pastel-pink' : 'bg-neo-pastel-green'}
+              textColor="text-neo-ink"
             >
-              {leaderboard.isLeaderboardPublished ? 'Unpublish Results' : 'Publish Leaderboard to Participants'}
-            </button>
+              {leaderboard.isLeaderboardPublished ? 'Unpublish Leaderboard' : 'Publish Leaderboard'}
+            </NeoButton>
           </div>
         )}
       </div>
 
       {/* Podium for Top 3 */}
       {rankings.length >= 2 && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12">
           {/* 2nd Place */}
           {rankings[1] && (
-            <div className="order-2 sm:order-1 glass-card rounded-2xl p-5 border border-slate-700/80 flex flex-col items-center text-center space-y-3 mt-4">
-              <div className="w-12 h-12 rounded-full bg-slate-300/10 border border-slate-400/40 flex items-center justify-center text-slate-300">
-                <Medal className="w-6 h-6 text-slate-300" />
+            <NeoCard color="bg-neo-pastel-blue" className="md:order-1 flex flex-col items-center text-center mt-12 hover:-translate-y-2 transition-transform">
+              <div className="w-16 h-16 rounded-full bg-white border-3 border-neo-ink flex items-center justify-center neo-shadow mb-4">
+                <Medal className="w-8 h-8 text-neo-ink" />
               </div>
-              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+              <span className="text-xs font-black px-3 py-1 bg-white border-2 border-neo-ink rounded-full uppercase mb-4 neo-shadow-sm">
                 2nd Place
               </span>
-              <h3 className="font-bold text-white text-base">{rankings[1].title}</h3>
-              <p className="text-xs text-indigo-400 font-semibold">{rankings[1].teamName}</p>
-              <div className="text-2xl font-extrabold font-mono text-white">
-                {rankings[1].totalWeightedScore} <span className="text-xs text-slate-500">pts</span>
+              <h3 className="font-black text-2xl text-neo-ink mb-1">{rankings[1].title}</h3>
+              <p className="text-sm font-bold text-neo-ink/70 mb-6">{rankings[1].teamName}</p>
+              
+              <div className="bg-white border-3 border-neo-ink rounded-xl px-6 py-4 w-full neo-shadow">
+                <div className="text-4xl font-black text-neo-ink">
+                  {rankings[1].totalWeightedScore} <span className="text-lg text-neo-ink/50">pts</span>
+                </div>
               </div>
-            </div>
+            </NeoCard>
           )}
 
           {/* 1st Place (Champion) */}
           {rankings[0] && (
-            <div className="order-1 sm:order-2 glass-panel rounded-2xl p-6 border-2 border-amber-500/40 bg-gradient-to-b from-amber-500/10 via-slate-900 to-slate-950 flex flex-col items-center text-center space-y-3 shadow-xl shadow-amber-500/10 scale-105">
-              <div className="w-14 h-14 rounded-full bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400">
-                <Trophy className="w-7 h-7 text-amber-400 animate-pulse" />
+            <NeoCard color="bg-neo-pastel-yellow" className="md:order-2 flex flex-col items-center text-center -mt-6 hover:-translate-y-2 transition-transform relative z-10">
+              <div className="absolute -top-10">
+                 <div className="w-20 h-20 rounded-full bg-white border-4 border-neo-ink flex items-center justify-center neo-shadow">
+                    <Trophy className="w-10 h-10 text-neo-ink" />
+                 </div>
               </div>
-              <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                Champion • 1st Place
+              
+              <span className="text-sm font-black px-4 py-1.5 bg-white border-3 border-neo-ink rounded-full uppercase mb-4 mt-8 neo-shadow">
+                Grand Champion
               </span>
-              <h3 className="font-extrabold text-white text-lg tracking-tight">{rankings[0].title}</h3>
-              <p className="text-xs text-amber-400 font-semibold">{rankings[0].teamName}</p>
-              <div className="text-3xl font-extrabold font-mono text-amber-300">
-                {rankings[0].totalWeightedScore} <span className="text-xs text-slate-400">pts</span>
+              
+              <h3 className="font-black text-4xl text-neo-ink mb-2 leading-tight">{rankings[0].title}</h3>
+              <p className="text-base font-bold text-neo-ink/70 mb-8">{rankings[0].teamName}</p>
+              
+              <div className="bg-white border-4 border-neo-ink rounded-2xl px-6 py-6 w-full neo-shadow">
+                <div className="text-5xl font-black text-neo-ink mb-2">
+                  {rankings[0].totalWeightedScore} <span className="text-2xl text-neo-ink/50">pts</span>
+                </div>
+                <div className="text-sm font-black uppercase text-neo-pastel-green drop-shadow-[1px_1px_0_rgba(26,26,26,1)]">
+                   {rankings[0].percentage}% Overall Score
+                </div>
               </div>
-              <span className="text-xs text-emerald-400 font-mono font-bold">
-                {rankings[0].percentage}% Total Score
-              </span>
-            </div>
+            </NeoCard>
           )}
 
           {/* 3rd Place */}
           {rankings[2] && (
-            <div className="order-3 glass-card rounded-2xl p-5 border border-amber-800/40 flex flex-col items-center text-center space-y-3 mt-8">
-              <div className="w-12 h-12 rounded-full bg-amber-800/20 border border-amber-700/40 flex items-center justify-center text-amber-600">
-                <Medal className="w-6 h-6 text-amber-500" />
+            <NeoCard color="bg-neo-pastel-orange" className="md:order-3 flex flex-col items-center text-center mt-20 hover:-translate-y-2 transition-transform">
+              <div className="w-16 h-16 rounded-full bg-white border-3 border-neo-ink flex items-center justify-center neo-shadow mb-4">
+                <Medal className="w-8 h-8 text-neo-ink" />
               </div>
-              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-950/40 text-amber-400 border border-amber-800/30">
+              <span className="text-xs font-black px-3 py-1 bg-white border-2 border-neo-ink rounded-full uppercase mb-4 neo-shadow-sm">
                 3rd Place
               </span>
-              <h3 className="font-bold text-white text-base">{rankings[2].title}</h3>
-              <p className="text-xs text-indigo-400 font-semibold">{rankings[2].teamName}</p>
-              <div className="text-2xl font-extrabold font-mono text-white">
-                {rankings[2].totalWeightedScore} <span className="text-xs text-slate-500">pts</span>
+              <h3 className="font-black text-2xl text-neo-ink mb-1">{rankings[2].title}</h3>
+              <p className="text-sm font-bold text-neo-ink/70 mb-6">{rankings[2].teamName}</p>
+              
+              <div className="bg-white border-3 border-neo-ink rounded-xl px-6 py-4 w-full neo-shadow">
+                <div className="text-4xl font-black text-neo-ink">
+                  {rankings[2].totalWeightedScore} <span className="text-lg text-neo-ink/50">pts</span>
+                </div>
               </div>
-            </div>
+            </NeoCard>
           )}
         </div>
       )}
 
       {/* Rankings Table */}
-      <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between">
-          <h3 className="font-bold text-white text-sm">Full Hackathon Leaderboard</h3>
-          <span className="text-xs text-slate-400 font-mono">{rankings.length} Submissions Ranked</span>
+      <div className="mt-16 bg-white border-3 border-neo-ink rounded-2xl overflow-hidden neo-shadow-lg">
+        <div className="px-6 py-5 border-b-3 border-neo-ink bg-neo-pastel-purple flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h3 className="font-black text-2xl text-neo-ink">Full Hackathon Leaderboard</h3>
+          <span className="text-sm font-black bg-white px-3 py-1 border-3 border-neo-ink rounded-full neo-shadow-sm uppercase">
+            {rankings.length} Submissions Ranked
+          </span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/60 text-slate-400 font-mono uppercase text-[11px] border-b border-slate-800">
+          <table className="w-full text-left">
+            <thead className="bg-neo-bg text-neo-ink font-black uppercase text-sm border-b-3 border-neo-ink">
               <tr>
-                <th className="py-3 px-4">Rank</th>
-                <th className="py-3 px-4">Project & Team</th>
-                <th className="py-3 px-4">Evaluations</th>
-                <th className="py-3 px-4 text-right">Weighted Score</th>
-                <th className="py-3 px-4 text-right">Percentage</th>
+                <th className="py-4 px-6 border-r-3 border-neo-ink w-24 text-center">Rank</th>
+                <th className="py-4 px-6 border-r-3 border-neo-ink">Project & Team</th>
+                <th className="py-4 px-6 border-r-3 border-neo-ink text-center">Evaluations</th>
+                <th className="py-4 px-6 text-right">Weighted Score</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-sans">
-              {rankings.map((r) => (
-                <tr key={r.submissionId} className="hover:bg-slate-900/40 transition-colors">
-                  <td className="py-4 px-4 font-mono font-bold">
+            <tbody className="divide-y-3 divide-neo-ink">
+              {rankings.map((r, i) => (
+                <tr key={r.submissionId} className="hover:bg-neo-bg transition-colors">
+                  <td className="py-4 px-6 border-r-3 border-neo-ink text-center">
                     <span
-                      className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs ${
+                      className={`inline-flex items-center justify-center w-10 h-10 rounded-full border-3 border-neo-ink font-black text-lg ${
                         r.rank === 1
-                          ? 'bg-amber-500/20 text-amber-300 font-extrabold border border-amber-500/40'
+                          ? 'bg-neo-pastel-yellow text-neo-ink shadow-[2px_2px_0px_0px_#1A1A1A]'
                           : r.rank === 2
-                          ? 'bg-slate-300/20 text-slate-200 border border-slate-400/40'
+                          ? 'bg-neo-pastel-blue text-neo-ink shadow-[2px_2px_0px_0px_#1A1A1A]'
                           : r.rank === 3
-                          ? 'bg-amber-800/20 text-amber-400 border border-amber-800/40'
-                          : 'text-slate-400'
+                          ? 'bg-neo-pastel-orange text-neo-ink shadow-[2px_2px_0px_0px_#1A1A1A]'
+                          : 'bg-white text-neo-ink'
                       }`}
                     >
                       {r.rank}
                     </span>
                   </td>
-                  <td className="py-4 px-4">
-                    <div className="font-bold text-white text-sm">{r.title}</div>
-                    <div className="text-xs text-indigo-400 font-medium">Team: {r.teamName}</div>
+                  <td className="py-4 px-6 border-r-3 border-neo-ink">
+                    <div className="font-black text-xl text-neo-ink mb-1">{r.title}</div>
+                    <div className="text-sm font-bold text-neo-ink/60 uppercase">Team: {r.teamName}</div>
                   </td>
-                  <td className="py-4 px-4 text-slate-400 font-mono">
-                    {r.judgeCount} {r.judgeCount === 1 ? 'Judge' : 'Judges'}
+                  <td className="py-4 px-6 border-r-3 border-neo-ink text-center">
+                    <span className="font-bold bg-white border-2 border-neo-ink px-2 py-1 rounded-lg">
+                       {r.judgeCount} {r.judgeCount === 1 ? 'Judge' : 'Judges'}
+                    </span>
                   </td>
-                  <td className="py-4 px-4 text-right font-mono font-extrabold text-sm text-emerald-400">
-                    {r.totalWeightedScore} / {r.totalMaxPossible}
-                  </td>
-                  <td className="py-4 px-4 text-right font-mono font-bold text-xs text-slate-200">
-                    {r.percentage}%
+                  <td className="py-4 px-6 text-right">
+                    <div className="font-black text-2xl text-neo-ink">
+                       {r.totalWeightedScore} <span className="text-sm text-neo-ink/50">/ {r.totalMaxPossible}</span>
+                    </div>
+                    <div className="font-bold text-sm text-neo-pastel-green drop-shadow-[1px_1px_0_rgba(26,26,26,1)] uppercase mt-1">
+                      {r.percentage}%
+                    </div>
                   </td>
                 </tr>
               ))}

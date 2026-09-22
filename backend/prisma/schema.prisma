@@ -44,12 +44,40 @@ model Event {
   members      EventMember[]
   criteria     Criterion[]
   tracks       Track[]
+  prizes       Prize[]
+  questions    EventQuestion[]
   teams        Team[]
   submissions  Submission[]
   judges       Judge[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Prize {
+  id          Int      @id @default(autoincrement())
+  eventId     Int
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  value       String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model EventQuestion {
+  id          Int      @id @default(autoincrement())
+  eventId     Int
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  question    String
+  isRequired  Boolean  @default(false)
+  order       Int      @default(0)
+
+  answers     SubmissionAnswer[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Track {
@@ -60,6 +88,7 @@ model Track {
   description String?
 
   judgeTracks JudgeTrack[]
+  submissions Submission[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -177,20 +206,42 @@ model Submission {
   team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   eventId     Int
   event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  status      String   @default("DRAFT") // "DRAFT", "SUBMITTED"
 
   title       String
   tagline     String?
   description String
+  thumbnailUrl String?
+  imageGallery String? // Stored as stringified JSON array
   repoUrl     String?
   demoUrl     String?
   videoUrl    String?
   techStack   String?
+
+  trackId     Int?
+  track       Track?   @relation(fields: [trackId], references: [id])
 
   submittedAt DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   scores      Score[]
   assignments JudgeAssignment[]
+  answers     SubmissionAnswer[]
+}
+
+model SubmissionAnswer {
+  id           Int           @id @default(autoincrement())
+  submissionId Int
+  submission   Submission    @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  questionId   Int
+  question     EventQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answer       String
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@unique([submissionId, questionId])
 }
 
 model Score {

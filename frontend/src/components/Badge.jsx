@@ -2,17 +2,17 @@ import React from 'react';
 
 export const Badge = ({ children, variant = 'default', className = '' }) => {
   const styles = {
-    default: 'bg-slate-800 text-slate-300 border-slate-700',
-    primary: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
-    success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-    warning: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-    danger: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-    purple: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+    default: 'bg-white text-neo-ink border-neo-ink',
+    primary: 'bg-neo-pastel-purple text-neo-ink border-neo-ink',
+    success: 'bg-neo-pastel-green text-neo-ink border-neo-ink',
+    warning: 'bg-neo-pastel-yellow text-neo-ink border-neo-ink',
+    danger: 'bg-neo-pastel-pink text-neo-ink border-neo-ink',
+    purple: 'bg-neo-pastel-purple text-neo-ink border-neo-ink',
   };
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-black uppercase border-3 shadow-[2px_2px_0px_0px_#1A1A1A] ${
         styles[variant] || styles.default
       } ${className}`}
     >

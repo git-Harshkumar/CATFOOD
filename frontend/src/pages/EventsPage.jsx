@@ -2,9 +2,14 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { CountdownTimer } from '../components/CountdownTimer';
-import { Badge } from '../components/Badge';
-import { getStatusBadge, formatDate } from '../utils/formatters';
-import { Trophy, Calendar, Users, FileText, PlusCircle, ArrowRight, Search, Sparkles } from 'lucide-react';
+import NeoCard from '../components/neo/NeoCard';
+import StatCard from '../components/neo/StatCard';
+import FilterChipRow from '../components/neo/FilterChipRow';
+import NeoButton from '../components/neo/NeoButton';
+import { Trophy, Calendar, Users, FileText, ArrowRight, Search, Sparkles, PlusCircle } from 'lucide-react';
+import { getStatusBadge } from '../utils/formatters';
+
+const PASTELS = ['bg-neo-pastel-purple', 'bg-neo-pastel-orange', 'bg-neo-pastel-yellow', 'bg-neo-pastel-green', 'bg-neo-pastel-pink'];
 
 export const EventsPage = ({ onSelectEvent, onOpenCreateEvent }) => {
   const { isOrganizer } = useAuth();
@@ -19,7 +24,7 @@ export const EventsPage = ({ onSelectEvent, onOpenCreateEvent }) => {
 
   const fetchEvents = async () => {
     try {
-      setLoading(false);
+      setLoading(true);
       const res = await api.getEvents();
       if (res?.data) {
         setEvents(res.data);
@@ -41,151 +46,125 @@ export const EventsPage = ({ onSelectEvent, onOpenCreateEvent }) => {
     return matchesSearch;
   });
 
+  const totalTeams = events.reduce((acc, ev) => acc + (ev._count?.teams || 0), 0);
+  const totalSubmissions = events.reduce((acc, ev) => acc + (ev._count?.submissions || 0), 0);
+
   return (
-    <div className="space-y-8 pb-12">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950/60 via-slate-900 to-slate-950 border border-indigo-500/20 p-8 sm:p-12 backdrop-blur-xl shadow-2xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 max-w-2xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Hackathon Operations & Judgment Suite</span>
+    <div className="space-y-10 pb-12 max-w-7xl mx-auto px-4">
+      {/* Hero / Stats Section */}
+      <div className="pt-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+          <div>
+            <h1 className="text-5xl md:text-7xl font-black text-neo-ink tracking-tight mb-4">
+              Dashboard
+            </h1>
+            <p className="text-xl font-bold text-neo-ink/70">
+              Build, Submit, and Evaluate with Precision.
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
-            Build, Submit, and Evaluate with Precision.
-          </h1>
-          <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-            A battle-tested hackathon platform featuring strict deadline enforcement, multi-criteria
-            weighted rubrics, and automated mathematical leaderboard synthesis.
-          </p>
-          {isOrganizer && (
-            <div className="pt-2">
-              <button
-                onClick={onOpenCreateEvent}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all hover:scale-105"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Host New Hackathon</span>
-              </button>
-            </div>
-          )}
+          
+          <div className="flex flex-wrap gap-8 items-end">
+            <StatCard label="Active Hackathons" value={events.filter(e => e.status === 'ACTIVE').length} />
+            <StatCard label="Total Teams" value={totalTeams} />
+            <StatCard label="Total Submissions" value={totalSubmissions} />
+          </div>
         </div>
-      </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-          <input
-            type="text"
-            placeholder="Search hackathons..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm bg-slate-900/80 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+        {/* Filter and Search Bar */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+          <FilterChipRow 
+            options={[
+              { label: 'All Events', value: 'ALL' },
+              { label: 'Active', value: 'ACTIVE' },
+              { label: 'Concluded', value: 'COMPLETED' },
+            ]}
+            activeOption={filter}
+            onChange={setFilter}
           />
+          
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="relative w-full sm:w-80">
+              <Search className="w-5 h-5 text-neo-ink absolute left-4 top-3.5" />
+              <input
+                type="text"
+                placeholder="Search hackathons..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 font-bold text-neo-ink bg-white border-3 border-neo-ink rounded-full placeholder-neo-ink/50 focus:outline-none neo-shadow focus:neo-active transition-all"
+              />
+            </div>
+            
+            {isOrganizer && (
+              <NeoButton onClick={onOpenCreateEvent} color="bg-neo-ink" textColor="text-white" className="shrink-0 whitespace-nowrap">
+                <PlusCircle className="w-5 h-5 mr-2" />
+                New Event
+              </NeoButton>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-1.5 p-1 bg-slate-900/80 border border-slate-800 rounded-xl">
-          {['ALL', 'ACTIVE', 'COMPLETED'].map((opt) => (
-            <button
-              key={opt}
-              onClick={() => setFilter(opt)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                filter === opt
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              {opt === 'ALL' ? 'All Events' : opt === 'ACTIVE' ? 'Active' : 'Concluded'}
-            </button>
-          ))}
-        </div>
-      </div>
+        {/* Hackathons Grid */}
+        {loading ? (
+          <div className="text-center py-20 font-bold text-2xl text-neo-ink/50">Loading hackathons...</div>
+        ) : filteredEvents.length === 0 ? (
+          <NeoCard color="bg-white" className="text-center py-20 flex flex-col items-center justify-center">
+            <Trophy className="w-16 h-16 text-neo-ink mb-6" />
+            <h3 className="text-3xl font-black text-neo-ink mb-2">No hackathons found</h3>
+            <p className="font-bold text-neo-ink/60">Try adjusting your search or filters.</p>
+          </NeoCard>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredEvents.map((ev, i) => {
+              const bg = PASTELS[i % PASTELS.length];
+              const statusBadge = getStatusBadge(ev.status);
+              const badgeBg = ev.status === 'ACTIVE' ? 'bg-neo-pastel-green' : 'bg-white';
 
-      {/* Hackathons Grid */}
-      {loading ? (
-        <div className="text-center py-16 text-slate-500 text-sm">Loading hackathons...</div>
-      ) : filteredEvents.length === 0 ? (
-        <div className="text-center py-16 bg-slate-900/40 border border-slate-800 rounded-2xl p-8">
-          <Trophy className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-slate-300">No hackathons found</h3>
-          <p className="text-xs text-slate-500 mt-1">Try adjusting your search or filters.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filteredEvents.map((ev) => {
-            const statusBadge = getStatusBadge(ev.status);
-            const isDeadlinePassed = new Date(ev.deadline) < new Date();
+              return (
+                <NeoCard key={ev.id} color={bg} className="flex flex-col justify-between cursor-pointer group hover:-translate-y-1" onClick={() => onSelectEvent(ev.id)}>
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <div className={`px-4 py-1.5 rounded-full border-3 border-neo-ink font-black text-xs uppercase ${badgeBg}`}>
+                        {statusBadge.label}
+                      </div>
+                      <div className="bg-white px-3 py-1 rounded-full border-3 border-neo-ink font-bold text-sm">
+                        {new Date(ev.deadline) < new Date() ? 'Ended' : <CountdownTimer deadline={ev.deadline} compact />}
+                      </div>
+                    </div>
 
-            return (
-              <div
-                key={ev.id}
-                className="glass-card rounded-2xl p-6 flex flex-col justify-between space-y-5"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-4 mb-3">
-                    <span
-                      className={`text-xs font-mono font-medium px-2.5 py-1 rounded-full border ${statusBadge.bg} ${statusBadge.text} ${statusBadge.border}`}
-                    >
-                      {statusBadge.label}
-                    </span>
-                    <CountdownTimer deadline={ev.deadline} />
+                    <h3 className="text-3xl font-black text-neo-ink leading-tight mb-2 group-hover:underline decoration-4 underline-offset-4">
+                      {ev.title}
+                    </h3>
+                    {ev.tagline && (
+                      <p className="text-lg font-bold text-neo-ink/80 mb-4">{ev.tagline}</p>
+                    )}
                   </div>
 
-                  <h3 className="text-xl font-bold text-white tracking-tight hover:text-indigo-400 transition-colors">
-                    {ev.title}
-                  </h3>
-                  {ev.tagline && (
-                    <p className="text-xs font-medium text-indigo-300 mt-1">{ev.tagline}</p>
-                  )}
-                  <p className="text-xs text-slate-400 mt-2 line-clamp-2">{ev.description}</p>
-                </div>
-
-                {/* Rubric Criteria Chips */}
-                {ev.criteria && ev.criteria.length > 0 && (
-                  <div className="space-y-1.5">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
-                      Judging Criteria ({ev.criteria.length})
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {ev.criteria.map((c) => (
-                        <span
-                          key={c.id}
-                          className="text-[11px] px-2 py-0.5 rounded-md bg-slate-800/80 text-slate-300 border border-slate-700/50"
-                        >
-                          {c.name} ({c.weight}x)
+                  <div className="mt-8 pt-6 border-t-3 border-neo-ink flex items-center justify-between">
+                    <div className="flex gap-4">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-black uppercase text-neo-ink/60">Teams</span>
+                        <span className="text-xl font-black flex items-center gap-1">
+                          <Users className="w-4 h-4" /> {ev._count?.teams || 0}
                         </span>
-                      ))}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-black uppercase text-neo-ink/60">Projects</span>
+                        <span className="text-xl font-black flex items-center gap-1">
+                          <FileText className="w-4 h-4" /> {ev._count?.submissions || 0}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="w-12 h-12 rounded-full border-3 border-neo-ink bg-white flex items-center justify-center group-hover:bg-neo-ink group-hover:text-white transition-colors">
+                      <ArrowRight className="w-6 h-6" />
                     </div>
                   </div>
-                )}
-
-                {/* Stats Bar & Action */}
-                <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-4 text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>{ev._count?.teams || 0} Teams</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <FileText className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>{ev._count?.submissions || 0} Submissions</span>
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => onSelectEvent(ev.id)}
-                    className="flex items-center gap-1 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
-                  >
-                    <span>View Event</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                </NeoCard>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

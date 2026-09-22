@@ -7,31 +7,31 @@ export const RubricScoreSlider = ({ criterion, value, onChange, feedback, onFeed
   const weightedScore = Math.round(currentVal * weight * 10) / 10;
 
   return (
-    <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 transition-all space-y-3">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+    <div className="p-6 rounded-2xl bg-white border-3 border-neo-ink neo-shadow space-y-6 transition-all hover:-translate-y-1">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-3 border-neo-ink pb-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h4 className="font-semibold text-slate-100">{criterion.name}</h4>
-            <span className="text-xs px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 font-mono">
-              Weight: {weight}x
+          <div className="flex items-center gap-3 mb-2">
+            <h4 className="font-black text-2xl text-neo-ink">{criterion.name}</h4>
+            <span className="text-xs px-3 py-1 rounded-full bg-neo-pastel-yellow border-3 border-neo-ink font-black uppercase neo-shadow-sm">
+              {weight}x
             </span>
           </div>
           {criterion.description && (
-            <p className="text-xs text-slate-400 mt-0.5">{criterion.description}</p>
+            <p className="text-sm font-bold text-neo-ink/70">{criterion.description}</p>
           )}
         </div>
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <span className="text-2xl font-bold font-mono text-indigo-400">{currentVal}</span>
-            <span className="text-xs text-slate-500 font-mono"> / {max}</span>
+        <div className="flex items-center gap-4 bg-neo-bg px-4 py-3 rounded-xl border-3 border-neo-ink">
+          <div className="text-right border-r-3 border-neo-ink pr-4">
+            <span className="text-3xl font-black text-neo-ink">{currentVal}</span>
+            <span className="text-sm font-bold text-neo-ink/60"> / {max}</span>
           </div>
-          <div className="text-xs font-mono px-2 py-1 rounded bg-slate-800 text-slate-300">
-            Weighted: <span className="font-bold text-white">{weightedScore}</span>
+          <div className="text-xs font-black uppercase text-neo-ink">
+            Total: <span className="text-lg bg-neo-pastel-green px-2 py-1 rounded-md border-2 border-neo-ink ml-1">{weightedScore}</span>
           </div>
         </div>
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-3">
         <input
           type="range"
           min="0"
@@ -39,22 +39,26 @@ export const RubricScoreSlider = ({ criterion, value, onChange, feedback, onFeed
           step="0.5"
           value={currentVal}
           onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500 hover:accent-indigo-400"
+          className="w-full h-4 bg-neo-bg rounded-full border-3 border-neo-ink appearance-none cursor-pointer accent-neo-ink focus:outline-none focus:ring-4 focus:ring-neo-pastel-purple/50"
+          style={{
+            backgroundImage: `linear-gradient(to right, #1A1A1A ${(currentVal / max) * 100}%, transparent ${(currentVal / max) * 100}%)`,
+            backgroundRepeat: 'no-repeat'
+          }}
         />
-        <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+        <div className="flex justify-between text-xs font-black text-neo-ink/50 uppercase px-1">
           <span>0 (Poor)</span>
           <span>{Math.round(max / 2)} (Average)</span>
-          <span>{max} (Exceptional)</span>
+          <span>{max} (Great)</span>
         </div>
       </div>
 
       <div>
         <textarea
-          rows="2"
+          rows="3"
           placeholder={`Optional qualitative feedback on ${criterion.name.toLowerCase()}...`}
           value={feedback || ''}
           onChange={(e) => onFeedbackChange(e.target.value)}
-          className="w-full px-3 py-1.5 text-xs bg-slate-950/70 border border-slate-800 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+          className="w-full px-4 py-3 text-sm font-bold bg-neo-bg border-3 border-neo-ink rounded-xl text-neo-ink placeholder-neo-ink/40 focus:outline-none focus:bg-white transition-colors"
         />
       </div>
     </div>

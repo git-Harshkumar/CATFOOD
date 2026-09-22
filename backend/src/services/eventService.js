@@ -184,6 +184,60 @@ const addCriterion = async (eventId, organizerId, criterionData) => {
   });
 };
 
+const addPrize = async (eventId, organizerId, prizeData) => {
+  const event = await prisma.event.findUnique({
+    where: { id: parseInt(eventId, 10) },
+  });
+
+  if (!event) {
+    const error = new Error('Event not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (event.organizerId !== organizerId) {
+    const error = new Error('Unauthorized. You can only manage prizes for your own events.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  return prisma.prize.create({
+    data: {
+      eventId: event.id,
+      name: prizeData.name,
+      description: prizeData.description || null,
+      value: prizeData.value || null,
+    },
+  });
+};
+
+const addEventQuestion = async (eventId, organizerId, questionData) => {
+  const event = await prisma.event.findUnique({
+    where: { id: parseInt(eventId, 10) },
+  });
+
+  if (!event) {
+    const error = new Error('Event not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (event.organizerId !== organizerId) {
+    const error = new Error('Unauthorized. You can only manage questions for your own events.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  return prisma.eventQuestion.create({
+    data: {
+      eventId: event.id,
+      question: questionData.question,
+      isRequired: questionData.isRequired || false,
+      order: parseInt(questionData.order, 10) || 0,
+    },
+  });
+};
+
 const assignJudge = async (eventId, organizerId, judgeEmail) => {
   const event = await prisma.event.findUnique({
     where: { id: parseInt(eventId, 10) },
@@ -283,6 +337,8 @@ module.exports = {
   createEvent,
   updateEvent,
   addCriterion,
+  addPrize,
+  addEventQuestion,
   assignJudge,
   publishLeaderboard,
 };

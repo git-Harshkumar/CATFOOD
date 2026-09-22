@@ -10,7 +10,9 @@ router.use(authenticate);
 
 router.post('/', validate(validateTeam), teamController.createTeam);
 router.post('/join', validate(validateJoinTeam), teamController.joinTeam);
+router.post('/join-link', teamController.joinTeamByToken);
 router.get('/my-teams', teamController.getMyTeams);
+router.get('/:id/invite-link', teamController.generateInviteLinkToken);
 router.get('/:id', teamController.getTeamById);
 router.post('/:id/leave', teamController.leaveTeam);
 

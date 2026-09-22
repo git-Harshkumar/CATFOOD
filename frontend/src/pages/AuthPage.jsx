@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import NeoCard from '../components/neo/NeoCard';
+import NeoButton from '../components/neo/NeoButton';
 import { Trophy, Lock, Mail, User, Shield, Sparkles } from 'lucide-react';
 
 export const AuthPage = ({ onSuccess }) => {
@@ -44,36 +46,40 @@ export const AuthPage = ({ onSuccess }) => {
     }
   };
 
+  const inputClass = "w-full pl-12 pr-4 py-3 font-bold bg-white border-3 border-neo-ink rounded-xl placeholder-neo-ink/40 neo-shadow focus:outline-none focus:neo-active transition-all";
+  const labelClass = "block font-black text-neo-ink mb-2";
+
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-neo-bg">
       <div className="w-full max-w-md">
+        
         {/* Quick Demo Switcher Card */}
-        <div className="mb-6 p-4 rounded-2xl bg-indigo-950/40 border border-indigo-500/20 backdrop-blur-md">
-          <div className="flex items-center gap-2 mb-2.5">
-            <Sparkles className="w-4 h-4 text-indigo-400" />
-            <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-300">
-              One-Click Role Demonstration
+        <div className="mb-8 p-4 rounded-2xl bg-white border-3 border-neo-ink neo-shadow">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-5 h-5 text-neo-ink" />
+            <h4 className="text-sm font-black uppercase tracking-wider text-neo-ink">
+              One-Click Role Demo
             </h4>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-3">
             <button
               type="button"
               onClick={() => quickLogin('organizer@hack.com')}
-              className="px-2.5 py-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-semibold text-center transition-all"
+              className="px-2 py-2 rounded-xl bg-neo-pastel-purple border-3 border-neo-ink text-neo-ink text-xs font-black uppercase hover:-translate-y-1 transition-transform"
             >
               Organizer
             </button>
             <button
               type="button"
               onClick={() => quickLogin('judge1@hack.com')}
-              className="px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold text-center transition-all"
+              className="px-2 py-2 rounded-xl bg-neo-pastel-green border-3 border-neo-ink text-neo-ink text-xs font-black uppercase hover:-translate-y-1 transition-transform"
             >
               Judge
             </button>
             <button
               type="button"
               onClick={() => quickLogin('alice@hack.com')}
-              className="px-2.5 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold text-center transition-all"
+              className="px-2 py-2 rounded-xl bg-neo-pastel-blue border-3 border-neo-ink text-neo-ink text-xs font-black uppercase hover:-translate-y-1 transition-transform"
             >
               Participant
             </button>
@@ -81,57 +87,57 @@ export const AuthPage = ({ onSuccess }) => {
         </div>
 
         {/* Auth Form Card */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl shadow-2xl p-8 backdrop-blur-xl">
-          <div className="text-center mb-6">
-            <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 mb-3">
-              <Trophy className="w-6 h-6 text-white" />
+        <NeoCard color="bg-neo-pastel-yellow" className="p-8">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 mx-auto rounded-full bg-white border-4 border-neo-ink flex items-center justify-center neo-shadow mb-4">
+              <Trophy className="w-8 h-8 text-neo-ink" />
             </div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">
-              {isLogin ? 'Sign in to JuryFlow' : 'Create an Account'}
+            <h2 className="text-4xl font-black text-neo-ink tracking-tight mb-2">
+              {isLogin ? 'Sign In' : 'Create Account'}
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-sm font-bold text-neo-ink/70">
               {isLogin
-                ? 'Access hackathon submissions, judging rubrics, and leaderboards'
-                : 'Join the premier hackathon judgment and competition platform'}
+                ? 'Welcome back to Dogfood Hack'
+                : 'Join the premier hackathon platform'}
             </p>
           </div>
 
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-medium">
+            <div className="mb-6 p-4 rounded-xl bg-neo-pastel-pink border-3 border-neo-ink font-bold text-neo-ink text-center">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {!isLogin && (
               <>
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Full Name</label>
+                  <label className={labelClass}>Full Name</label>
                   <div className="relative">
-                    <User className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+                    <User className="w-5 h-5 text-neo-ink absolute left-4 top-3.5" />
                     <input
                       type="text"
                       required
                       placeholder="Alan Turing"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-sm bg-slate-950/70 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                      className={inputClass}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Platform Role</label>
+                  <label className={labelClass}>Platform Role</label>
                   <div className="relative">
-                    <Shield className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+                    <Shield className="w-5 h-5 text-neo-ink absolute left-4 top-3.5" />
                     <select
                       value={role}
                       onChange={(e) => setRole(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-sm bg-slate-950/70 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                      className={inputClass}
                     >
-                      <option value="PARTICIPANT">Participant (Hacker / Team Member)</option>
-                      <option value="JUDGE">Judge (Evaluator / Reviewer)</option>
-                      <option value="ORGANIZER">Organizer (Host / Administrator)</option>
+                      <option value="PARTICIPANT">Participant (Hacker)</option>
+                      <option value="JUDGE">Judge (Reviewer)</option>
+                      <option value="ORGANIZER">Organizer (Host)</option>
                     </select>
                   </div>
                 </div>
@@ -139,45 +145,47 @@ export const AuthPage = ({ onSuccess }) => {
             )}
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
+              <label className={labelClass}>Email Address</label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+                <Mail className="w-5 h-5 text-neo-ink absolute left-4 top-3.5" />
                 <input
                   type="email"
                   required
                   placeholder="developer@hack.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm bg-slate-950/70 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className={inputClass}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
+              <label className={labelClass}>Password</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+                <Lock className="w-5 h-5 text-neo-ink absolute left-4 top-3.5" />
                 <input
                   type="password"
                   required
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm bg-slate-950/70 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className={inputClass}
                 />
               </div>
             </div>
 
-            <button
+            <NeoButton
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 px-4 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 mt-2"
+              color="bg-neo-ink"
+              textColor="text-white"
+              className="w-full mt-8 !py-4 text-lg"
             >
-              {loading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
-            </button>
+              {loading ? 'Processing...' : isLogin ? 'Sign In to JuryFlow' : 'Create Account'}
+            </NeoButton>
           </form>
 
-          <div className="mt-6 text-center text-xs text-slate-400">
+          <div className="mt-8 text-center text-sm font-bold text-neo-ink/70">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button
               type="button"
@@ -185,12 +193,12 @@ export const AuthPage = ({ onSuccess }) => {
                 setIsLogin(!isLogin);
                 setError(null);
               }}
-              className="font-semibold text-indigo-400 hover:text-indigo-300 underline"
+              className="font-black text-neo-ink hover:underline decoration-3 underline-offset-4"
             >
               {isLogin ? 'Sign up' : 'Sign in'}
             </button>
           </div>
-        </div>
+        </NeoCard>
       </div>
     </div>
   );

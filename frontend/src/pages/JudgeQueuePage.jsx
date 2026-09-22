@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import NeoCard from '../components/neo/NeoCard';
+import NeoButton from '../components/neo/NeoButton';
 import { Award, CheckCircle2, Clock, ArrowRight, Trophy } from 'lucide-react';
 import { formatDate } from '../utils/formatters';
 
@@ -26,97 +28,84 @@ export const JudgeQueuePage = ({ onOpenScore }) => {
   };
 
   return (
-    <div className="space-y-8 pb-16">
+    <div className="max-w-7xl mx-auto px-4 space-y-10 pb-16 pt-6">
       <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Award className="w-5 h-5 text-emerald-400" />
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Judge Evaluation Queue
-          </h1>
-        </div>
-        <p className="text-xs sm:text-sm text-slate-400">
+        <h1 className="text-4xl md:text-6xl font-black text-neo-ink tracking-tight mb-4">
+          Judge Queue
+        </h1>
+        <p className="text-xl font-bold text-neo-ink/70 max-w-2xl">
           Review hackathon submissions against weighted rubrics and assign scores and feedback.
         </p>
       </div>
 
       {loading ? (
-        <div className="text-center py-16 text-slate-500 text-sm">Loading assigned projects...</div>
+        <div className="text-center py-20 font-bold text-2xl text-neo-ink/50">Loading assigned projects...</div>
       ) : queue.length === 0 ? (
-        <div className="text-center py-16 bg-slate-900/40 border border-slate-800 rounded-2xl p-8 space-y-2">
-          <Trophy className="w-12 h-12 text-slate-600 mx-auto" />
-          <h3 className="text-base font-semibold text-slate-300">No projects currently in queue</h3>
-          <p className="text-xs text-slate-500">
+        <NeoCard color="bg-white" className="text-center py-20 flex flex-col items-center justify-center">
+          <Trophy className="w-16 h-16 text-neo-ink mb-6" />
+          <h3 className="text-3xl font-black text-neo-ink mb-2">No projects in queue</h3>
+          <p className="font-bold text-neo-ink/60">
             You will see submissions here once assigned as a judge or when projects are submitted.
           </p>
-        </div>
+        </NeoCard>
       ) : (
-        <div className="space-y-8">
-          {queue.map((eventItem) => (
-            <div
-              key={eventItem.eventId}
-              className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-5"
-            >
-              <div className="flex items-center justify-between">
+        <div className="space-y-12">
+          {queue.map((eventItem, eventIdx) => (
+            <NeoCard key={eventItem.eventId} color={['bg-neo-pastel-yellow', 'bg-neo-pastel-blue'][eventIdx % 2]} className="space-y-8">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-3 border-neo-ink pb-4">
                 <div>
-                  <h3 className="text-lg font-bold text-white tracking-tight">
+                  <h3 className="text-3xl font-black text-neo-ink">
                     {eventItem.eventTitle}
                   </h3>
-                  <span className="text-xs text-slate-400">
+                  <span className="font-bold text-neo-ink/70">
                     Deadline: {formatDate(eventItem.deadline)}
                   </span>
                 </div>
-                <span className="text-xs font-mono px-2.5 py-1 rounded bg-slate-800 text-slate-300">
+                <div className="bg-white px-4 py-2 border-3 border-neo-ink rounded-full neo-shadow text-sm font-black uppercase">
                   {eventItem.submissions.filter((s) => s.isEvaluated).length} / {eventItem.submissions.length} Evaluated
-                </span>
+                </div>
               </div>
 
               {eventItem.submissions.length === 0 ? (
-                <div className="text-center py-6 text-xs text-slate-500">
+                <div className="text-center py-10 font-bold text-lg text-neo-ink/50">
                   No submissions yet for this hackathon.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {eventItem.submissions.map((sub) => (
-                    <div
-                      key={sub.submissionId}
-                      className="p-4 rounded-xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between gap-4"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-semibold text-sm text-slate-100">{sub.title}</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {eventItem.submissions.map((sub, i) => (
+                    <NeoCard key={sub.submissionId} color="bg-white" className="flex flex-col justify-between p-5 hover:-translate-y-1 transition-transform">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-start gap-2">
+                           <h4 className="font-black text-xl text-neo-ink leading-tight">{sub.title}</h4>
+                           {sub.isEvaluated ? (
+                              <span className="shrink-0 px-2 py-1 bg-neo-pastel-green border-2 border-neo-ink rounded-full text-[10px] font-black uppercase flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3" /> Done
+                              </span>
+                            ) : (
+                              <span className="shrink-0 px-2 py-1 bg-neo-pastel-orange border-2 border-neo-ink rounded-full text-[10px] font-black uppercase flex items-center gap-1">
+                                <Clock className="w-3 h-3" /> Pending
+                              </span>
+                            )}
                         </div>
-                        <div className="text-xs text-slate-400">Team: {sub.teamName}</div>
-                        <div className="flex items-center gap-2 pt-1">
-                          {sub.isEvaluated ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400">
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>Evaluated ({sub.scoresCount}/{sub.totalCriteriaCount})</span>
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-400">
-                              <Clock className="w-3.5 h-3.5" />
-                              <span>Pending Review</span>
-                            </span>
-                          )}
-                        </div>
+                        <div className="text-sm font-bold text-neo-ink/60 uppercase">Team: <span className="text-neo-ink">{sub.teamName}</span></div>
                       </div>
 
-                      <button
-                        onClick={() => onOpenScore(eventItem.eventId, sub.submissionId)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all ${
-                          sub.isEvaluated
-                            ? 'bg-slate-800 hover:bg-slate-700 text-slate-300'
-                            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20'
-                        }`}
-                      >
-                        <span>{sub.isEvaluated ? 'Edit Score' : 'Score'}</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
-                    </div>
+                      <div className="pt-6 mt-6 border-t-3 border-neo-ink">
+                        <NeoButton
+                          onClick={() => onOpenScore(eventItem.eventId, sub.submissionId)}
+                          color={sub.isEvaluated ? 'bg-neo-bg' : 'bg-neo-ink'}
+                          textColor={sub.isEvaluated ? 'text-neo-ink' : 'text-white'}
+                          className="w-full flex justify-center"
+                        >
+                          <span>{sub.isEvaluated ? 'Edit Score' : 'Score Project'}</span>
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </NeoButton>
+                      </div>
+                    </NeoCard>
                   ))}
                 </div>
               )}
-            </div>
+            </NeoCard>
           ))}
         </div>
       )}

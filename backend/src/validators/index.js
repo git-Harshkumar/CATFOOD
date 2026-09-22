@@ -87,6 +87,31 @@ const validateSubmission = (body) => {
   if (!body.description || typeof body.description !== 'string' || body.description.trim().length === 0) {
     errors.description = 'Project description is required.';
   }
+  if (body.status && !['DRAFT', 'SUBMITTED'].includes(body.status)) {
+    errors.status = 'Status must be either DRAFT or SUBMITTED.';
+  }
+  if (body.imageGallery && !Array.isArray(body.imageGallery)) {
+    errors.imageGallery = 'Image gallery must be an array of URLs.';
+  }
+  if (body.answers && !Array.isArray(body.answers)) {
+    errors.answers = 'Answers must be an array of objects.';
+  }
+  return errors;
+};
+
+const validatePrize = (body) => {
+  const errors = {};
+  if (!body.name || typeof body.name !== 'string' || body.name.trim().length === 0) {
+    errors.name = 'Prize name is required.';
+  }
+  return errors;
+};
+
+const validateEventQuestion = (body) => {
+  const errors = {};
+  if (!body.question || typeof body.question !== 'string' || body.question.trim().length === 0) {
+    errors.question = 'Question text is required.';
+  }
   return errors;
 };
 
@@ -117,4 +142,6 @@ module.exports = {
   validateJoinTeam,
   validateSubmission,
   validateScore,
+  validatePrize,
+  validateEventQuestion,
 };

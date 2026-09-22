@@ -46,6 +46,24 @@ const addCriterion = async (req, res, next) => {
   }
 };
 
+const addPrize = async (req, res, next) => {
+  try {
+    const prize = await eventService.addPrize(req.params.id, req.user.id, req.body);
+    return success(res, prize, 'Prize added successfully', 201);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const addEventQuestion = async (req, res, next) => {
+  try {
+    const question = await eventService.addEventQuestion(req.params.id, req.user.id, req.body);
+    return success(res, question, 'Event question added successfully', 201);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const assignJudge = async (req, res, next) => {
   try {
     const assignment = await eventService.assignJudge(req.params.id, req.user.id, req.body.judgeEmail);
@@ -71,6 +89,8 @@ module.exports = {
   createEvent,
   updateEvent,
   addCriterion,
+  addPrize,
+  addEventQuestion,
   assignJudge,
   publishLeaderboard,
 };

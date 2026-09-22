@@ -113,6 +113,14 @@ class ApiService {
     return this.request('/teams/join', { method: 'POST', body: { inviteCode } });
   }
 
+  async getInviteLink(teamId) {
+    return this.request(`/teams/${teamId}/invite-link`);
+  }
+
+  async joinTeamByLink(token) {
+    return this.request('/teams/join-link', { method: 'POST', body: { token } });
+  }
+
   async getMyTeams() {
     return this.request('/teams/my-teams');
   }
@@ -136,6 +144,10 @@ class ApiService {
 
   async getSubmissionsByEvent(eventId) {
     return this.request(`/submissions/event/${eventId}`);
+  }
+
+  async getGallery(eventId) {
+    return this.request(`/submissions/gallery/${eventId}`);
   }
 
   // Judging

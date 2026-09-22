@@ -4,7 +4,7 @@ const createOrUpdateSubmission = async (userId, currentUser, teamId, data) => {
   const team = await prisma.team.findUnique({
     where: { id: parseInt(teamId, 10) },
     include: {
-      event: true,
+      event: { include: { questions: true } },
       members: true,
       submission: true,
     },
@@ -50,7 +50,20 @@ const createOrUpdateSubmission = async (userId, currentUser, teamId, data) => {
     throw error;
   }
 
-  const { title, tagline, description, repoUrl, demoUrl, videoUrl, techStack } = data;
+  const { title, tagline, description, repoUrl, demoUrl, videoUrl, techStack, status, thumbnailUrl, imageGallery, trackId, answers } = data;
+
+  // Enforce required questions if status is SUBMITTED
+  if (status === 'SUBMITTED') {
+    const requiredQuestions = team.event.questions.filter(q => q.isRequired);
+    for (const q of requiredQuestions) {
+      const found = (answers || []).find(a => parseInt(a.questionId, 10) === q.id);
+      if (!found || !found.answer || found.answer.trim() === '') {
+        const error = new Error(`Required question is missing: ${q.question}`);
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+  }
 
   const submissionData = {
     title: title.trim(),
@@ -60,38 +73,55 @@ const createOrUpdateSubmission = async (userId, currentUser, teamId, data) => {
     demoUrl: demoUrl ? demoUrl.trim() : null,
     videoUrl: videoUrl ? videoUrl.trim() : null,
     techStack: Array.isArray(techStack) ? techStack.join(', ') : techStack || null,
+    status: status || 'DRAFT',
+    thumbnailUrl: thumbnailUrl || null,
+    imageGallery: imageGallery ? JSON.stringify(imageGallery) : JSON.stringify([]),
+    trackId: trackId ? parseInt(trackId, 10) : null,
   };
 
+  let submission;
+
   if (team.submission) {
-    return prisma.submission.update({
+    submission = await prisma.submission.update({
       where: { id: team.submission.id },
       data: submissionData,
-      include: {
-        team: {
-          select: { id: true, name: true, leaderId: true },
-        },
-        event: {
-          select: { id: true, title: true, deadline: true },
-        },
-      },
     });
   } else {
-    return prisma.submission.create({
+    submission = await prisma.submission.create({
       data: {
         ...submissionData,
         teamId: team.id,
         eventId: team.eventId,
       },
-      include: {
-        team: {
-          select: { id: true, name: true, leaderId: true },
-        },
-        event: {
-          select: { id: true, title: true, deadline: true },
-        },
-      },
     });
   }
+
+  // Handle Answers
+  if (answers && Array.isArray(answers)) {
+    // We use a simple loop because SQLite with Prisma doesn't natively support createMany/upsert in a clean array way for related records
+    for (const ans of answers) {
+      if (ans.questionId && ans.answer) {
+        await prisma.submissionAnswer.upsert({
+          where: {
+            submissionId_questionId: {
+              submissionId: submission.id,
+              questionId: parseInt(ans.questionId, 10),
+            }
+          },
+          update: {
+            answer: ans.answer,
+          },
+          create: {
+            submissionId: submission.id,
+            questionId: parseInt(ans.questionId, 10),
+            answer: ans.answer,
+          }
+        });
+      }
+    }
+  }
+
+  return getSubmissionById(submission.id, currentUser);
 };
 
 const getSubmissionById = async (submissionId, currentUser) => {
@@ -106,6 +136,12 @@ const getSubmissionById = async (submissionId, currentUser) => {
             },
           },
         },
+      },
+      track: true,
+      answers: {
+        include: {
+          question: true,
+        }
       },
       event: {
         include: {
@@ -125,6 +161,14 @@ const getSubmissionById = async (submissionId, currentUser) => {
     const error = new Error('Submission not found.');
     error.statusCode = 404;
     throw error;
+  }
+
+  if (submission.imageGallery) {
+    try {
+      submission.imageGallery = JSON.parse(submission.imageGallery);
+    } catch(e) {
+      submission.imageGallery = [];
+    }
   }
 
   let eventRole = null;
@@ -165,6 +209,7 @@ const getSubmissionsByEvent = async (eventId, currentUser) => {
       team: {
         select: { id: true, name: true, leaderId: true },
       },
+      track: true,
       scores: {
         include: {
           criterion: true,
@@ -189,19 +234,82 @@ const getSubmissionsByEvent = async (eventId, currentUser) => {
   const isJudge = eventRole === 'JUDGE';
   const isPublished = event.isLeaderboardPublished;
 
-  if (!isOrganizer && !isJudge && !isPublished) {
-    return submissions.map((sub) => {
-      const copy = { ...sub };
+  return submissions.map((sub) => {
+    let copy = { ...sub };
+    if (copy.imageGallery) {
+      try {
+        copy.imageGallery = JSON.parse(copy.imageGallery);
+      } catch (e) {
+        copy.imageGallery = [];
+      }
+    }
+    if (!isOrganizer && !isJudge && !isPublished) {
       delete copy.scores;
-      return copy;
-    });
+    }
+    return copy;
+  });
+};
+
+const getPublicGallery = async (eventId, queryParams) => {
+  const event = await prisma.event.findUnique({
+    where: { id: parseInt(eventId, 10) },
+  });
+
+  if (!event) {
+    const error = new Error('Event not found.');
+    error.statusCode = 404;
+    throw error;
   }
 
-  return submissions;
+  const { search, trackId, techTags } = queryParams;
+
+  let whereClause = {
+    eventId: parseInt(eventId, 10),
+    status: 'SUBMITTED', // Only show completed submissions to public
+  };
+
+  if (search) {
+    whereClause.OR = [
+      { title: { contains: search } },
+      { tagline: { contains: search } },
+    ];
+  }
+
+  if (trackId) {
+    whereClause.trackId = parseInt(trackId, 10);
+  }
+  
+  if (techTags) {
+    whereClause.techStack = { contains: techTags };
+  }
+
+  const submissions = await prisma.submission.findMany({
+    where: whereClause,
+    include: {
+      team: {
+        select: { id: true, name: true },
+      },
+      track: true,
+    },
+    orderBy: { submittedAt: 'desc' },
+  });
+
+  return submissions.map((sub) => {
+    let copy = { ...sub };
+    if (copy.imageGallery) {
+      try {
+        copy.imageGallery = JSON.parse(copy.imageGallery);
+      } catch (e) {
+        copy.imageGallery = [];
+      }
+    }
+    return copy;
+  });
 };
 
 module.exports = {
   createOrUpdateSubmission,
   getSubmissionById,
   getSubmissionsByEvent,
+  getPublicGallery,
 };
