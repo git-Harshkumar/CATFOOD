@@ -247,6 +247,39 @@ const joinTeamByToken = async (userId, token) => {
   return getTeamById(team.id);
 };
 
+const completeRegistration = async (teamId, userId) => {
+  const team = await prisma.team.findUnique({
+    where: { id: parseInt(teamId, 10) },
+    include: { members: true },
+  });
+
+  if (!team) {
+    const error = new Error('Team not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const isMember = team.members.some((m) => m.userId === userId) || team.leaderId === userId;
+  if (!isMember) {
+    const error = new Error('You must be a member of the team to complete registration.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  if (team.isRegistered) {
+    const error = new Error('Team is already fully registered.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  await prisma.team.update({
+    where: { id: team.id },
+    data: { isRegistered: true },
+  });
+
+  return getTeamById(team.id);
+};
+
 const getTeamById = async (teamId) => {
   const team = await prisma.team.findUnique({
     where: { id: parseInt(teamId, 10) },
@@ -368,4 +401,5 @@ module.exports = {
   getTeamById,
   getMyTeams,
   leaveTeam,
+  completeRegistration,
 };

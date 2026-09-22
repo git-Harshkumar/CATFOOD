@@ -187,6 +187,8 @@ model Team {
   leaderId Int
   leader   User @relation("TeamLeader", fields: [leaderId], references: [id], onDelete: Cascade)
 
+  isRegistered Boolean @default(false)
+
   members    TeamMember[]
   submission Submission?
 

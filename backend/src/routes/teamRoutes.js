@@ -15,5 +15,6 @@ router.get('/my-teams', teamController.getMyTeams);
 router.get('/:id/invite-link', teamController.generateInviteLinkToken);
 router.get('/:id', teamController.getTeamById);
 router.post('/:id/leave', teamController.leaveTeam);
+router.post('/:id/complete-registration', teamController.completeRegistration);
 
 module.exports = router;

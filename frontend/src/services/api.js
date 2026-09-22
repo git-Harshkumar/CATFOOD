@@ -153,6 +153,10 @@ class ApiService {
     return this.request(`/teams/${id}/leave`, { method: 'POST' });
   }
 
+  async completeTeamRegistration(teamId) {
+    return this.request(`/teams/${teamId}/complete-registration`, { method: 'POST' });
+  }
+
   // Submissions
   async submitProject(teamId, data) {
     return this.request(`/submissions/team/${teamId}`, { method: 'POST', body: data });

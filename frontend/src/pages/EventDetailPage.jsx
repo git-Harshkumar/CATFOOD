@@ -8,6 +8,8 @@ import PillButton from '../components/neo/PillButton';
 import AvatarStack from '../components/neo/AvatarStack';
 import NeoToggle from '../components/neo/NeoToggle';
 import { EventImage } from '../components/EventImage';
+import { CreateTeamModal } from './CreateTeamModal';
+import { JoinTeamModal } from './JoinTeamModal';
 import { getStatusBadge, formatDate } from '../utils/formatters';
 import { Trophy, FileText, Award, Github, Globe, Users, Lock, ArrowLeft, PlusCircle } from 'lucide-react';
 import JudgingProgressSection from '../components/JudgingProgressSection';
@@ -18,7 +20,6 @@ export const EventDetailPage = ({
   onOpenSubmit,
   onOpenScore,
   onViewLeaderboard,
-  onOpenCreateTeam,
   onViewGallery,
 }) => {
   const { user, isOrganizer, isJudge, isParticipant } = useAuth();
@@ -29,6 +30,9 @@ export const EventDetailPage = ({
   const [judgeEmail, setJudgeEmail] = useState('');
   const [assigningJudge, setAssigningJudge] = useState(false);
   const [message, setMessage] = useState(null);
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isJoinOpen, setIsJoinOpen] = useState(false);
 
   useEffect(() => {
     fetchEventDetails();
@@ -174,27 +178,36 @@ export const EventDetailPage = ({
             <div>Deadline: {formatDate(event.deadline)}</div>
             <div>Team Size: {event.minTeamSize} - {event.maxTeamSize} members</div>
           </div>
-        </div>
-      </NeoCard>
 
-      {/* Action Buttons & Organizer Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-6 border-t-3 border-neo-ink pt-8">
-        <div className="flex items-center gap-4">
+          {/* Action Buttons inside Hero */}
           {userTeam ? (
             <NeoButton 
               onClick={() => onOpenSubmit(userTeam.id, userTeam.submission)} 
               disabled={isDeadlinePassed}
               color="bg-neo-ink" 
               textColor="text-white"
+              className="w-full justify-center mt-2"
             >
               <FileText className="w-5 h-5 mr-2" />
-              {userTeam.submission ? (isDeadlinePassed ? 'View Submission (Locked)' : 'Edit Team Submission') : 'Submit Project'}
+              {userTeam.submission ? (isDeadlinePassed ? 'View Submission (Locked)' : 'Edit Submission') : 'Submit Project'}
             </NeoButton>
           ) : isParticipant ? (
-            <NeoButton onClick={() => onOpenCreateTeam(eventId)} color="bg-neo-ink" textColor="text-white">
-              <Users className="w-5 h-5 mr-2" /> Create or Join Team
-            </NeoButton>
+            <div className="flex flex-col gap-3 w-full mt-2">
+              <NeoButton onClick={() => setIsCreateOpen(true)} color="bg-neo-ink" textColor="text-white" className="w-full justify-center">
+                <PlusCircle className="w-5 h-5 mr-2" /> Register Team
+              </NeoButton>
+              <NeoButton onClick={() => setIsJoinOpen(true)} color="bg-white" textColor="text-neo-ink" className="w-full justify-center">
+                <Users className="w-5 h-5 mr-2" /> Join with Code
+              </NeoButton>
+            </div>
           ) : null}
+        </div>
+      </NeoCard>
+
+      {/* Organizer Controls and Evaluator Buttons */}
+      <div className="flex flex-wrap items-center justify-between gap-6 border-t-3 border-neo-ink pt-8">
+        <div className="flex items-center gap-4">
+          {/* Moved submit and register to the hero card above */}
 
           {isJudge && (
             <NeoButton onClick={() => onOpenScore(eventId)} color="bg-neo-pastel-green" textColor="text-neo-ink">
@@ -370,6 +383,18 @@ export const EventDetailPage = ({
       {activeTab === 'judging' && isOrganizer && event.organizerId === user?.id && (
         <JudgingProgressSection eventId={event.id} />
       )}
+      {/* Local Modals */}
+      <CreateTeamModal 
+        isOpen={isCreateOpen} 
+        onClose={() => setIsCreateOpen(false)} 
+        initialEventId={event.id}
+        onSuccess={() => fetchEventDetails()}
+      />
+      <JoinTeamModal 
+        isOpen={isJoinOpen} 
+        onClose={() => setIsJoinOpen(false)} 
+        onSuccess={() => fetchEventDetails()}
+      />
     </div>
   );
 };
