@@ -2,7 +2,24 @@ const prisma = require('../utils/prisma');
 const { hashPassword, comparePassword } = require('../utils/passwords');
 const { generateToken } = require('../utils/jwt');
 
-const register = async ({ email, password, name }) => {
+const resolveUserRole = async (userId, isGlobalAdmin) => {
+  if (isGlobalAdmin) return 'ADMIN';
+  const organizerEvent = await prisma.event.findFirst({
+    where: { organizerId: userId },
+  });
+  if (organizerEvent) return 'ORGANIZER';
+  const judgeProfile = await prisma.judge.findFirst({
+    where: { userId },
+  });
+  if (judgeProfile) return 'JUDGE';
+  const eventMember = await prisma.eventMember.findFirst({
+    where: { userId },
+  });
+  if (eventMember) return eventMember.role;
+  return 'PARTICIPANT';
+};
+
+const register = async ({ email, password, name, role = 'PARTICIPANT' }) => {
   const existingUser = await prisma.user.findUnique({
     where: { email: email.toLowerCase() },
   });
@@ -30,9 +47,14 @@ const register = async ({ email, password, name }) => {
     },
   });
 
-  const token = generateToken(user);
+  const safeUser = {
+    ...user,
+    role: role || 'PARTICIPANT',
+  };
 
-  return { user, token };
+  const token = generateToken(safeUser);
+
+  return { user: safeUser, token };
 };
 
 const login = async ({ email, password }) => {
@@ -53,10 +75,13 @@ const login = async ({ email, password }) => {
     throw error;
   }
 
+  const role = await resolveUserRole(user.id, user.isGlobalAdmin);
+
   const safeUser = {
     id: user.id,
     email: user.email,
     name: user.name,
+    role,
     isGlobalAdmin: user.isGlobalAdmin,
     createdAt: user.createdAt,
   };
@@ -73,7 +98,6 @@ const getProfile = async (userId) => {
       id: true,
       email: true,
       name: true,
-      passwordHash: true,
       isGlobalAdmin: true,
       createdAt: true,
       organizedEvents: {
@@ -109,7 +133,12 @@ const getProfile = async (userId) => {
     throw error;
   }
 
-  return user;
+  const role = await resolveUserRole(user.id, user.isGlobalAdmin);
+
+  return {
+    ...user,
+    role,
+  };
 };
 
 module.exports = {

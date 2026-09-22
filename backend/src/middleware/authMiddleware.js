@@ -31,7 +31,10 @@ const authenticate = async (req, res, next) => {
       return error(res, 'User no longer exists.', 401);
     }
 
-    req.user = user;
+    req.user = {
+      ...user,
+      role: decoded.role || (user.isGlobalAdmin ? 'ADMIN' : 'PARTICIPANT'),
+    };
     next();
   } catch (err) {
     if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {

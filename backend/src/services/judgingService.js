@@ -214,6 +214,17 @@ const getLeaderboard = async (eventId, currentUser) => {
 };
 
 const getJudgeQueue = async (eventId, userId) => {
+  if (!eventId) {
+    const judgeProfiles = await prisma.judge.findMany({
+      where: { userId },
+    });
+    if (!judgeProfiles.length) return [];
+    const allQueues = await Promise.all(
+      judgeProfiles.map((j) => getJudgeQueue(j.eventId, userId))
+    );
+    return allQueues.flat();
+  }
+
   const judge = await prisma.judge.findUnique({
     where: { eventId_userId: { eventId: parseInt(eventId, 10), userId } }
   });

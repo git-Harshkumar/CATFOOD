@@ -2,13 +2,21 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Modal } from '../components/Modal';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 import { CountdownTimer } from '../components/CountdownTimer';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
 import AvatarStack from '../components/neo/AvatarStack';
 import { Users, PlusCircle, UserPlus, Copy, Check, FileText, Link as LinkIcon, LogOut } from 'lucide-react';
 
-export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
+export const TeamsPage = ({
+  onOpenSubmit,
+  onSelectEvent,
+  initialEventId,
+  autoOpenCreate,
+  autoOpenJoin,
+  onClearContext,
+}) => {
   const { user } = useAuth();
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,6 +26,19 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
   const [events, setEvents] = useState([]);
+
+  // Confirmation / Alert Modal state
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'confirm',
+    variant: 'default',
+    confirmText: 'Confirm',
+    actionText: 'OK',
+    confirmColor: undefined,
+    onConfirm: null,
+  });
 
   // Form states
   const [selectedEventId, setSelectedEventId] = useState('');
@@ -33,6 +54,17 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
     fetchMyTeams();
     fetchAvailableEvents();
   }, []);
+
+  useEffect(() => {
+    if (initialEventId) {
+      setSelectedEventId(String(initialEventId));
+    }
+    if (autoOpenCreate) {
+      setIsCreateOpen(true);
+    } else if (autoOpenJoin) {
+      setIsJoinOpen(true);
+    }
+  }, [initialEventId, autoOpenCreate, autoOpenJoin]);
 
   const fetchMyTeams = async () => {
     try {
@@ -54,7 +86,11 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
       if (res?.data) {
         const activeEvents = res.data.filter((e) => e.status === 'ACTIVE');
         setEvents(activeEvents);
-        if (activeEvents.length > 0) setSelectedEventId(String(activeEvents[0].id));
+        if (initialEventId) {
+          setSelectedEventId(String(initialEventId));
+        } else if (activeEvents.length > 0) {
+          setSelectedEventId(String(activeEvents[0].id));
+        }
       }
     } catch (err) {
       console.error('Failed to load events:', err);
@@ -77,7 +113,14 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
       }
     } catch (e) {
       console.error(e);
-      alert('Failed to generate invite link');
+      setConfirmModal({
+        isOpen: true,
+        title: 'Invite Link Error',
+        message: e.message || 'Failed to generate invite link.',
+        type: 'alert',
+        variant: 'warning',
+        actionText: 'OK',
+      });
     } finally {
       setGeneratingLinkFor(null);
     }
@@ -91,6 +134,7 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
       await api.createTeam({ eventId: parseInt(selectedEventId, 10), name: teamName });
       setIsCreateOpen(false);
       setTeamName('');
+      if (onClearContext) onClearContext();
       await fetchMyTeams();
     } catch (err) {
       setModalError(err.message || 'Failed to create team');
@@ -107,6 +151,7 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
       await api.joinTeam(inviteCode.trim());
       setIsJoinOpen(false);
       setInviteCode('');
+      if (onClearContext) onClearContext();
       await fetchMyTeams();
     } catch (err) {
       setModalError(err.message || 'Failed to join team');
@@ -115,14 +160,32 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
     }
   };
 
-  const handleLeaveTeam = async (teamId) => {
-    if (!window.confirm('Are you sure you want to leave this team?')) return;
-    try {
-      await api.leaveTeam(teamId);
-      await fetchMyTeams();
-    } catch (err) {
-      alert(err.message || 'Failed to leave team');
-    }
+  const handleLeaveTeam = (teamId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Leave Team',
+      message: 'Are you sure you want to leave this team? This action cannot easily be undone.',
+      type: 'confirm',
+      variant: 'danger',
+      confirmText: 'Leave Team',
+      confirmColor: 'bg-red-600',
+      onConfirm: async () => {
+        try {
+          await api.leaveTeam(teamId);
+          setConfirmModal((m) => ({ ...m, isOpen: false }));
+          await fetchMyTeams();
+        } catch (err) {
+          setConfirmModal({
+            isOpen: true,
+            title: 'Failed to Leave Team',
+            message: err.message || 'Could not leave team. Please try again.',
+            type: 'alert',
+            variant: 'warning',
+            actionText: 'OK',
+          });
+        }
+      },
+    });
   };
 
   const inputClass = "w-full px-4 py-3 font-bold bg-white border-3 border-neo-ink rounded-xl placeholder-neo-ink/40 neo-shadow focus:outline-none focus:neo-active transition-all";
@@ -312,6 +375,11 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
                 </option>
               ))}
             </select>
+            {initialEventId && events.some(e => String(e.id) === String(initialEventId)) && (
+              <p className="text-xs font-bold text-neo-ink/70 mt-2">
+                ✓ Pre-selected from the hackathon you were viewing.
+              </p>
+            )}
           </div>
 
           <div>
@@ -327,7 +395,15 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
           </div>
 
           <div className="pt-6 flex justify-end gap-4">
-            <NeoButton type="button" onClick={() => setIsCreateOpen(false)} color="bg-white" textColor="text-neo-ink">
+            <NeoButton
+              type="button"
+              onClick={() => {
+                setIsCreateOpen(false);
+                if (onClearContext) onClearContext();
+              }}
+              color="bg-white"
+              textColor="text-neo-ink"
+            >
               Cancel
             </NeoButton>
             <NeoButton type="submit" disabled={submitting} color="bg-neo-ink" textColor="text-white">
@@ -340,7 +416,10 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
       {/* Modal: Join Team */}
       <Modal
         isOpen={isJoinOpen}
-        onClose={() => setIsJoinOpen(false)}
+        onClose={() => {
+          setIsJoinOpen(false);
+          if (onClearContext) onClearContext();
+        }}
         title="Join an Existing Team"
         maxWidth="max-w-xl"
       >
@@ -367,7 +446,15 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
           </div>
 
           <div className="pt-6 flex justify-end gap-4">
-            <NeoButton type="button" onClick={() => setIsJoinOpen(false)} color="bg-white" textColor="text-neo-ink">
+            <NeoButton
+              type="button"
+              onClick={() => {
+                setIsJoinOpen(false);
+                if (onClearContext) onClearContext();
+              }}
+              color="bg-white"
+              textColor="text-neo-ink"
+            >
               Cancel
             </NeoButton>
             <NeoButton type="submit" disabled={submitting} color="bg-neo-ink" textColor="text-white">
@@ -376,6 +463,20 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
           </div>
         </form>
       </Modal>
+
+      {/* Confirmation & Alert Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal((m) => ({ ...m, isOpen: false }))}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        variant={confirmModal.variant}
+        confirmText={confirmModal.confirmText}
+        actionText={confirmModal.actionText}
+        confirmColor={confirmModal.confirmColor}
+        onConfirm={confirmModal.onConfirm}
+      />
     </div>
   );
 };

@@ -7,8 +7,9 @@ import NeoButton from '../components/neo/NeoButton';
 import PillButton from '../components/neo/PillButton';
 import AvatarStack from '../components/neo/AvatarStack';
 import NeoToggle from '../components/neo/NeoToggle';
+import { EventImage } from '../components/EventImage';
 import { getStatusBadge, formatDate } from '../utils/formatters';
-import { Trophy, FileText, Award, Github, Globe, Users, Lock, ArrowLeft } from 'lucide-react';
+import { Trophy, FileText, Award, Github, Globe, Users, Lock, ArrowLeft, PlusCircle } from 'lucide-react';
 
 export const EventDetailPage = ({
   eventId,
@@ -157,6 +158,14 @@ export const EventDetailPage = ({
         </div>
 
         <div className="flex flex-col items-start md:items-end gap-4 min-w-max">
+          {event.imageUrl && (
+            <EventImage
+              src={event.imageUrl}
+              alt={event.title}
+              className="w-52 h-36"
+              title={event.title}
+            />
+          )}
           <div className="bg-white border-3 border-neo-ink rounded-2xl p-4 text-center neo-shadow">
             <CountdownTimer deadline={event.deadline} />
           </div>
@@ -181,7 +190,7 @@ export const EventDetailPage = ({
               {userTeam.submission ? (isDeadlinePassed ? 'View Submission (Locked)' : 'Edit Team Submission') : 'Submit Project'}
             </NeoButton>
           ) : isParticipant ? (
-            <NeoButton onClick={onOpenCreateTeam} color="bg-neo-ink" textColor="text-white">
+            <NeoButton onClick={() => onOpenCreateTeam(eventId)} color="bg-neo-ink" textColor="text-white">
               <Users className="w-5 h-5 mr-2" /> Create or Join Team
             </NeoButton>
           ) : null}
