@@ -23,7 +23,7 @@ const authenticate = async (req, res, next) => {
         id: true,
         email: true,
         name: true,
-        role: true,
+        isGlobalAdmin: true,
       },
     });
 

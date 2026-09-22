@@ -3,8 +3,8 @@ const { success } = require('../utils/response');
 
 const submitScores = async (req, res, next) => {
   try {
-    const { submissionId } = req.params;
-    const scores = await judgingService.submitScores(req.user.id, submissionId, req.body.scores);
+    const { eventId, submissionId } = req.params;
+    const scores = await judgingService.submitScores(eventId, req.user.id, submissionId, req.body.scores);
     return success(res, scores, 'Scores submitted successfully', 200);
   } catch (err) {
     next(err);
@@ -13,8 +13,8 @@ const submitScores = async (req, res, next) => {
 
 const getSubmissionScores = async (req, res, next) => {
   try {
-    const { submissionId } = req.params;
-    const scores = await judgingService.getSubmissionScoresByJudge(submissionId, req.user.id);
+    const { eventId, submissionId } = req.params;
+    const scores = await judgingService.getSubmissionScoresByJudge(eventId, submissionId, req.user.id);
     return success(res, scores, 'Submission scores retrieved successfully');
   } catch (err) {
     next(err);
@@ -33,7 +33,8 @@ const getLeaderboard = async (req, res, next) => {
 
 const getJudgeQueue = async (req, res, next) => {
   try {
-    const queue = await judgingService.getJudgeQueue(req.user.id);
+    const { eventId } = req.params;
+    const queue = await judgingService.getJudgeQueue(eventId, req.user.id);
     return success(res, queue, 'Judge evaluation queue retrieved successfully');
   } catch (err) {
     next(err);

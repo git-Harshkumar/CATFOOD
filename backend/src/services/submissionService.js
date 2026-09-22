@@ -1,6 +1,6 @@
 const prisma = require('../utils/prisma');
 
-const createOrUpdateSubmission = async (userId, userRole, teamId, data) => {
+const createOrUpdateSubmission = async (userId, currentUser, teamId, data) => {
   const team = await prisma.team.findUnique({
     where: { id: parseInt(teamId, 10) },
     include: {
@@ -16,9 +16,16 @@ const createOrUpdateSubmission = async (userId, userRole, teamId, data) => {
     throw error;
   }
 
-  // Authorization check: User must be a member of the team (or organizer override)
+  let eventRole = null;
+  if (currentUser && !currentUser.isGlobalAdmin) {
+    const member = await prisma.eventMember.findUnique({
+      where: { eventId_userId: { eventId: team.eventId, userId: currentUser.id } }
+    });
+    if (member) eventRole = member.role;
+  }
+
   const isMember = team.members.some((m) => m.userId === userId);
-  const isOrganizer = userRole === 'ORGANIZER' && team.event.organizerId === userId;
+  const isOrganizer = currentUser?.isGlobalAdmin || eventRole === 'ORGANIZER' || team.event.organizerId === userId;
 
   if (!isMember && !isOrganizer) {
     const error = new Error('Unauthorized. You can only submit or edit projects for your own team.');
@@ -26,7 +33,6 @@ const createOrUpdateSubmission = async (userId, userRole, teamId, data) => {
     throw error;
   }
 
-  // Deadline check: STRICT SERVER-SIDE ENFORCEMENT
   const now = new Date();
   const deadline = new Date(team.event.deadline);
 
@@ -38,7 +44,6 @@ const createOrUpdateSubmission = async (userId, userRole, teamId, data) => {
     throw error;
   }
 
-  // Event status check
   if (team.event.status === 'COMPLETED' && !isOrganizer) {
     const error = new Error('This hackathon has already concluded. Submissions are closed.');
     error.statusCode = 400;
@@ -58,7 +63,6 @@ const createOrUpdateSubmission = async (userId, userRole, teamId, data) => {
   };
 
   if (team.submission) {
-    // Update existing submission
     return prisma.submission.update({
       where: { id: team.submission.id },
       data: submissionData,
@@ -72,7 +76,6 @@ const createOrUpdateSubmission = async (userId, userRole, teamId, data) => {
       },
     });
   } else {
-    // Create new submission
     return prisma.submission.create({
       data: {
         ...submissionData,
@@ -111,7 +114,7 @@ const getSubmissionById = async (submissionId, currentUser) => {
       },
       scores: {
         include: {
-          judge: { select: { id: true, name: true } },
+          judge: { include: { user: { select: { id: true, name: true } } } },
           criterion: { select: { id: true, name: true, maxScore: true, weight: true } },
         },
       },
@@ -124,11 +127,16 @@ const getSubmissionById = async (submissionId, currentUser) => {
     throw error;
   }
 
-  // RBAC privacy for scores:
-  // If user is neither an ORGANIZER nor a JUDGE, and leaderboard is not published,
-  // hide individual judge scores and feedback from competitors!
-  const isOrganizer = currentUser?.role === 'ORGANIZER' && submission.event.organizerId === currentUser.id;
-  const isJudge = currentUser?.role === 'JUDGE';
+  let eventRole = null;
+  if (currentUser && !currentUser.isGlobalAdmin) {
+    const member = await prisma.eventMember.findUnique({
+      where: { eventId_userId: { eventId: submission.eventId, userId: currentUser.id } }
+    });
+    if (member) eventRole = member.role;
+  }
+
+  const isOrganizer = currentUser?.isGlobalAdmin || eventRole === 'ORGANIZER' || submission.event.organizerId === currentUser?.id;
+  const isJudge = eventRole === 'JUDGE';
   const isPublished = submission.event.isLeaderboardPublished;
 
   if (!isOrganizer && !isJudge && !isPublished) {
@@ -169,8 +177,16 @@ const getSubmissionsByEvent = async (eventId, currentUser) => {
     orderBy: { submittedAt: 'asc' },
   });
 
-  const isOrganizer = currentUser?.role === 'ORGANIZER' && event.organizerId === currentUser.id;
-  const isJudge = currentUser?.role === 'JUDGE';
+  let eventRole = null;
+  if (currentUser && !currentUser.isGlobalAdmin) {
+    const member = await prisma.eventMember.findUnique({
+      where: { eventId_userId: { eventId: event.id, userId: currentUser.id } }
+    });
+    if (member) eventRole = member.role;
+  }
+
+  const isOrganizer = currentUser?.isGlobalAdmin || eventRole === 'ORGANIZER' || event.organizerId === currentUser?.id;
+  const isJudge = eventRole === 'JUDGE';
   const isPublished = event.isLeaderboardPublished;
 
   if (!isOrganizer && !isJudge && !isPublished) {

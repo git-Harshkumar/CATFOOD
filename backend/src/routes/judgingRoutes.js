@@ -11,21 +11,21 @@ router.get('/leaderboard/:eventId', authenticate, judgingController.getLeaderboa
 
 // Judge-only routes
 router.get(
-  '/queue',
+  '/:eventId/queue',
   authenticate,
   requireRole('JUDGE', 'ORGANIZER'),
   judgingController.getJudgeQueue
 );
 
 router.get(
-  '/scores/:submissionId',
+  '/:eventId/scores/:submissionId',
   authenticate,
   requireRole('JUDGE', 'ORGANIZER'),
   judgingController.getSubmissionScores
 );
 
 router.post(
-  '/score/:submissionId',
+  '/:eventId/score/:submissionId',
   authenticate,
   requireRole('JUDGE'),
   validate(validateScore),

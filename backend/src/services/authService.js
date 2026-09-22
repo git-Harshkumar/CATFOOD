@@ -2,7 +2,7 @@ const prisma = require('../utils/prisma');
 const { hashPassword, comparePassword } = require('../utils/passwords');
 const { generateToken } = require('../utils/jwt');
 
-const register = async ({ email, password, name, role = 'PARTICIPANT' }) => {
+const register = async ({ email, password, name }) => {
   const existingUser = await prisma.user.findUnique({
     where: { email: email.toLowerCase() },
   });
@@ -20,13 +20,12 @@ const register = async ({ email, password, name, role = 'PARTICIPANT' }) => {
       email: email.toLowerCase(),
       passwordHash,
       name,
-      role,
     },
     select: {
       id: true,
       email: true,
       name: true,
-      role: true,
+      isGlobalAdmin: true,
       createdAt: true,
     },
   });
@@ -58,7 +57,7 @@ const login = async ({ email, password }) => {
     id: user.id,
     email: user.email,
     name: user.name,
-    role: user.role,
+    isGlobalAdmin: user.isGlobalAdmin,
     createdAt: user.createdAt,
   };
 
@@ -74,7 +73,8 @@ const getProfile = async (userId) => {
       id: true,
       email: true,
       name: true,
-      role: true,
+      passwordHash: true,
+      isGlobalAdmin: true,
       createdAt: true,
       organizedEvents: {
         select: { id: true, title: true, status: true, deadline: true },
@@ -93,7 +93,7 @@ const getProfile = async (userId) => {
           },
         },
       },
-      judgeAssignments: {
+      judgeProfiles: {
         include: {
           event: {
             select: { id: true, title: true, status: true },

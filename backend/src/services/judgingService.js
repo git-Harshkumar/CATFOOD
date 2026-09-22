@@ -1,6 +1,16 @@
 const prisma = require('../utils/prisma');
 
-const submitScores = async (judgeId, submissionId, scoresPayload) => {
+const submitScores = async (eventId, userId, submissionId, scoresPayload) => {
+  const judge = await prisma.judge.findUnique({
+    where: { eventId_userId: { eventId: parseInt(eventId, 10), userId } }
+  });
+  if (!judge) {
+    const error = new Error('Judge profile not found for this event.');
+    error.statusCode = 403;
+    throw error;
+  }
+  const judgeId = judge.id;
+
   const submission = await prisma.submission.findUnique({
     where: { id: parseInt(submissionId, 10) },
     include: {
@@ -19,7 +29,6 @@ const submitScores = async (judgeId, submissionId, scoresPayload) => {
   const validCriterionMap = new Map();
   submission.event.criteria.forEach((c) => validCriterionMap.set(c.id, c));
 
-  // Validate each score against criterion bounds
   for (const item of scoresPayload) {
     const criterion = validCriterionMap.get(item.criterionId);
     if (!criterion) {
@@ -36,7 +45,6 @@ const submitScores = async (judgeId, submissionId, scoresPayload) => {
     }
   }
 
-  // Upsert scores in a transaction
   const upsertedScores = await prisma.$transaction(
     scoresPayload.map((item) =>
       prisma.score.upsert({
@@ -68,11 +76,16 @@ const submitScores = async (judgeId, submissionId, scoresPayload) => {
   return upsertedScores;
 };
 
-const getSubmissionScoresByJudge = async (submissionId, judgeId) => {
+const getSubmissionScoresByJudge = async (eventId, submissionId, userId) => {
+  const judge = await prisma.judge.findUnique({
+    where: { eventId_userId: { eventId: parseInt(eventId, 10), userId } }
+  });
+  if (!judge) return [];
+
   return prisma.score.findMany({
     where: {
       submissionId: parseInt(submissionId, 10),
-      judgeId,
+      judgeId: judge.id,
     },
     include: {
       criterion: true,
@@ -92,7 +105,7 @@ const getLeaderboard = async (eventId, currentUser) => {
           },
           scores: {
             include: {
-              judge: { select: { id: true, name: true } },
+              judge: { include: { user: { select: { id: true, name: true } } } },
               criterion: true,
             },
           },
@@ -107,11 +120,16 @@ const getLeaderboard = async (eventId, currentUser) => {
     throw error;
   }
 
-  // Access control:
-  // If leaderboard is NOT published, only ORGANIZERS and JUDGES can see preview rankings.
-  // Participants will be blocked or informed that leaderboard is pending.
-  const isOrganizer = currentUser?.role === 'ORGANIZER' && event.organizerId === currentUser.id;
-  const isJudge = currentUser?.role === 'JUDGE';
+  let eventRole = null;
+  if (currentUser && !currentUser.isGlobalAdmin) {
+    const member = await prisma.eventMember.findUnique({
+      where: { eventId_userId: { eventId: event.id, userId: currentUser.id } }
+    });
+    if (member) eventRole = member.role;
+  }
+  
+  const isOrganizer = currentUser?.isGlobalAdmin || eventRole === 'ORGANIZER' || event.organizerId === currentUser?.id;
+  const isJudge = eventRole === 'JUDGE';
 
   if (!event.isLeaderboardPublished && !isOrganizer && !isJudge) {
     const error = new Error('The final leaderboard for this hackathon has not been published yet.');
@@ -119,9 +137,7 @@ const getLeaderboard = async (eventId, currentUser) => {
     throw error;
   }
 
-  // Compute weighted scores for each submission
   const rankings = event.submissions.map((sub) => {
-    // Group scores by criterion
     const criteriaScores = {};
     event.criteria.forEach((crit) => {
       criteriaScores[crit.id] = {
@@ -182,10 +198,8 @@ const getLeaderboard = async (eventId, currentUser) => {
     };
   });
 
-  // Sort descending by totalWeightedScore
   rankings.sort((a, b) => b.totalWeightedScore - a.totalWeightedScore);
 
-  // Assign ranks
   rankings.forEach((item, index) => {
     item.rank = index + 1;
   });
@@ -199,29 +213,29 @@ const getLeaderboard = async (eventId, currentUser) => {
   };
 };
 
-const getJudgeQueue = async (judgeId) => {
-  // Find events where user is assigned or all active events
+const getJudgeQueue = async (eventId, userId) => {
+  const judge = await prisma.judge.findUnique({
+    where: { eventId_userId: { eventId: parseInt(eventId, 10), userId } }
+  });
+  if (!judge) return [];
+
   const assignments = await prisma.judgeAssignment.findMany({
-    where: { judgeId },
-    select: { eventId: true },
+    where: { judgeId: judge.id },
+    select: { submissionId: true },
   });
 
-  const eventIds = assignments.map((a) => a.eventId);
+  const submissionIds = assignments.map((a) => a.submissionId);
 
-  // If judge has specific assignments, filter by those; otherwise all active/judging events
-  const whereClause = eventIds.length > 0
-    ? { id: { in: eventIds } }
-    : { status: { in: ['ACTIVE', 'JUDGING', 'COMPLETED'] } };
-
-  const events = await prisma.event.findMany({
-    where: whereClause,
+  const event = await prisma.event.findUnique({
+    where: { id: parseInt(eventId, 10) },
     include: {
       criteria: true,
       submissions: {
+        where: submissionIds.length > 0 ? { id: { in: submissionIds } } : undefined,
         include: {
           team: { select: { id: true, name: true } },
           scores: {
-            where: { judgeId },
+            where: { judgeId: judge.id },
             include: { criterion: true },
           },
         },
@@ -229,28 +243,28 @@ const getJudgeQueue = async (judgeId) => {
     },
   });
 
-  return events.map((ev) => {
-    const queue = ev.submissions.map((sub) => {
-      const isEvaluated = sub.scores.length === ev.criteria.length && ev.criteria.length > 0;
-      return {
-        submissionId: sub.id,
-        title: sub.title,
-        teamName: sub.team.name,
-        submittedAt: sub.submittedAt,
-        isEvaluated,
-        scoresCount: sub.scores.length,
-        totalCriteriaCount: ev.criteria.length,
-      };
-    });
+  if (!event) return [];
 
+  const queue = event.submissions.map((sub) => {
+    const isEvaluated = sub.scores.length === event.criteria.length && event.criteria.length > 0;
     return {
-      eventId: ev.id,
-      eventTitle: ev.title,
-      status: ev.status,
-      deadline: ev.deadline,
-      submissions: queue,
+      submissionId: sub.id,
+      title: sub.title,
+      teamName: sub.team.name,
+      submittedAt: sub.submittedAt,
+      isEvaluated,
+      scoresCount: sub.scores.length,
+      totalCriteriaCount: event.criteria.length,
     };
   });
+
+  return [{
+    eventId: event.id,
+    eventTitle: event.title,
+    status: event.status,
+    deadline: event.deadline,
+    submissions: queue,
+  }];
 };
 
 module.exports = {
