@@ -12,6 +12,7 @@
     "test:events": "node --test tests/events/**/*.test.js",
     "test:teams": "node --test tests/teams/**/*.test.js",
     "test:submissions": "node --test tests/submissions/**/*.test.js",
+    "test:judging": "node --test tests/judging/**/*.test.js",
     "test:integration": "node --test tests/integration/**/*.test.js",
     "seed": "node backend/prisma/seed.js",
     "prisma:studio": "npm --prefix backend run prisma:studio",

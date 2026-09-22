@@ -36,17 +36,26 @@ const request = async (endpoint, options = {}) => {
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
 
+  let text;
   let data;
   try {
-    data = await response.json();
+    text = await response.text();
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = null;
+    }
   } catch (e) {
+    text = null;
     data = null;
   }
 
   return {
     status: response.status,
     ok: response.ok,
+    headers: response.headers,
     body: data,
+    text,
   };
 };
 

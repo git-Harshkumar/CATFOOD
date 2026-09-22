@@ -10,6 +10,7 @@ import NeoToggle from '../components/neo/NeoToggle';
 import { EventImage } from '../components/EventImage';
 import { getStatusBadge, formatDate } from '../utils/formatters';
 import { Trophy, FileText, Award, Github, Globe, Users, Lock, ArrowLeft, PlusCircle } from 'lucide-react';
+import JudgingProgressSection from '../components/JudgingProgressSection';
 
 export const EventDetailPage = ({
   eventId,
@@ -218,6 +219,9 @@ export const EventDetailPage = ({
           { key: 'criteria', label: `Judging Rubric (${event.criteria?.length || 0})` },
           { key: 'submissions', label: `Projects (${submissions?.length || 0})` },
           { key: 'teams', label: `Teams (${event.teams?.length || 0})` },
+          ...(isOrganizer && event.organizerId === user?.id
+            ? [{ key: 'judging', label: '⚖ Judging Progress' }]
+            : []),
         ].map((tab) => (
           <PillButton
             key={tab.key}
@@ -360,6 +364,11 @@ export const EventDetailPage = ({
             </NeoCard>
           ))}
         </div>
+      )}
+
+      {/* Tab: Judging Progress (Organizer only) */}
+      {activeTab === 'judging' && isOrganizer && event.organizerId === user?.id && (
+        <JudgingProgressSection eventId={event.id} />
       )}
     </div>
   );

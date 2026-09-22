@@ -1,0 +1,12 @@
+# DOGFOOD 2026 Acceptance Checker Configuration
+# Configures endpoints tested by python3 run.py .dogfood.toml
+
+[routes]
+judge_scores = "/api/judge/scores"
+peer_scores = "/api/judge/scores"
+csv_export = "/api/organizer/judging/export.csv"
+
+[endpoints]
+judge_scores = "/api/judge/scores"
+peer_scores = "/api/judge/scores"
+csv_export = "/api/organizer/judging/export.csv"

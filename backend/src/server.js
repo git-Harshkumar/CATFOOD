@@ -36,6 +36,8 @@ app.use('/api/events', eventRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/judging', judgingRoutes);
+app.use('/api/judge', judgingRoutes);
+app.use('/api/organizer/judging', judgingRoutes);
 
 // Error Handling
 app.use(notFoundHandler);

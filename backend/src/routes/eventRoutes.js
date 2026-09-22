@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const eventController = require('../controllers/eventController');
+const judgingController = require('../controllers/judgingController');
 const { authenticate } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
 const { validate } = require('../middleware/validateMiddleware');
@@ -57,6 +58,16 @@ router.post(
   eventController.assignJudge
 );
 
+router.get(
+  '/:id/judges',
+  authenticate,
+  requireRole('ORGANIZER'),
+  (req, res, next) => {
+    req.params.eventId = req.params.id;
+    judgingController.getEventJudges(req, res, next);
+  }
+);
+
 router.post(
   '/:id/publish-leaderboard',
   authenticate,
@@ -64,4 +75,87 @@ router.post(
   eventController.publishLeaderboard
 );
 
+// Event Judging & Assignments
+router.get(
+  '/:id/judging/progress',
+  authenticate,
+  requireRole('ORGANIZER'),
+  (req, res, next) => {
+    req.params.eventId = req.params.id;
+    judgingController.getJudgingProgress(req, res, next);
+  }
+);
+
+router.post(
+  '/:id/judging/normalize',
+  authenticate,
+  requireRole('ORGANIZER'),
+  (req, res, next) => {
+    req.params.eventId = req.params.id;
+    judgingController.runNormalization(req, res, next);
+  }
+);
+
+router.get(
+  '/:id/judging/export.csv',
+  authenticate,
+  requireRole('ORGANIZER'),
+  (req, res, next) => {
+    req.params.eventId = req.params.id;
+    judgingController.exportCsv(req, res, next);
+  }
+);
+
+router.get(
+  '/:id/judge-assignments',
+  authenticate,
+  requireRole('ORGANIZER'),
+  (req, res, next) => {
+    req.params.eventId = req.params.id;
+    judgingController.getJudgeAssignments(req, res, next);
+  }
+);
+
+router.post(
+  '/:id/judge-assignments/batch',
+  authenticate,
+  requireRole('ORGANIZER'),
+  (req, res, next) => {
+    req.params.eventId = req.params.id;
+    judgingController.batchAssignJudges(req, res, next);
+  }
+);
+
+router.post(
+  '/:id/judge-assignments/auto',
+  authenticate,
+  requireRole('ORGANIZER'),
+  (req, res, next) => {
+    req.params.eventId = req.params.id;
+    judgingController.autoAssignJudges(req, res, next);
+  }
+);
+
+router.delete(
+  '/:id/judge-assignments/:assignmentId',
+  authenticate,
+  requireRole('ORGANIZER'),
+  (req, res, next) => {
+    req.params.eventId = req.params.id;
+    req.params.id = req.params.assignmentId;
+    judgingController.removeJudgeAssignment(req, res, next);
+  }
+);
+
+router.get(
+  '/:id/audit-logs',
+  authenticate,
+  requireRole('ORGANIZER'),
+  (req, res, next) => {
+    req.params.eventId = req.params.id;
+    judgingController.getAuditLogs(req, res, next);
+  }
+);
+
 module.exports = router;
+
