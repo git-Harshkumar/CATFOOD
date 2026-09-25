@@ -2,6 +2,7 @@ const prisma = require('../utils/prisma');
 const judgingEngine = require('./judgingEngine');
 const auditService = require('./auditService');
 const { formatCsv } = require('../utils/csv');
+const { dispatchEvent } = require('./webhookService');
 
 /**
  * Submit judge scores for a submission with strict track and assignment isolation.
@@ -175,6 +176,8 @@ const submitScores = async (eventId, userId, submissionId, scoresPayload) => {
       percentage: weightedResult.percentage,
     },
   });
+
+  dispatchEvent('score.submitted', submission.eventId, { submissionId: submission.id, judgeId: judge.id }).catch(console.error);
 
   return scoreRecords;
 };

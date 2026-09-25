@@ -1,4 +1,5 @@
 const prisma = require('../utils/prisma');
+const { dispatchEvent } = require('./webhookService');
 
 const createOrUpdateSubmission = async (userId, currentUser, teamId, data) => {
   const team = await prisma.team.findUnique({
@@ -120,6 +121,8 @@ const createOrUpdateSubmission = async (userId, currentUser, teamId, data) => {
       }
     }
   }
+
+  dispatchEvent('submission.updated', team.eventId, { submissionId: submission.id }).catch(console.error);
 
   return getSubmissionById(submission.id, currentUser);
 };
@@ -294,8 +297,13 @@ const getPublicGallery = async (eventId, queryParams = {}) => {
       },
       track: true,
     },
-    orderBy: { submittedAt: 'desc' },
   });
+
+  // Fisher-Yates shuffle
+  for (let i = submissions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [submissions[i], submissions[j]] = [submissions[j], submissions[i]];
+  }
 
   return submissions.map((sub) => {
     let copy = { ...sub };

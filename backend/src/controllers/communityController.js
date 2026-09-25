@@ -3,7 +3,7 @@ const { success } = require('../utils/response');
 
 const castVote = async (req, res, next) => {
   try {
-    const { submissionId, voterEmail } = req.body;
+    const { submissionId, voterEmail, credits } = req.body;
     const eventId = req.params.eventId || req.body.eventId;
     const voterIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
@@ -13,6 +13,7 @@ const castVote = async (req, res, next) => {
       voterEmail,
       voterIp,
       currentUser: req.user,
+      credits,
     });
 
     return success(res, result, 'Community vote cast successfully', 201);
