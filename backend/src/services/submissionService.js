@@ -250,21 +250,24 @@ const getSubmissionsByEvent = async (eventId, currentUser) => {
   });
 };
 
-const getPublicGallery = async (eventId, queryParams) => {
-  const event = await prisma.event.findUnique({
-    where: { id: parseInt(eventId, 10) },
-  });
-
+const getPublicGallery = async (eventId, queryParams = {}) => {
+  let event = null;
+  const parsedEventId = eventId ? parseInt(eventId, 10) : NaN;
+  if (!isNaN(parsedEventId)) {
+    event = await prisma.event.findUnique({ where: { id: parsedEventId } });
+  }
   if (!event) {
-    const error = new Error('Event not found.');
-    error.statusCode = 404;
-    throw error;
+    event = await prisma.event.findFirst({ orderBy: { id: 'asc' } });
   }
 
-  const { search, trackId, techTags } = queryParams;
+  if (!event) {
+    return [];
+  }
+
+  const { search, trackId, techTags } = queryParams || {};
 
   let whereClause = {
-    eventId: parseInt(eventId, 10),
+    eventId: event.id,
     status: 'SUBMITTED', // Only show completed submissions to public
   };
 

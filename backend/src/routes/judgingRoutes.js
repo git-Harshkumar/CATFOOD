@@ -69,6 +69,33 @@ router.post(
   judgingController.submitScores
 );
 
+// Pairwise Judging (Bradley-Terry)
+router.post(
+  '/pairwise/compare',
+  authenticate,
+  requireRole('JUDGE'),
+  judgingController.recordPairwiseComparison
+);
+
+router.post(
+  '/:eventId/pairwise/compare',
+  authenticate,
+  requireRole('JUDGE'),
+  judgingController.recordPairwiseComparison
+);
+
+router.get(
+  '/pairwise/standings',
+  authenticate,
+  judgingController.getPairwiseStandings
+);
+
+router.get(
+  '/:eventId/pairwise/standings',
+  authenticate,
+  judgingController.getPairwiseStandings
+);
+
 // Progress Dashboard (Organizer only)
 router.get(
   '/progress',

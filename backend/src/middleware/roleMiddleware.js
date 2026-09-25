@@ -28,6 +28,14 @@ const requireRole = (...allowedRoles) => {
       if (req.user.role && flatRoles.includes(req.user.role)) {
         return next();
       }
+      if (flatRoles.includes('ORGANIZER')) {
+        const organized = await prisma.event.findFirst({ where: { organizerId: req.user.id } });
+        if (organized) return next();
+      }
+      if (flatRoles.includes('JUDGE')) {
+        const judgeProfile = await prisma.judge.findFirst({ where: { userId: req.user.id } });
+        if (judgeProfile) return next();
+      }
       return error(
         res,
         `Access denied. Requires one of the following roles: [${flatRoles.join(', ')}]. Current role: '${req.user.role || 'NONE'}'`,

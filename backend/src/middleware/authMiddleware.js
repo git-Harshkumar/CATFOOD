@@ -4,14 +4,32 @@ const prisma = require('../utils/prisma');
 
 const authenticate = async (req, res, next) => {
   try {
+    let token = null;
+
+    // 1. Check Authorization header
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return error(res, 'Authentication required. No Bearer token provided.', 401);
+    if (authHeader) {
+      if (authHeader.startsWith('Bearer ')) {
+        token = authHeader.split(' ')[1];
+      } else {
+        token = authHeader.trim();
+      }
     }
 
-    const token = authHeader.split(' ')[1];
+    // 2. Check Cookie header (e.g. Cookie: session=<token> or Cookie: token=<token>)
+    if (!token && req.headers.cookie) {
+      const cookies = req.headers.cookie.split(';');
+      for (const cookie of cookies) {
+        const [k, v] = cookie.trim().split('=');
+        if (k === 'session' || k === 'token' || k === 'jwt') {
+          token = decodeURIComponent(v);
+          break;
+        }
+      }
+    }
+
     if (!token) {
-      return error(res, 'Invalid token format.', 401);
+      return error(res, 'Authentication required. No credentials provided.', 401);
     }
 
     const decoded = verifyToken(token);

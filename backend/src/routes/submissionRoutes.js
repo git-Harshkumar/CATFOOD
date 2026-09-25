@@ -7,6 +7,8 @@ const { validateSubmission } = require('../validators');
 
 // Public routes
 router.get('/gallery/:eventId', submissionController.getPublicGallery);
+router.get('/gallery', submissionController.getPublicGallery);
+router.get('/', submissionController.getPublicGallery);
 
 // Public/authenticated view routes
 router.get('/event/:eventId', authenticate, submissionController.getSubmissionsByEvent);
@@ -18,6 +20,18 @@ router.post(
   authenticate,
   validate(validateSubmission),
   submissionController.createOrUpdateSubmission
+);
+
+// Direct submit endpoint
+router.post(
+  '/submit',
+  authenticate,
+  submissionController.handleDirectSubmission
+);
+router.post(
+  '/',
+  authenticate,
+  submissionController.handleDirectSubmission
 );
 
 module.exports = router;
