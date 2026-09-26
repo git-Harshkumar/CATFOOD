@@ -3,9 +3,11 @@ const { success } = require('../utils/response');
 
 const castVote = async (req, res, next) => {
   try {
-    const { submissionId, voterEmail, credits } = req.body;
-    const eventId = req.params.eventId || req.body.eventId;
+    const submissionId = req.body.submissionId || req.body.project_id;
+    const voterEmail = req.body.voterEmail || req.user?.email || 'voter@example.com';
+    const eventId = req.params.eventId || req.body.eventId || 1;
     const voterIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const credits = req.body.credits;
 
     const result = await communityService.castVote({
       eventId,
@@ -24,7 +26,7 @@ const castVote = async (req, res, next) => {
 
 const getCommunityResults = async (req, res, next) => {
   try {
-    const { eventId } = req.params;
+    const eventId = req.params.eventId || 1;
     const results = await communityService.getCommunityResults(eventId, req.user);
     return success(res, results, 'Community voting results retrieved successfully');
   } catch (err) {
@@ -61,6 +63,31 @@ const getComments = async (req, res, next) => {
   }
 };
 
+const addCommentProxy = async (req, res, next) => {
+  try {
+    const submissionId = req.body.project_id || req.query.project_id;
+    const content = req.body.body || req.body.content;
+    const comment = await communityService.addComment({
+      submissionId,
+      content,
+      currentUser: req.user,
+    });
+    return success(res, comment, 'Comment added successfully', 201);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getCommentsProxy = async (req, res, next) => {
+  try {
+    const submissionId = req.query.project_id;
+    const comments = await communityService.getComments(submissionId);
+    return success(res, comments, 'Comments retrieved successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
 const updateVotingSettings = async (req, res, next) => {
   try {
     const { eventId } = req.params;
@@ -76,5 +103,7 @@ module.exports = {
   getCommunityResults,
   addComment,
   getComments,
+  addCommentProxy,
+  getCommentsProxy,
   updateVotingSettings,
 };

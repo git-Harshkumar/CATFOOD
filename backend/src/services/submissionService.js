@@ -305,7 +305,7 @@ const getPublicGallery = async (eventId, queryParams = {}) => {
     [submissions[i], submissions[j]] = [submissions[j], submissions[i]];
   }
 
-  return submissions.map((sub) => {
+  const results = submissions.map((sub) => {
     let copy = { ...sub };
     if (copy.imageGallery) {
       try {
@@ -316,6 +316,9 @@ const getPublicGallery = async (eventId, queryParams = {}) => {
     }
     return copy;
   });
+  
+  // T3 requirement: ballot ordering is randomised
+  return results.sort(() => Math.random() - 0.5);
 };
 
 module.exports = {

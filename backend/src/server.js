@@ -30,6 +30,10 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.get('/api', (req, res) => {
+  res.json({ service: 'DOGFOOD 2026 REST API', version: '1.0' });
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
