@@ -144,6 +144,25 @@ async function main() {
     });
   }
   
+  console.log('[Seed Fixtures] Creating certificate for judge A...');
+  const certId = 'CERT-1-JUDGE385-DEMO';
+  const crypto = require('crypto');
+  const CERT_SIGNING_SECRET = process.env.CERT_SECRET || 'dogfood-certificate-signing-key-2026';
+  const payloadToSign = `${certId}|${activeEvent.id}|${judgeA.email.toLowerCase()}|JUDGE|{}`;
+  const signature = crypto.createHmac('sha256', CERT_SIGNING_SECRET).update(payloadToSign).digest('hex');
+
+  await prisma.certificate.create({
+    data: {
+      id: certId,
+      eventId: activeEvent.id,
+      recipientName: judgeA.name,
+      recipientEmail: judgeA.email,
+      role: 'JUDGE',
+      signature: signature,
+      metadata: '{}'
+    }
+  });
+
   console.log('[Seed Fixtures] Done!');
 }
 

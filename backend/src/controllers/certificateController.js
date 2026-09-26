@@ -28,6 +28,16 @@ const verifyCertificate = async (req, res, next) => {
   }
 };
 
+const verifyJudgeCertificate = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const verification = await certificateService.verifyJudgeCertificate(userId);
+    return success(res, verification, 'Judge Certificate verification completed');
+  } catch (err) {
+    next(err);
+  }
+};
+
 const getMyCertificates = async (req, res, next) => {
   try {
     const certs = await certificateService.getUserCertificates(req.user.email);
@@ -40,5 +50,6 @@ const getMyCertificates = async (req, res, next) => {
 module.exports = {
   issueCertificate,
   verifyCertificate,
+  verifyJudgeCertificate,
   getMyCertificates,
 };

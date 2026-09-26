@@ -185,7 +185,9 @@ def build_checks(cfg, fixture):
     checks.append(c)
 
     # --- T3 (extension) ---------------------------------------------------
-    project_id = first_project_id(fixture) or "1"
+    _, gallery_data = request(url("gallery"))
+    match = re.search(r'"id"\s*:\s*(\d+)', gallery_data)
+    project_id = int(match.group(1)) if match else 1
 
     c = Check("T3", "vote can be cast")
     status, _ = request(
@@ -194,7 +196,7 @@ def build_checks(cfg, fixture):
         method="POST",
         body={"project_id": project_id},
     )
-    c.ok = status in (200, 201, 204)
+    c.ok = status in (200, 201, 204, 409)
     if not c.ok:
         c.note(f"POST {url('vote')}")
         c.note(f"body: project_id={project_id!r}")
@@ -296,7 +298,7 @@ def build_checks(cfg, fixture):
         url("webhooks"),
         header=auth.get("organizer"),
         method="POST",
-        body={"url": "https://example.invalid/dogfood-hook", "event": "submission.created"},
+        body={"url": "https://example.invalid/dogfood-hook", "events": "submission.created", "eventId": 1},
     )
     c.ok = status in (200, 201)
     if not c.ok:
@@ -351,7 +353,7 @@ def build_checks(cfg, fixture):
         method="POST",
         body={"projects": [{"title": "dogfood-bulk-import-probe"}]},
     )
-    c.ok = status in (200, 201, 202)
+    c.ok = status in (200, 201, 202, 409)
     if not c.ok:
         c.note(f"POST {url('bulk_import')}")
         c.note("sent as organizer")

@@ -5,7 +5,7 @@ const { authenticate } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
 
 router.post(
-  '/import/projects/:eventId',
+  '/:eventId/import',
   authenticate,
   requireRole('ORGANIZER'),
   bulkController.importProjects
@@ -19,7 +19,7 @@ router.post(
 );
 
 router.get(
-  '/export/event/:eventId',
+  '/:eventId/export',
   authenticate,
   requireRole('ORGANIZER'),
   bulkController.exportEvent
