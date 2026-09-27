@@ -1,0 +1,136 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               Int               @id @default(autoincrement())
+  email            String            @unique
+  passwordHash     String
+  name             String
+  role             String            @default("PARTICIPANT") // "ORGANIZER", "JUDGE", "PARTICIPANT"
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  organizedEvents  Event[]           @relation("OrganizerEvents")
+  judgeAssignments JudgeAssignment[]
+  ledTeams         Team[]            @relation("TeamLeader")
+  teamMemberships  TeamMember[]
+  scoresGiven      Score[]           @relation("JudgeScores")
+}
+
+model Event {
+  id                     Int               @id @default(autoincrement())
+  title                  String
+  tagline                String?
+  description            String
+  rules                  String?
+  minTeamSize            Int               @default(1)
+  maxTeamSize            Int               @default(4)
+  startDate              DateTime
+  deadline               DateTime          // Submission deadline
+  judgingDeadline        DateTime?
+  status                 String            @default("ACTIVE") // "DRAFT", "ACTIVE", "JUDGING", "COMPLETED"
+  isLeaderboardPublished Boolean           @default(false)
+  organizerId            Int
+  organizer              User              @relation("OrganizerEvents", fields: [organizerId], references: [id], onDelete: Cascade)
+
+  criteria               Criterion[]
+  teams                  Team[]
+  submissions            Submission[]
+  judges                 JudgeAssignment[]
+
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+}
+
+model Criterion {
+  id          Int      @id @default(autoincrement())
+  eventId     Int
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  maxScore    Int      @default(10)
+  weight      Float    @default(1.0)
+  scores      Score[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model JudgeAssignment {
+  id        Int      @id @default(autoincrement())
+  eventId   Int
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  judgeId   Int
+  judge     User     @relation(fields: [judgeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, judgeId])
+}
+
+model Team {
+  id         Int          @id @default(autoincrement())
+  eventId    Int
+  event      Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name       String
+  inviteCode String       @unique
+  leaderId   Int
+  leader     User         @relation("TeamLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  members    TeamMember[]
+  submission Submission?
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@unique([eventId, name])
+}
+
+model TeamMember {
+  id       Int      @id @default(autoincrement())
+  teamId   Int
+  team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId   Int
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt DateTime @default(now())
+
+  @@unique([teamId, userId])
+}
+
+model Submission {
+  id          Int      @id @default(autoincrement())
+  teamId      Int      @unique
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  eventId     Int
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  title       String
+  tagline     String?
+  description String
+  repoUrl     String?
+  demoUrl     String?
+  videoUrl    String?
+  techStack   String?
+  submittedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  scores      Score[]
+}
+
+model Score {
+  id           Int        @id @default(autoincrement())
+  submissionId Int
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  judgeId      Int
+  judge        User       @relation("JudgeScores", fields: [judgeId], references: [id], onDelete: Cascade)
+  criterionId  Int
+  criterion    Criterion  @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+  score        Float
+  feedback     String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([submissionId, judgeId, criterionId])
+}
