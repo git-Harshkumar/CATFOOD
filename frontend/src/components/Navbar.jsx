@@ -45,7 +45,7 @@ export const Navbar = ({ currentView, setView }) => {
           
           {user && (
             <>
-              <NavItem id="teams" label="My Teams" icon={Users} />
+              <NavItem id="activity" label="My Activity" icon={Users} />
               {(isJudge || isOrganizer) && (
                 <NavItem id="judging" label="Judging Queue" icon={Award} />
               )}

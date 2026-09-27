@@ -4,7 +4,7 @@ import { MainLayout } from './layouts/MainLayout';
 import { AuthPage } from './pages/AuthPage';
 import { EventsPage } from './pages/EventsPage';
 import { EventDetailPage } from './pages/EventDetailPage';
-import { TeamsPage } from './pages/TeamsPage';
+import { MyActivityPage } from './pages/MyActivityPage';
 import { JudgeQueuePage } from './pages/JudgeQueuePage';
 import { ScoringPage } from './pages/ScoringPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
@@ -48,11 +48,20 @@ export function App() {
 
   const handleOpenCreateTeam = (fromEventId) => {
     if (fromEventId) {
-      setCreateTeamContext({ eventId: fromEventId, autoOpenCreate: true });
+      setCreateTeamContext({ eventId: fromEventId, autoOpenCreate: true, autoOpenJoin: false });
     } else {
-      setCreateTeamContext({ eventId: null, autoOpenCreate: false });
+      setCreateTeamContext({ eventId: null, autoOpenCreate: false, autoOpenJoin: false });
     }
-    setView('teams');
+    setView('activity');
+  };
+
+  const handleOpenJoinTeam = (fromEventId) => {
+    if (fromEventId) {
+      setCreateTeamContext({ eventId: fromEventId, autoOpenCreate: false, autoOpenJoin: true });
+    } else {
+      setCreateTeamContext({ eventId: null, autoOpenCreate: false, autoOpenJoin: true });
+    }
+    setView('activity');
   };
 
   const handleOpenScore = (eventId, submissionId) => {
@@ -99,6 +108,7 @@ export function App() {
           }}
           onViewLeaderboard={handleViewLeaderboard}
           onOpenCreateTeam={handleOpenCreateTeam}
+          onOpenJoinTeam={handleOpenJoinTeam}
           onViewGallery={() => setView('gallery')}
         />
       )}
@@ -110,13 +120,14 @@ export function App() {
         />
       )}
 
-      {view === 'teams' && (
-        <TeamsPage
+      {view === 'activity' && (
+        <MyActivityPage
           onOpenSubmit={handleOpenSubmit}
           onSelectEvent={handleSelectEvent}
           initialEventId={createTeamContext.eventId}
           autoOpenCreate={createTeamContext.autoOpenCreate}
-          onClearContext={() => setCreateTeamContext({ eventId: null, autoOpenCreate: false })}
+          autoOpenJoin={createTeamContext.autoOpenJoin}
+          onClearContext={() => setCreateTeamContext({ eventId: null, autoOpenCreate: false, autoOpenJoin: false })}
         />
       )}
 

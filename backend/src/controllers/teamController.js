@@ -64,6 +64,15 @@ const leaveTeam = async (req, res, next) => {
   }
 };
 
+const completeRegistration = async (req, res, next) => {
+  try {
+    const team = await teamService.completeRegistration(req.params.id, req.user.id);
+    return success(res, team, 'Team registration completed successfully', 200);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createTeam,
   joinTeam,
@@ -72,4 +81,5 @@ module.exports = {
   getTeamById,
   getMyTeams,
   leaveTeam,
+  completeRegistration,
 };
