@@ -18,6 +18,12 @@ export function App() {
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
 
+  // Create team context (from event detail page)
+  const [createTeamContext, setCreateTeamContext] = useState({
+    eventId: null,
+    autoOpenCreate: false,
+  });
+
   // Modals
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [submitModalState, setSubmitModalState] = useState({
@@ -38,6 +44,15 @@ export function App() {
   const handleSelectEvent = (eventId) => {
     setSelectedEventId(eventId);
     setView('event-detail');
+  };
+
+  const handleOpenCreateTeam = (fromEventId) => {
+    if (fromEventId) {
+      setCreateTeamContext({ eventId: fromEventId, autoOpenCreate: true });
+    } else {
+      setCreateTeamContext({ eventId: null, autoOpenCreate: false });
+    }
+    setView('teams');
   };
 
   const handleOpenScore = (eventId, submissionId) => {
@@ -83,7 +98,7 @@ export function App() {
             }
           }}
           onViewLeaderboard={handleViewLeaderboard}
-          onOpenCreateTeam={() => setView('teams')}
+          onOpenCreateTeam={handleOpenCreateTeam}
           onViewGallery={() => setView('gallery')}
         />
       )}
@@ -99,6 +114,9 @@ export function App() {
         <TeamsPage
           onOpenSubmit={handleOpenSubmit}
           onSelectEvent={handleSelectEvent}
+          initialEventId={createTeamContext.eventId}
+          autoOpenCreate={createTeamContext.autoOpenCreate}
+          onClearContext={() => setCreateTeamContext({ eventId: null, autoOpenCreate: false })}
         />
       )}
 

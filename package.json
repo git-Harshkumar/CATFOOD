@@ -16,7 +16,8 @@
     "seed": "node backend/prisma/seed.js",
     "prisma:studio": "npm --prefix backend run prisma:studio",
     "prisma:generate": "npm --prefix backend run prisma:generate",
-    "prisma:push": "npm --prefix backend run prisma:push"
+    "prisma:push": "npm --prefix backend run prisma:push",
+    "prisma:reset": "npm --prefix backend run prisma:reset"
   },
   "keywords": [
     "hackathon",

@@ -1,9 +1,17 @@
 const judgingService = require('../services/judgingService');
 const { success } = require('../utils/response');
+const prisma = require('../utils/prisma');
 
 const submitScores = async (req, res, next) => {
   try {
-    const { eventId, submissionId } = req.params;
+    let { eventId, submissionId } = req.params;
+    if (!eventId && submissionId) {
+      const sub = await prisma.submission.findUnique({
+        where: { id: parseInt(submissionId, 10) },
+        select: { eventId: true },
+      });
+      if (sub) eventId = sub.eventId;
+    }
     const scores = await judgingService.submitScores(eventId, req.user.id, submissionId, req.body.scores);
     return success(res, scores, 'Scores submitted successfully', 200);
   } catch (err) {
@@ -13,7 +21,14 @@ const submitScores = async (req, res, next) => {
 
 const getSubmissionScores = async (req, res, next) => {
   try {
-    const { eventId, submissionId } = req.params;
+    let { eventId, submissionId } = req.params;
+    if (!eventId && submissionId) {
+      const sub = await prisma.submission.findUnique({
+        where: { id: parseInt(submissionId, 10) },
+        select: { eventId: true },
+      });
+      if (sub) eventId = sub.eventId;
+    }
     const scores = await judgingService.getSubmissionScoresByJudge(eventId, submissionId, req.user.id);
     return success(res, scores, 'Submission scores retrieved successfully');
   } catch (err) {

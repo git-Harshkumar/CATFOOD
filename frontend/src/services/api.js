@@ -38,7 +38,13 @@ class ApiService {
       }
 
       if (!response.ok) {
-        const errorMessage = json?.message || `HTTP Error ${response.status}: ${response.statusText}`;
+        let errorMessage = json?.message || `HTTP Error ${response.status}: ${response.statusText}`;
+        if (json?.errors && typeof json.errors === 'object') {
+          const fieldMsgs = Object.values(json.errors).filter(Boolean);
+          if (fieldMsgs.length > 0) {
+            errorMessage = fieldMsgs.join('. ');
+          }
+        }
         const error = new Error(errorMessage);
         error.status = response.status;
         error.errors = json?.errors;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import NeoCard from '../components/neo/NeoCard';
 import FilterChipRow from '../components/neo/FilterChipRow';
+import { EventImage } from '../components/EventImage';
 import { Search, Github, Globe, Video, ArrowLeft, Image as ImageIcon } from 'lucide-react';
 
 const PASTELS = ['bg-neo-pastel-purple', 'bg-neo-pastel-orange', 'bg-neo-pastel-yellow', 'bg-neo-pastel-green', 'bg-neo-pastel-blue', 'bg-neo-pastel-pink'];
@@ -112,15 +113,14 @@ export const PublicGalleryPage = ({ eventId, onBack }) => {
             return (
               <NeoCard key={sub.id} color={bg} className="flex flex-col justify-between group">
                 <div>
-                  {sub.thumbnailUrl ? (
-                    <div className="w-full h-48 mb-6 border-3 border-neo-ink rounded-2xl overflow-hidden neo-shadow bg-white">
-                      <img src={sub.thumbnailUrl} alt={sub.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                    </div>
-                  ) : (
-                    <div className="w-full h-48 mb-6 border-3 border-neo-ink rounded-2xl flex items-center justify-center neo-shadow bg-white/50 group-hover:bg-white transition-colors">
-                      <ImageIcon className="w-12 h-12 text-neo-ink/20" />
-                    </div>
-                  )}
+                  <EventImage
+                    src={sub.thumbnailUrl}
+                    alt={sub.title}
+                    title={sub.title}
+                    className="w-full h-48 mb-6"
+                    imgClassName="group-hover:scale-105 transition-transform"
+                    icon={ImageIcon}
+                  />
 
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <span className="font-black text-sm bg-white px-3 py-1 border-3 border-neo-ink rounded-full neo-shadow">

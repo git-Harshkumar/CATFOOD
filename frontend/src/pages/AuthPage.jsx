@@ -23,11 +23,17 @@ export const AuthPage = ({ onSuccess }) => {
       if (isLogin) {
         await login({ email, password });
       } else {
+        if (!password || password.length < 6) {
+          setError('Password must be at least 6 characters long.');
+          setLoading(false);
+          return;
+        }
         await register({ email, password, name, role });
       }
       if (onSuccess) onSuccess();
     } catch (err) {
-      setError(err.message || 'Authentication failed');
+      const msg = err.errors?.password || (err.errors ? Object.values(err.errors).join(', ') : err.message);
+      setError(msg || 'Authentication failed');
     } finally {
       setLoading(false);
     }
@@ -166,12 +172,22 @@ export const AuthPage = ({ onSuccess }) => {
                 <input
                   type="password"
                   required
+                  minLength={!isLogin ? 6 : undefined}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className={inputClass}
                 />
               </div>
+              {!isLogin && (
+                <p className={`text-xs font-bold mt-2 transition-colors ${
+                  password.length > 0 && password.length < 6
+                    ? 'text-red-600'
+                    : 'text-neo-ink/70'
+                }`}>
+                  Password must be at least 6 characters long{password.length > 0 && password.length < 6 ? ` (${password.length}/6 characters entered)` : ''}.
+                </p>
+              )}
             </div>
 
             <NeoButton

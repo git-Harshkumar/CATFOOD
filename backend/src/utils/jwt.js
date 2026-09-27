@@ -10,6 +10,7 @@ const generateToken = (user) => {
       email: user.email,
       isGlobalAdmin: user.isGlobalAdmin,
       name: user.name,
+      role: user.role,
     },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }

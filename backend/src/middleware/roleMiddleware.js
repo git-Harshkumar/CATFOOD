@@ -11,18 +11,34 @@ const requireRole = (...allowedRoles) => {
       return next();
     }
 
-    const eventIdParam = req.params.eventId || req.params.id || req.body.eventId || req.query.eventId;
+    const flatRoles = allowedRoles.flat();
+    let eventIdParam = req.params.eventId || req.params.id || req.body.eventId || req.query.eventId;
+
+    if (!eventIdParam && req.params.submissionId) {
+      const sub = await prisma.submission.findUnique({
+        where: { id: parseInt(req.params.submissionId, 10) },
+        select: { eventId: true },
+      });
+      if (sub) {
+        eventIdParam = sub.eventId;
+      }
+    }
     
     if (!eventIdParam) {
-      return error(res, 'Event context missing for role verification.', 400);
+      if (req.user.role && flatRoles.includes(req.user.role)) {
+        return next();
+      }
+      return error(
+        res,
+        `Access denied. Requires one of the following roles: [${flatRoles.join(', ')}]. Current role: '${req.user.role || 'NONE'}'`,
+        403
+      );
     }
 
     const eventId = parseInt(eventIdParam, 10);
     if (isNaN(eventId)) {
       return error(res, 'Invalid event ID.', 400);
     }
-
-    const flatRoles = allowedRoles.flat();
 
     try {
       const eventMember = await prisma.eventMember.findUnique({
@@ -35,6 +51,12 @@ const requireRole = (...allowedRoles) => {
       });
 
       if (!eventMember || !flatRoles.includes(eventMember.role)) {
+        // Fallback: Check if user is organizer of event
+        const event = await prisma.event.findUnique({ where: { id: eventId } });
+        if (event && event.organizerId === req.user.id && flatRoles.includes('ORGANIZER')) {
+          req.eventRole = 'ORGANIZER';
+          return next();
+        }
         return error(
           res,
           `Access denied. Requires one of the following roles in this event: [${flatRoles.join(', ')}].`,
