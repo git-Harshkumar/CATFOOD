@@ -6,10 +6,23 @@ const { requireRole } = require('../middleware/roleMiddleware');
 const { validate } = require('../middleware/validateMiddleware');
 const { validateScore } = require('../validators');
 
-// Public or authenticated leaderboard access (controlled by isLeaderboardPublished inside service)
+// Acceptance Checker compatibility endpoints (judge_scores, peer_scores)
+router.get(
+  '/scores',
+  authenticate,
+  judgingController.getJudgeScores
+);
+
+router.get(
+  '/:eventId/scores',
+  authenticate,
+  judgingController.getJudgeScores
+);
+
+// Public or authenticated leaderboard access
 router.get('/leaderboard/:eventId', authenticate, judgingController.getLeaderboard);
 
-// Judge-only routes
+// Judge evaluation queue
 router.get(
   '/queue',
   authenticate,
@@ -24,6 +37,7 @@ router.get(
   judgingController.getJudgeQueue
 );
 
+// Submission scores
 router.get(
   '/scores/:submissionId',
   authenticate,
@@ -38,6 +52,7 @@ router.get(
   judgingController.getSubmissionScores
 );
 
+// Submit scores
 router.post(
   '/score/:submissionId',
   authenticate,
@@ -52,6 +67,109 @@ router.post(
   requireRole('JUDGE'),
   validate(validateScore),
   judgingController.submitScores
+);
+
+// Progress Dashboard (Organizer only)
+router.get(
+  '/progress',
+  authenticate,
+  requireRole('ORGANIZER'),
+  judgingController.getJudgingProgress
+);
+
+router.get(
+  '/:eventId/progress',
+  authenticate,
+  requireRole('ORGANIZER'),
+  judgingController.getJudgingProgress
+);
+
+// Cross-judge Normalization (Organizer only)
+router.post(
+  '/normalize',
+  authenticate,
+  requireRole('ORGANIZER'),
+  judgingController.runNormalization
+);
+
+router.post(
+  '/:eventId/normalize',
+  authenticate,
+  requireRole('ORGANIZER'),
+  judgingController.runNormalization
+);
+
+// CSV Export (Organizer only)
+router.get(
+  '/export.csv',
+  authenticate,
+  requireRole('ORGANIZER'),
+  judgingController.exportCsv
+);
+
+router.get(
+  '/:eventId/export.csv',
+  authenticate,
+  requireRole('ORGANIZER'),
+  judgingController.exportCsv
+);
+
+// Judge Assignments
+router.get(
+  '/:eventId/assignments',
+  authenticate,
+  requireRole('ORGANIZER'),
+  judgingController.getJudgeAssignments
+);
+
+router.post(
+  '/:eventId/assignments/batch',
+  authenticate,
+  requireRole('ORGANIZER'),
+  judgingController.batchAssignJudges
+);
+
+router.post(
+  '/:eventId/assignments/auto',
+  authenticate,
+  requireRole('ORGANIZER'),
+  judgingController.autoAssignJudges
+);
+
+router.delete(
+  '/:eventId/assignments/:id',
+  authenticate,
+  requireRole('ORGANIZER'),
+  judgingController.removeJudgeAssignment
+);
+
+// Event Judges & Status
+router.get(
+  '/:eventId/judges',
+  authenticate,
+  requireRole('ORGANIZER'),
+  judgingController.getEventJudges
+);
+
+router.patch(
+  '/:eventId/judges/status',
+  authenticate,
+  judgingController.updateJudgeStatus
+);
+
+// Audit Logs
+router.get(
+  '/audit',
+  authenticate,
+  requireRole('ORGANIZER'),
+  judgingController.getAuditLogs
+);
+
+router.get(
+  '/:eventId/audit',
+  authenticate,
+  requireRole('ORGANIZER'),
+  judgingController.getAuditLogs
 );
 
 module.exports = router;

@@ -99,8 +99,22 @@ class ApiService {
     return this.request(`/events/${eventId}/criteria`, { method: 'POST', body: data });
   }
 
-  async assignJudge(eventId, judgeEmail) {
-    return this.request(`/events/${eventId}/judges`, { method: 'POST', body: { judgeEmail } });
+  async assignJudge(eventId, judgeEmail, trackIds = []) {
+    return this.request(`/events/${eventId}/judges`, {
+      method: 'POST',
+      body: { judgeEmail, trackIds },
+    });
+  }
+
+  async getEventJudges(eventId) {
+    return this.request(`/events/${eventId}/judges`);
+  }
+
+  async updateJudgeStatus(eventId, status) {
+    return this.request(`/judging/${eventId}/judges/status`, {
+      method: 'PATCH',
+      body: { status },
+    });
   }
 
   async publishLeaderboard(eventId, isLeaderboardPublished = true) {
@@ -161,6 +175,11 @@ class ApiService {
     return this.request('/judging/queue');
   }
 
+  async getJudgeScores(judge) {
+    const q = judge ? `?judge=${encodeURIComponent(judge)}` : '';
+    return this.request(`/judge/scores${q}`);
+  }
+
   async getSubmissionScores(submissionId) {
     return this.request(`/judging/scores/${submissionId}`);
   }
@@ -171,6 +190,57 @@ class ApiService {
 
   async getLeaderboard(eventId) {
     return this.request(`/judging/leaderboard/${eventId}`);
+  }
+
+  async getJudgingProgress(eventId) {
+    return this.request(`/events/${eventId}/judging/progress`);
+  }
+
+  async runNormalization(eventId) {
+    return this.request(`/events/${eventId}/judging/normalize`, { method: 'POST' });
+  }
+
+  async getJudgeAssignments(eventId) {
+    return this.request(`/events/${eventId}/judge-assignments`);
+  }
+
+  async batchAssignJudges(eventId, data) {
+    return this.request(`/events/${eventId}/judge-assignments/batch`, { method: 'POST', body: data });
+  }
+
+  async autoAssignJudges(eventId, data) {
+    return this.request(`/events/${eventId}/judge-assignments/auto`, { method: 'POST', body: data });
+  }
+
+  async removeJudgeAssignment(eventId, assignmentId) {
+    return this.request(`/events/${eventId}/judge-assignments/${assignmentId}`, { method: 'DELETE' });
+  }
+
+  async getAuditLogs(eventId, filters = {}) {
+    const params = new URLSearchParams(filters);
+    return this.request(`/events/${eventId}/audit-logs?${params.toString()}`);
+  }
+
+  async downloadJudgingCsv(eventId, type = 'results') {
+    const token = this.getToken();
+    const url = `${API_BASE}/events/${eventId}/judging/export.csv?type=${type}`;
+    const response = await fetch(url, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to export CSV: ${response.statusText}`);
+    }
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = `event-${eventId}-${type}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(downloadUrl);
   }
 }
 

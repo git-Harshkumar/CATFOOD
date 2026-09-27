@@ -66,7 +66,12 @@ const addEventQuestion = async (req, res, next) => {
 
 const assignJudge = async (req, res, next) => {
   try {
-    const assignment = await eventService.assignJudge(req.params.id, req.user.id, req.body.judgeEmail);
+    const assignment = await eventService.assignJudge(
+      req.params.id,
+      req.user.id,
+      req.body.judgeEmail,
+      req.body.trackIds
+    );
     return success(res, assignment, 'Judge assigned successfully', 201);
   } catch (err) {
     next(err);

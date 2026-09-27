@@ -76,18 +76,28 @@ export const JudgeQueuePage = ({ onOpenScore }) => {
                     <NeoCard key={sub.submissionId} color="bg-white" className="flex flex-col justify-between p-5 hover:-translate-y-1 transition-transform">
                       <div className="space-y-4">
                         <div className="flex justify-between items-start gap-2">
-                           <h4 className="font-black text-xl text-neo-ink leading-tight">{sub.title}</h4>
-                           {sub.isEvaluated ? (
-                              <span className="shrink-0 px-2 py-1 bg-neo-pastel-green border-2 border-neo-ink rounded-full text-[10px] font-black uppercase flex items-center gap-1">
-                                <CheckCircle2 className="w-3 h-3" /> Done
-                              </span>
-                            ) : (
-                              <span className="shrink-0 px-2 py-1 bg-neo-pastel-orange border-2 border-neo-ink rounded-full text-[10px] font-black uppercase flex items-center gap-1">
-                                <Clock className="w-3 h-3" /> Pending
-                              </span>
-                            )}
+                          <h4 className="font-black text-xl text-neo-ink leading-tight">{sub.title}</h4>
+                          {sub.isEvaluated ? (
+                            <span className="shrink-0 px-2 py-1 bg-neo-pastel-green border-2 border-neo-ink rounded-full text-[10px] font-black uppercase flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" /> Done
+                            </span>
+                          ) : (
+                            <span className="shrink-0 px-2 py-1 bg-neo-pastel-orange border-2 border-neo-ink rounded-full text-[10px] font-black uppercase flex items-center gap-1">
+                              <Clock className="w-3 h-3" /> Pending
+                            </span>
+                          )}
                         </div>
                         <div className="text-sm font-bold text-neo-ink/60 uppercase">Team: <span className="text-neo-ink">{sub.teamName}</span></div>
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                          <span className="text-[11px] font-black px-2 py-0.5 bg-neo-pastel-yellow border-2 border-neo-ink rounded-lg neo-shadow-sm uppercase">
+                            {sub.trackName || 'General'}
+                          </span>
+                          {sub.batch && (
+                            <span className="text-[10px] font-black px-2 py-0.5 bg-white border-2 border-neo-ink rounded-lg neo-shadow-sm uppercase text-neo-ink/70">
+                              {sub.batch}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <div className="pt-6 mt-6 border-t-3 border-neo-ink">

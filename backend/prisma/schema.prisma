@@ -22,6 +22,7 @@ model User {
   judgeProfiles    Judge[]
   ledTeams         Team[]            @relation("TeamLeader")
   teamMemberships  TeamMember[]
+  auditLogs        AuditLog[]
 }
 
 model Event {
@@ -41,14 +42,15 @@ model Event {
   organizerId Int
   organizer   User @relation("OrganizerEvents", fields: [organizerId], references: [id], onDelete: Cascade)
 
-  members      EventMember[]
-  criteria     Criterion[]
-  tracks       Track[]
-  prizes       Prize[]
-  questions    EventQuestion[]
-  teams        Team[]
-  submissions  Submission[]
-  judges       Judge[]
+  members          EventMember[]
+  criteria         Criterion[]
+  tracks           Track[]
+  prizes           Prize[]
+  questions        EventQuestion[]
+  teams            Team[]
+  submissions      Submission[]
+  judges           Judge[]
+  normalizedScores NormalizedScore[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -89,6 +91,7 @@ model Track {
 
   judgeTracks JudgeTrack[]
   submissions Submission[]
+  assignments JudgeAssignment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -119,9 +122,10 @@ model Judge {
 
   status String @default("INVITED")
 
-  tracks      JudgeTrack[]
-  assignments JudgeAssignment[]
-  scores      Score[] @relation("JudgeScores")
+  tracks           JudgeTrack[]
+  assignments      JudgeAssignment[]
+  scores           Score[]           @relation("JudgeScores")
+  normalizedScores NormalizedScore[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -146,6 +150,10 @@ model JudgeAssignment {
 
   judge      Judge      @relation(fields: [judgeId], references: [id], onDelete: Cascade)
   submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  trackId Int?
+  track   Track?  @relation(fields: [trackId], references: [id], onDelete: SetNull)
+  batch   String?
 
   status    String   @default("PENDING")
   createdAt DateTime @default(now())
@@ -225,9 +233,10 @@ model Submission {
   submittedAt DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  scores      Score[]
-  assignments JudgeAssignment[]
-  answers     SubmissionAnswer[]
+  scores           Score[]
+  assignments      JudgeAssignment[]
+  answers          SubmissionAnswer[]
+  normalizedScores NormalizedScore[]
 }
 
 model SubmissionAnswer {
@@ -260,3 +269,40 @@ model Score {
 
   @@unique([submissionId, judgeId, criterionId])
 }
+
+model NormalizedScore {
+  id              Int        @id @default(autoincrement())
+  eventId         Int
+  event           Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  submissionId    Int
+  submission      Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  judgeId         Int?
+  judge           Judge?     @relation(fields: [judgeId], references: [id], onDelete: SetNull)
+  rawScore        Float
+  normalizedScore Float
+  metadata        String?    // JSON string storing details (mean, stddev, zScore, etc.)
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([eventId])
+  @@index([submissionId])
+  @@index([judgeId])
+}
+
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  actorId     Int?
+  actor       User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action      String
+  targetType  String?
+  targetId    String?
+  metadata    String?
+  timestamp   DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([timestamp])
+}
+
