@@ -4,33 +4,34 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1', // Indigo primary
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
-          950: '#1e1b4b',
-        },
-        surface: {
-          darker: '#0a0d14',
-          dark: '#0f172a',
-          card: '#1e293b',
-          border: '#334155',
+        neo: {
+          bg: '#FAF6EC',
+          ink: '#1A1A1A',
+          'pastel-purple': '#C9B8F5',
+          'pastel-orange': '#F5A868',
+          'pastel-yellow': '#F5D876',
+          'pastel-green': '#8FD6B0',
+          'pastel-blue': '#A5C8F2',
+          'pastel-pink': '#F5A8C8',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['Outfit', 'system-ui', 'sans-serif'],
       },
+      borderWidth: {
+        '3': '3px',
+      },
+      boxShadow: {
+        'neo': '4px 4px 0px 0px #1A1A1A',
+        'neo-lg': '8px 8px 0px 0px #1A1A1A',
+        'neo-active': '2px 2px 0px 0px #1A1A1A',
+      },
+      borderRadius: {
+        'neo': '1.5rem',
+      }
     },
   },
   plugins: [],

@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const prisma = require('../utils/prisma');
 
 const generateInviteCode = () => {
@@ -150,6 +151,102 @@ const joinTeam = async (userId, inviteCode) => {
   return getTeamById(team.id);
 };
 
+const generateInviteLinkToken = async (teamId, userId) => {
+  const team = await prisma.team.findUnique({
+    where: { id: parseInt(teamId, 10) },
+    include: { members: true },
+  });
+
+  if (!team) {
+    const error = new Error('Team not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // Only team leader can generate invite link (or any member, depending on requirements, let's say leader)
+  if (team.leaderId !== userId) {
+    const error = new Error('Only the team leader can generate invite links.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  const payload = {
+    teamId: team.id,
+    eventId: team.eventId,
+  };
+
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+  return token;
+};
+
+const joinTeamByToken = async (userId, token) => {
+  if (!token) {
+    const error = new Error('Invite token is required.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    const error = new Error('Invalid or expired invite link.');
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const team = await prisma.team.findUnique({
+    where: { id: decoded.teamId },
+    include: { event: true, members: true },
+  });
+
+  if (!team) {
+    const error = new Error('Team not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (team.eventId !== decoded.eventId) {
+    const error = new Error('Invalid token payload.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Check if team is full
+  if (team.members.length >= team.event.maxTeamSize) {
+    const error = new Error(`Team is already full (maximum ${team.event.maxTeamSize} members allowed).`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Check if user is already in any team for this event
+  const existingMembership = await prisma.teamMember.findFirst({
+    where: {
+      userId,
+      team: { eventId: team.eventId },
+    },
+  });
+
+  if (existingMembership) {
+    const error = new Error('You are already a member of a team in this event.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  await prisma.$transaction([
+    prisma.teamMember.create({
+      data: { teamId: team.id, userId },
+    }),
+    prisma.eventMember.upsert({
+      where: { eventId_userId: { eventId: team.eventId, userId } },
+      update: {},
+      create: { eventId: team.eventId, userId, role: 'PARTICIPANT' }
+    })
+  ]);
+
+  return getTeamById(team.id);
+};
+
 const getTeamById = async (teamId) => {
   const team = await prisma.team.findUnique({
     where: { id: parseInt(teamId, 10) },
@@ -266,6 +363,8 @@ const leaveTeam = async (userId, teamId) => {
 module.exports = {
   createTeam,
   joinTeam,
+  joinTeamByToken,
+  generateInviteLinkToken,
   getTeamById,
   getMyTeams,
   leaveTeam,

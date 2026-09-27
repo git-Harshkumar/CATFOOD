@@ -10,6 +10,7 @@ import { ScoringPage } from './pages/ScoringPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
 import { CreateEventModal } from './pages/CreateEventModal';
 import { SubmitProjectModal } from './pages/SubmitProjectModal';
+import { PublicGalleryPage } from './pages/PublicGalleryPage';
 
 export function App() {
   const { user, loading } = useAuth();
@@ -27,7 +28,7 @@ export function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center text-slate-400 text-sm">
+      <div className="min-h-screen bg-neo-bg flex items-center justify-center font-black text-2xl text-neo-ink/50">
         Initializing JuryFlow Platform...
       </div>
     );
@@ -83,6 +84,14 @@ export function App() {
           }}
           onViewLeaderboard={handleViewLeaderboard}
           onOpenCreateTeam={() => setView('teams')}
+          onViewGallery={() => setView('gallery')}
+        />
+      )}
+
+      {view === 'gallery' && selectedEventId && (
+        <PublicGalleryPage
+          eventId={selectedEventId}
+          onBack={() => setView('event-detail')}
         />
       )}
 

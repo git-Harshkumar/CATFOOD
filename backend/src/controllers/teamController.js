@@ -19,6 +19,24 @@ const joinTeam = async (req, res, next) => {
   }
 };
 
+const generateInviteLinkToken = async (req, res, next) => {
+  try {
+    const token = await teamService.generateInviteLinkToken(req.params.id, req.user.id);
+    return success(res, { token }, 'Invite link token generated successfully', 200);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const joinTeamByToken = async (req, res, next) => {
+  try {
+    const team = await teamService.joinTeamByToken(req.user.id, req.body.token);
+    return success(res, team, 'Joined team successfully via link', 200);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const getTeamById = async (req, res, next) => {
   try {
     const team = await teamService.getTeamById(req.params.id);
@@ -49,6 +67,8 @@ const leaveTeam = async (req, res, next) => {
 module.exports = {
   createTeam,
   joinTeam,
+  generateInviteLinkToken,
+  joinTeamByToken,
   getTeamById,
   getMyTeams,
   leaveTeam,

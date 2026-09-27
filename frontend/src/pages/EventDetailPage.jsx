@@ -2,23 +2,13 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { CountdownTimer } from '../components/CountdownTimer';
-import { Badge } from '../components/Badge';
+import NeoCard from '../components/neo/NeoCard';
+import NeoButton from '../components/neo/NeoButton';
+import PillButton from '../components/neo/PillButton';
+import AvatarStack from '../components/neo/AvatarStack';
+import NeoToggle from '../components/neo/NeoToggle';
 import { getStatusBadge, formatDate } from '../utils/formatters';
-import {
-  Trophy,
-  Calendar,
-  Users,
-  FileText,
-  Award,
-  ExternalLink,
-  Github,
-  Globe,
-  PlusCircle,
-  UserCheck,
-  CheckCircle,
-  Share2,
-  Lock,
-} from 'lucide-react';
+import { Trophy, FileText, Award, Github, Globe, Users, Lock, ArrowLeft } from 'lucide-react';
 
 export const EventDetailPage = ({
   eventId,
@@ -27,6 +17,7 @@ export const EventDetailPage = ({
   onOpenScore,
   onViewLeaderboard,
   onOpenCreateTeam,
+  onViewGallery,
 }) => {
   const { user, isOrganizer, isJudge, isParticipant } = useAuth();
   const [event, setEvent] = useState(null);
@@ -48,7 +39,6 @@ export const EventDetailPage = ({
       if (res?.data) {
         setEvent(res.data);
       }
-      // Load submissions if user is authenticated
       if (user) {
         try {
           const subsRes = await api.getSubmissionsByEvent(eventId);
@@ -89,7 +79,7 @@ export const EventDetailPage = ({
       await fetchEventDetails();
       setMessage({
         type: 'success',
-        text: `Leaderboard is now ${nextState ? 'PUBLISHED to all participants' : 'HIDDEN/UNPUBLISHED'}!`,
+        text: `Leaderboard is now ${nextState ? 'PUBLISHED' : 'HIDDEN'}!`,
       });
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
@@ -97,308 +87,245 @@ export const EventDetailPage = ({
   };
 
   if (loading || !event) {
-    return (
-      <div className="py-20 text-center text-slate-400">Loading hackathon details...</div>
-    );
+    return <div className="py-20 text-center font-bold text-2xl text-neo-ink/50">Loading hackathon details...</div>;
   }
 
   const isDeadlinePassed = new Date(event.deadline) < new Date();
   const statusBadge = getStatusBadge(event.status);
-
-  // Check if current participant has a team in this event
   const userTeam = event.teams?.find((t) =>
     t.members?.some((m) => m.userId === user?.id) || t.leaderId === user?.id
   );
 
   return (
-    <div className="space-y-8 pb-16">
+    <div className="max-w-7xl mx-auto px-4 space-y-10 pb-16 pt-6">
       {/* Top Bar Navigation */}
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1 transition-colors"
+          className="flex items-center gap-2 font-bold text-neo-ink hover:underline decoration-3 underline-offset-4"
         >
-          ← Back to Hackathons
+          <ArrowLeft className="w-5 h-5" /> Back to Hackathons
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           {event.isLeaderboardPublished || isOrganizer || isJudge ? (
-            <button
-              onClick={() => onViewLeaderboard(event.id)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-all"
-            >
-              <Trophy className="w-4 h-4 text-amber-400" />
-              <span>{event.isLeaderboardPublished ? 'View Leaderboard' : 'Leaderboard Preview'}</span>
-            </button>
+            <NeoButton onClick={() => onViewLeaderboard(event.id)} color="bg-neo-pastel-yellow" textColor="text-neo-ink">
+              <Trophy className="w-5 h-5 mr-2" />
+              {event.isLeaderboardPublished ? 'View Leaderboard' : 'Leaderboard Preview'}
+            </NeoButton>
           ) : (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono bg-slate-800 text-slate-400 border border-slate-700">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Leaderboard Unpublished</span>
+            <div className="flex items-center gap-2 px-5 py-2.5 rounded-full border-3 border-neo-ink bg-white font-bold text-neo-ink">
+              <Lock className="w-4 h-4" /> Leaderboard Unpublished
             </div>
           )}
+          
+          <NeoButton onClick={() => onViewGallery()} color="bg-neo-pastel-purple" textColor="text-neo-ink">
+             Public Gallery
+          </NeoButton>
         </div>
       </div>
 
       {message && (
-        <div
-          className={`p-4 rounded-xl text-xs font-medium border ${
-            message.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-          }`}
-        >
+        <NeoCard color={message.type === 'success' ? 'bg-neo-pastel-green' : 'bg-neo-pastel-pink'} className="py-4 font-bold text-center">
           {message.text}
-        </div>
+        </NeoCard>
       )}
 
       {/* Hero Header Card */}
-      <div className="glass-panel rounded-3xl p-6 sm:p-10 border border-slate-800 space-y-6 relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-          <div className="space-y-3 max-w-3xl">
-            <div className="flex items-center gap-3 flex-wrap">
-              <span
-                className={`text-xs font-mono font-medium px-2.5 py-1 rounded-full border ${statusBadge.bg} ${statusBadge.text} ${statusBadge.border}`}
-              >
-                {statusBadge.label}
-              </span>
-              <span className="text-xs text-slate-400">
-                Organized by: <strong className="text-slate-200">{event.organizer?.name}</strong>
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-              {event.title}
-            </h1>
-            {event.tagline && (
-              <p className="text-sm font-medium text-indigo-300">{event.tagline}</p>
-            )}
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">{event.description}</p>
+      <NeoCard color="bg-neo-pastel-purple" className="flex flex-col md:flex-row md:items-start justify-between gap-8">
+        <div className="space-y-6 max-w-3xl">
+          <div className="flex items-center gap-4 flex-wrap">
+            <span className={`px-4 py-1.5 rounded-full border-3 border-neo-ink font-black text-xs uppercase bg-white text-neo-ink`}>
+              {statusBadge.label}
+            </span>
+            <span className="font-bold text-neo-ink/70">
+              Organized by: <strong className="text-neo-ink">{event.organizer?.name}</strong>
+            </span>
           </div>
-
-          <div className="flex flex-col items-start md:items-end gap-3 min-w-max">
-            <CountdownTimer deadline={event.deadline} />
-            <div className="text-right text-[11px] text-slate-400 space-y-0.5">
-              <div>Deadline: {formatDate(event.deadline)}</div>
-              <div>Team Size: {event.minTeamSize} - {event.maxTeamSize} members</div>
-            </div>
-          </div>
+          
+          <h1 className="text-4xl md:text-6xl font-black text-neo-ink tracking-tight leading-tight">
+            {event.title}
+          </h1>
+          
+          {event.tagline && (
+            <p className="text-xl md:text-2xl font-bold text-neo-ink/80">{event.tagline}</p>
+          )}
+          
+          <p className="text-lg font-medium text-neo-ink/80 leading-relaxed max-w-4xl">
+            {event.description}
+          </p>
         </div>
 
-        {/* Action Buttons Row */}
-        <div className="pt-6 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            {userTeam ? (
-              <button
-                onClick={() => onOpenSubmit(userTeam.id, userTeam.submission)}
-                disabled={isDeadlinePassed}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white shadow-lg shadow-indigo-600/25 transition-all"
-              >
-                <FileText className="w-4 h-4" />
-                <span>
-                  {userTeam.submission
-                    ? isDeadlinePassed
-                      ? 'View Submission (Locked)'
-                      : 'Edit Team Submission'
-                    : 'Submit Project'}
-                </span>
-              </button>
-            ) : isParticipant ? (
-              <button
-                onClick={onOpenCreateTeam}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 transition-all"
-              >
-                <Users className="w-4 h-4" />
-                <span>Create or Join Team</span>
-              </button>
-            ) : null}
-
-            {isJudge && (
-              <button
-                onClick={() => onOpenScore(eventId)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/25 transition-all"
-              >
-                <Award className="w-4 h-4" />
-                <span>Evaluate Submissions</span>
-              </button>
-            )}
+        <div className="flex flex-col items-start md:items-end gap-4 min-w-max">
+          <div className="bg-white border-3 border-neo-ink rounded-2xl p-4 text-center neo-shadow">
+            <CountdownTimer deadline={event.deadline} />
           </div>
+          <div className="text-right font-bold text-sm text-neo-ink/70">
+            <div>Deadline: {formatDate(event.deadline)}</div>
+            <div>Team Size: {event.minTeamSize} - {event.maxTeamSize} members</div>
+          </div>
+        </div>
+      </NeoCard>
 
-          {/* Organizer Controls */}
-          {isOrganizer && event.organizerId === user?.id && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleToggleLeaderboard}
-                className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                  event.isLeaderboardPublished
-                    ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border-rose-500/30'
-                    : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                }`}
-              >
-                {event.isLeaderboardPublished ? 'Unpublish Leaderboard' : 'Publish Leaderboard to Public'}
-              </button>
-            </div>
+      {/* Action Buttons & Organizer Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-6 border-t-3 border-neo-ink pt-8">
+        <div className="flex items-center gap-4">
+          {userTeam ? (
+            <NeoButton 
+              onClick={() => onOpenSubmit(userTeam.id, userTeam.submission)} 
+              disabled={isDeadlinePassed}
+              color="bg-neo-ink" 
+              textColor="text-white"
+            >
+              <FileText className="w-5 h-5 mr-2" />
+              {userTeam.submission ? (isDeadlinePassed ? 'View Submission (Locked)' : 'Edit Team Submission') : 'Submit Project'}
+            </NeoButton>
+          ) : isParticipant ? (
+            <NeoButton onClick={onOpenCreateTeam} color="bg-neo-ink" textColor="text-white">
+              <Users className="w-5 h-5 mr-2" /> Create or Join Team
+            </NeoButton>
+          ) : null}
+
+          {isJudge && (
+            <NeoButton onClick={() => onOpenScore(eventId)} color="bg-neo-pastel-green" textColor="text-neo-ink">
+              <Award className="w-5 h-5 mr-2" /> Evaluate Submissions
+            </NeoButton>
           )}
         </div>
+
+        {isOrganizer && event.organizerId === user?.id && (
+          <NeoToggle 
+            checked={event.isLeaderboardPublished}
+            onChange={handleToggleLeaderboard}
+            label="Publish Leaderboard"
+          />
+        )}
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800 space-x-8 text-sm">
+      <div className="flex items-center gap-3 overflow-x-auto py-2 pb-4 scrollbar-hide border-b-3 border-neo-ink">
         {[
           { key: 'overview', label: 'Rules & Guidelines' },
           { key: 'criteria', label: `Judging Rubric (${event.criteria?.length || 0})` },
           { key: 'submissions', label: `Projects (${submissions?.length || 0})` },
           { key: 'teams', label: `Teams (${event.teams?.length || 0})` },
         ].map((tab) => (
-          <button
+          <PillButton
             key={tab.key}
+            label={tab.label}
+            active={activeTab === tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`pb-3 font-semibold text-xs uppercase tracking-wider transition-colors border-b-2 ${
-              activeTab === tab.key
-                ? 'border-indigo-500 text-indigo-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            {tab.label}
-          </button>
+          />
         ))}
       </div>
 
       {/* Tab: Overview */}
       {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
-            <h3 className="text-base font-bold text-white">Hackathon Rules</h3>
-            <p className="text-xs text-slate-300 whitespace-pre-line leading-relaxed">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <NeoCard className="md:col-span-2 space-y-4">
+            <h3 className="text-2xl font-black text-neo-ink">Hackathon Rules</h3>
+            <p className="text-lg font-medium text-neo-ink/80 whitespace-pre-line leading-relaxed">
               {event.rules || 'Standard hackathon guidelines apply. All code must be submitted before deadline.'}
             </p>
-          </div>
+          </NeoCard>
 
-          <div className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
-            <h3 className="text-base font-bold text-white">Event Judges</h3>
+          <NeoCard color="bg-neo-pastel-orange" className="space-y-6">
+            <h3 className="text-2xl font-black text-neo-ink">Event Judges</h3>
             {event.judges && event.judges.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {event.judges.map((j) => (
-                  <div
-                    key={j.id}
-                    className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs flex items-center justify-between"
-                  >
-                    <span className="font-semibold text-slate-200">{j.judge.name}</span>
-                    <span className="text-[10px] font-mono text-emerald-400">Assigned</span>
+                  <div key={j.id} className="p-3 rounded-xl bg-white border-3 border-neo-ink flex items-center justify-between neo-shadow">
+                    <span className="font-bold text-neo-ink">{j.user?.name || 'Judge'}</span>
+                    <span className="text-xs font-black px-2 py-1 bg-neo-pastel-green border-2 border-neo-ink rounded-full uppercase">Assigned</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-slate-500">No judges assigned yet.</p>
+              <p className="font-bold text-neo-ink/70">No judges assigned yet.</p>
             )}
 
             {isOrganizer && event.organizerId === user?.id && (
-              <form onSubmit={handleAssignJudge} className="pt-2 space-y-2">
+              <form onSubmit={handleAssignJudge} className="pt-4 border-t-3 border-neo-ink space-y-3">
                 <input
                   type="email"
                   placeholder="judge@hack.com"
                   value={judgeEmail}
                   onChange={(e) => setJudgeEmail(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-lg text-white placeholder-slate-500"
+                  className="w-full px-4 py-3 font-bold bg-white border-3 border-neo-ink rounded-xl placeholder-neo-ink/40 neo-shadow focus:outline-none focus:neo-active transition-all"
                 />
-                <button
-                  type="submit"
-                  disabled={assigningJudge}
-                  className="w-full py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
-                >
-                  {assigningJudge ? 'Assigning...' : '+ Assign Judge Email'}
-                </button>
+                <NeoButton type="submit" disabled={assigningJudge} color="bg-neo-ink" textColor="text-white" className="w-full">
+                  {assigningJudge ? 'Assigning...' : '+ Assign Judge'}
+                </NeoButton>
               </form>
             )}
-          </div>
+          </NeoCard>
         </div>
       )}
 
       {/* Tab: Criteria */}
       {activeTab === 'criteria' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {event.criteria?.map((c) => (
-            <div
-              key={c.id}
-              className="glass-card rounded-2xl p-5 border border-slate-800 space-y-3"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 font-mono font-bold">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {event.criteria?.map((c, i) => (
+            <NeoCard key={c.id} color={['bg-white', 'bg-neo-bg'][i%2]} className="space-y-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-black px-3 py-1 rounded-full bg-neo-pastel-yellow border-3 border-neo-ink uppercase">
                   {c.weight}x Weight
                 </span>
-                <span className="text-xs font-mono text-slate-400">Max: {c.maxScore} pts</span>
+                <span className="font-black text-neo-ink">Max: {c.maxScore} pts</span>
               </div>
-              <h4 className="font-bold text-white text-sm">{c.name}</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <h4 className="font-black text-2xl text-neo-ink">{c.name}</h4>
+              <p className="font-medium text-neo-ink/80 leading-relaxed">
                 {c.description || 'Evaluation based on overall quality and execution.'}
               </p>
-            </div>
+            </NeoCard>
           ))}
         </div>
       )}
 
       {/* Tab: Submissions */}
       {activeTab === 'submissions' && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {submissions.length === 0 ? (
-            <div className="text-center py-12 text-slate-500 text-xs">
+            <div className="text-center py-20 font-bold text-xl text-neo-ink/50">
               No submissions recorded yet for this hackathon.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {submissions.map((sub) => (
-                <div
-                  key={sub.id}
-                  className="glass-card rounded-2xl p-5 border border-slate-800 space-y-4 flex flex-col justify-between"
-                >
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {submissions.map((sub, i) => (
+                <NeoCard key={sub.id} color={['bg-neo-pastel-blue', 'bg-white', 'bg-neo-pastel-purple'][i%3]} className="flex flex-col justify-between">
                   <div>
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="text-xs font-bold text-indigo-400">{sub.team?.name}</span>
-                      <span className="text-[10px] text-slate-500">
-                        {formatDate(sub.submittedAt)}
-                      </span>
+                    <div className="flex items-center justify-between gap-2 mb-4 border-b-3 border-neo-ink pb-3">
+                      <span className="font-black text-lg bg-white px-3 py-1 border-3 border-neo-ink rounded-full neo-shadow">{sub.team?.name}</span>
+                      <span className="font-bold text-sm">{formatDate(sub.submittedAt)}</span>
                     </div>
-                    <h4 className="font-bold text-white text-base">{sub.title}</h4>
+                    <h4 className="font-black text-3xl text-neo-ink mb-2">{sub.title}</h4>
                     {sub.tagline && (
-                      <p className="text-xs text-indigo-300 mt-0.5 font-medium">{sub.tagline}</p>
+                      <p className="font-bold text-lg text-neo-ink/80 mb-4">{sub.tagline}</p>
                     )}
-                    <p className="text-xs text-slate-400 mt-2 line-clamp-3">{sub.description}</p>
+                    <p className="font-medium text-neo-ink/80 line-clamp-3">{sub.description}</p>
                   </div>
 
-                  <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                  <div className="pt-6 mt-6 border-t-3 border-neo-ink flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {sub.repoUrl && (
-                        <a
-                          href={sub.repoUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-slate-400 hover:text-white flex items-center gap-1 text-xs"
-                        >
-                          <Github className="w-3.5 h-3.5" />
-                          <span>Code</span>
+                        <a href={sub.repoUrl} target="_blank" rel="noreferrer" className="w-12 h-12 bg-white border-3 border-neo-ink rounded-full flex items-center justify-center hover:neo-active neo-shadow text-neo-ink">
+                          <Github className="w-6 h-6" />
                         </a>
                       )}
                       {sub.demoUrl && (
-                        <a
-                          href={sub.demoUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-slate-400 hover:text-white flex items-center gap-1 text-xs"
-                        >
-                          <Globe className="w-3.5 h-3.5" />
-                          <span>Demo</span>
+                        <a href={sub.demoUrl} target="_blank" rel="noreferrer" className="w-12 h-12 bg-white border-3 border-neo-ink rounded-full flex items-center justify-center hover:neo-active neo-shadow text-neo-ink">
+                          <Globe className="w-6 h-6" />
                         </a>
                       )}
                     </div>
 
                     {isJudge && (
-                      <button
-                        onClick={() => onOpenScore(eventId, sub.id)}
-                        className="px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-colors"
-                      >
+                      <NeoButton onClick={() => onOpenScore(eventId, sub.id)} color="bg-neo-pastel-green" textColor="text-neo-ink">
                         Score Project
-                      </button>
+                      </NeoButton>
                     )}
                   </div>
-                </div>
+                </NeoCard>
               ))}
             </div>
           )}
@@ -407,35 +334,21 @@ export const EventDetailPage = ({
 
       {/* Tab: Teams */}
       {activeTab === 'teams' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {event.teams?.map((t) => (
-            <div
-              key={t.id}
-              className="glass-card rounded-2xl p-5 border border-slate-800 space-y-3"
-            >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {event.teams?.map((t, i) => (
+            <NeoCard key={t.id} color={['bg-white', 'bg-neo-bg'][i%2]} className="space-y-6">
               <div className="flex items-center justify-between">
-                <h4 className="font-bold text-white text-sm">{t.name}</h4>
-                <span className="text-[10px] font-mono text-slate-400">
-                  {t.members?.length || 1} / {event.maxTeamSize} Members
+                <h4 className="font-black text-2xl text-neo-ink">{t.name}</h4>
+                <span className="font-black px-3 py-1 bg-white border-3 border-neo-ink rounded-full neo-shadow text-sm">
+                  {t.members?.length || 1}/{event.maxTeamSize}
                 </span>
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold text-slate-500">Roster:</span>
-                <div className="text-xs text-slate-300 space-y-0.5">
-                  {t.members?.map((m) => (
-                    <div key={m.user.id} className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                      <span>{m.user.name}</span>
-                      {m.user.id === t.leaderId && (
-                        <span className="text-[9px] px-1 rounded bg-indigo-500/20 text-indigo-300">
-                          Leader
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
+              
+              <div className="space-y-3 pt-4 border-t-3 border-neo-ink">
+                <span className="text-xs font-black uppercase tracking-wide text-neo-ink/60">Members</span>
+                <AvatarStack members={t.members.map(m => ({ name: m.user.name, ...m }))} max={4} />
               </div>
-            </div>
+            </NeoCard>
           ))}
         </div>
       )}

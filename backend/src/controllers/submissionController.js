@@ -34,8 +34,18 @@ const getSubmissionsByEvent = async (req, res, next) => {
   }
 };
 
+const getPublicGallery = async (req, res, next) => {
+  try {
+    const submissions = await submissionService.getPublicGallery(req.params.eventId, req.query);
+    return success(res, submissions, 'Public gallery retrieved successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createOrUpdateSubmission,
   getSubmissionById,
   getSubmissionsByEvent,
+  getPublicGallery,
 };

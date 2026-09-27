@@ -13,20 +13,20 @@ export const Modal = ({ isOpen, onClose, title, children, maxWidth = 'max-w-xl' 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neo-ink/50 backdrop-blur-sm">
       <div
-        className={`w-full ${maxWidth} bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden glass-panel flex flex-col max-h-[90vh]`}
+        className={`w-full ${maxWidth} bg-white border-3 border-neo-ink rounded-neo neo-shadow-lg flex flex-col max-h-[90vh] overflow-hidden`}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/50">
-          <h3 className="text-lg font-semibold text-white tracking-tight">{title}</h3>
+        <div className="flex items-center justify-between px-8 py-5 border-b-3 border-neo-ink bg-neo-pastel-yellow">
+          <h3 className="text-2xl font-black text-neo-ink">{title}</h3>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+            className="w-10 h-10 rounded-full border-3 border-neo-ink bg-white flex items-center justify-center hover:neo-active neo-shadow text-neo-ink transition-transform"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto">{children}</div>
+        <div className="p-8 overflow-y-auto">{children}</div>
       </div>
     </div>
   );

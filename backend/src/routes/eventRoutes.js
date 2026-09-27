@@ -4,7 +4,7 @@ const eventController = require('../controllers/eventController');
 const { authenticate } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
 const { validate } = require('../middleware/validateMiddleware');
-const { validateEvent, validateCriterion } = require('../validators');
+const { validateEvent, validateCriterion, validatePrize, validateEventQuestion } = require('../validators');
 
 // Public routes (anyone can view active events)
 router.get('/', eventController.getAllEvents);
@@ -32,6 +32,22 @@ router.post(
   requireRole('ORGANIZER'),
   validate(validateCriterion),
   eventController.addCriterion
+);
+
+router.post(
+  '/:id/prizes',
+  authenticate,
+  requireRole('ORGANIZER'),
+  validate(validatePrize),
+  eventController.addPrize
+);
+
+router.post(
+  '/:id/questions',
+  authenticate,
+  requireRole('ORGANIZER'),
+  validate(validateEventQuestion),
+  eventController.addEventQuestion
 );
 
 router.post(

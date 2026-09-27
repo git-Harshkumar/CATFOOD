@@ -3,7 +3,10 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Modal } from '../components/Modal';
 import { CountdownTimer } from '../components/CountdownTimer';
-import { Users, PlusCircle, UserPlus, Copy, Check, FileText, ArrowRight, Shield } from 'lucide-react';
+import NeoCard from '../components/neo/NeoCard';
+import NeoButton from '../components/neo/NeoButton';
+import AvatarStack from '../components/neo/AvatarStack';
+import { Users, PlusCircle, UserPlus, Copy, Check, FileText, Link as LinkIcon, LogOut } from 'lucide-react';
 
 export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
   const { user } = useAuth();
@@ -22,6 +25,9 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
   const [inviteCode, setInviteCode] = useState('');
   const [modalError, setModalError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Link generation
+  const [generatingLinkFor, setGeneratingLinkFor] = useState(null);
 
   useEffect(() => {
     fetchMyTeams();
@@ -55,10 +61,26 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
     }
   };
 
-  const copyToClipboard = (code) => {
-    navigator.clipboard.writeText(code);
-    setCopiedCode(code);
+  const copyToClipboard = (text, type = 'code') => {
+    navigator.clipboard.writeText(text);
+    setCopiedCode(type);
     setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const handleGenerateLink = async (teamId) => {
+    setGeneratingLinkFor(teamId);
+    try {
+      const res = await api.getInviteLink(teamId);
+      if (res?.data?.token) {
+        const link = `${window.location.origin}/join?token=${res.data.token}`;
+        copyToClipboard(link, `link-${teamId}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Failed to generate invite link');
+    } finally {
+      setGeneratingLinkFor(null);
+    }
   };
 
   const handleCreateTeam = async (e) => {
@@ -93,158 +115,171 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
     }
   };
 
+  const handleLeaveTeam = async (teamId) => {
+    if (!window.confirm('Are you sure you want to leave this team?')) return;
+    try {
+      await api.leaveTeam(teamId);
+      await fetchMyTeams();
+    } catch (err) {
+      alert(err.message || 'Failed to leave team');
+    }
+  };
+
+  const inputClass = "w-full px-4 py-3 font-bold bg-white border-3 border-neo-ink rounded-xl placeholder-neo-ink/40 neo-shadow focus:outline-none focus:neo-active transition-all";
+
   return (
-    <div className="space-y-8 pb-16">
+    <div className="max-w-7xl mx-auto px-4 space-y-10 pb-16 pt-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Team Workspace & Roster
+          <h1 className="text-4xl md:text-5xl font-black text-neo-ink tracking-tight">
+            Team Workspace
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-lg font-bold text-neo-ink/70 mt-2">
             Manage your hackathon teams, collaborate with teammates, and submit deliverables.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsJoinOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
-          >
-            <UserPlus className="w-4 h-4 text-slate-400" />
-            <span>Join Team</span>
-          </button>
+        <div className="flex items-center gap-4">
+          <NeoButton onClick={() => setIsJoinOpen(true)} color="bg-white" textColor="text-neo-ink">
+            <UserPlus className="w-5 h-5 mr-2" />
+            Join Team
+          </NeoButton>
 
-          <button
-            onClick={() => setIsCreateOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>Create Team</span>
-          </button>
+          <NeoButton onClick={() => setIsCreateOpen(true)} color="bg-neo-ink" textColor="text-white">
+            <PlusCircle className="w-5 h-5 mr-2" />
+            Create Team
+          </NeoButton>
         </div>
       </div>
 
       {/* Teams Grid */}
       {loading ? (
-        <div className="text-center py-16 text-slate-500 text-sm">Loading your teams...</div>
+        <div className="text-center py-20 font-bold text-2xl text-neo-ink/50">Loading your teams...</div>
       ) : teams.length === 0 ? (
-        <div className="text-center py-16 bg-slate-900/40 border border-slate-800 rounded-2xl p-8 space-y-3">
-          <Users className="w-12 h-12 text-slate-600 mx-auto" />
-          <h3 className="text-base font-semibold text-slate-300">You are not in any teams yet</h3>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto">
+        <NeoCard color="bg-white" className="text-center py-20 flex flex-col items-center justify-center">
+          <Users className="w-16 h-16 text-neo-ink mb-6" />
+          <h3 className="text-3xl font-black text-neo-ink mb-2">You are not in any teams yet</h3>
+          <p className="font-bold text-neo-ink/60 max-w-sm mb-6">
             Create a new team for an active hackathon or join an existing team using an invite code.
           </p>
-          <div className="pt-2 flex justify-center gap-2">
-            <button
-              onClick={() => setIsCreateOpen(true)}
-              className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-500"
-            >
+          <div className="flex gap-4">
+            <NeoButton onClick={() => setIsCreateOpen(true)} color="bg-neo-pastel-purple" textColor="text-neo-ink">
               Create Team
-            </button>
-            <button
-              onClick={() => setIsJoinOpen(true)}
-              className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700"
-            >
+            </NeoButton>
+            <NeoButton onClick={() => setIsJoinOpen(true)} color="bg-neo-ink" textColor="text-white">
               Join with Code
-            </button>
+            </NeoButton>
           </div>
-        </div>
+        </NeoCard>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {teams.map((tm) => {
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {teams.map((tm, i) => {
             const isDeadlinePassed = new Date(tm.event.deadline) < new Date();
             const isLeader = tm.leaderId === user?.id;
+            const bgClass = ['bg-neo-pastel-yellow', 'bg-neo-pastel-green', 'bg-neo-pastel-blue'][i % 3];
 
             return (
-              <div
-                key={tm.id}
-                className="glass-card rounded-2xl p-6 border border-slate-800 space-y-5 flex flex-col justify-between"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between gap-3">
+              <NeoCard key={tm.id} color={bgClass} className="flex flex-col justify-between">
+                <div className="space-y-6">
+                  <div className="flex items-start justify-between gap-4">
                     <div>
-                      <span className="text-[10px] uppercase font-bold text-indigo-400">
+                      <span className="text-xs font-black uppercase tracking-wider px-3 py-1 bg-white border-3 border-neo-ink rounded-full neo-shadow">
                         {tm.event.title}
                       </span>
-                      <h3 className="text-xl font-bold text-white tracking-tight">{tm.name}</h3>
+                      <h3 className="text-4xl font-black text-neo-ink tracking-tight mt-4">{tm.name}</h3>
                     </div>
-                    <CountdownTimer deadline={tm.event.deadline} />
+                    <div className="bg-white px-3 py-1 rounded-full border-3 border-neo-ink font-bold text-sm text-center">
+                       {isDeadlinePassed ? 'Ended' : <CountdownTimer deadline={tm.event.deadline} compact />}
+                    </div>
                   </div>
 
                   {/* Invite Code Box */}
-                  <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] uppercase tracking-wider text-slate-500 block">
-                        Invite Code for Teammates
-                      </span>
-                      <span className="font-mono text-sm font-bold text-indigo-300 tracking-wider">
-                        {tm.inviteCode}
-                      </span>
+                  <div className="p-4 rounded-xl bg-white border-3 border-neo-ink flex flex-col gap-3 neo-shadow">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-neo-ink/60 block">
+                          Static Invite Code
+                        </span>
+                        <span className="font-mono text-xl font-black text-neo-ink tracking-wider">
+                          {tm.inviteCode}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(tm.inviteCode, 'code')}
+                        className="w-10 h-10 rounded-full bg-neo-pastel-orange border-3 border-neo-ink flex items-center justify-center hover:neo-active neo-shadow text-neo-ink"
+                        title="Copy invite code"
+                      >
+                        {copiedCode === 'code' ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                      </button>
                     </div>
-                    <button
-                      onClick={() => copyToClipboard(tm.inviteCode)}
-                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
-                      title="Copy invite code"
-                    >
-                      {copiedCode === tm.inviteCode ? (
-                        <Check className="w-4 h-4 text-emerald-400" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
-                    </button>
+
+                    <div className="border-t-3 border-neo-ink pt-3 flex items-center justify-between">
+                       <div>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-neo-ink/60 block">
+                          1-Hour Expiring Link
+                        </span>
+                        <span className="text-xs font-bold text-neo-ink block">
+                          Send a secure, auto-expiring link
+                        </span>
+                       </div>
+                       <NeoButton 
+                          variant="pill" 
+                          onClick={() => handleGenerateLink(tm.id)}
+                          color="bg-neo-ink" 
+                          textColor="text-white"
+                          className="!py-1.5 !px-3 !text-xs"
+                          disabled={generatingLinkFor === tm.id}
+                        >
+                          {copiedCode === `link-${tm.id}` ? 'Copied Link!' : (generatingLinkFor === tm.id ? 'Generating...' : 'Copy Link')}
+                        </NeoButton>
+                    </div>
                   </div>
 
                   {/* Team Members List */}
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-500 block mb-2">
-                      Roster ({tm.members.length} members)
-                    </span>
-                    <div className="space-y-1.5">
-                      {tm.members.map((m) => (
-                        <div
-                          key={m.user.id}
-                          className="flex items-center justify-between text-xs px-2.5 py-1.5 rounded-lg bg-slate-900/60 border border-slate-800/80"
-                        >
-                          <span className="text-slate-200">{m.user.name}</span>
-                          <span className="text-[10px] font-mono text-slate-400">
-                            {m.user.id === tm.leaderId ? 'Leader' : 'Member'}
-                          </span>
-                        </div>
-                      ))}
+                    <div className="flex justify-between items-center mb-2">
+                       <span className="text-[10px] font-black uppercase tracking-wider text-neo-ink/60">
+                         Roster ({tm.members.length}/{tm.event.maxTeamSize})
+                       </span>
                     </div>
+                    <AvatarStack members={tm.members.map(m => ({
+                        ...m, 
+                        name: m.user.id === tm.leaderId ? `${m.user.name} (L)` : m.user.name
+                    }))} max={5} />
                   </div>
                 </div>
 
                 {/* Submission Status & Action */}
-                <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                <div className="pt-6 mt-6 border-t-3 border-neo-ink flex items-center justify-between">
                   <div>
                     {tm.submission ? (
-                      <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-semibold">
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Submitted: {tm.submission.title}</span>
+                      <span className="inline-flex items-center gap-2 text-sm text-neo-ink font-black bg-white px-3 py-1 rounded-full border-3 border-neo-ink neo-shadow">
+                        <Check className="w-4 h-4 text-green-600" />
+                        Submitted
                       </span>
                     ) : (
-                      <span className="text-xs text-amber-400 font-medium">No project submitted yet</span>
+                      <span className="text-sm text-neo-ink/70 font-bold bg-white px-3 py-1 rounded-full border-3 border-neo-ink neo-shadow">Not Submitted</span>
                     )}
                   </div>
 
-                  <button
-                    onClick={() => onOpenSubmit(tm.id, tm.submission)}
-                    disabled={isDeadlinePassed}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white transition-all shadow-md shadow-indigo-600/20"
-                  >
-                    <FileText className="w-3.5 h-3.5" />
-                    <span>
-                      {tm.submission
-                        ? isDeadlinePassed
-                          ? 'View (Locked)'
-                          : 'Edit Submission'
-                        : 'Submit Project'}
-                    </span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => handleLeaveTeam(tm.id)} className="w-12 h-12 bg-neo-pastel-pink border-3 border-neo-ink rounded-full flex items-center justify-center hover:neo-active neo-shadow text-neo-ink" title="Leave Team">
+                      <LogOut className="w-5 h-5" />
+                    </button>
+
+                    <NeoButton
+                      onClick={() => onOpenSubmit(tm.id, tm.submission)}
+                      disabled={isDeadlinePassed && !tm.submission}
+                      color="bg-neo-ink" 
+                      textColor="text-white"
+                    >
+                      <FileText className="w-5 h-5 mr-2" />
+                      {tm.submission ? (isDeadlinePassed ? 'View (Locked)' : 'Edit Submission') : 'Submit'}
+                    </NeoButton>
+                  </div>
                 </div>
-              </div>
+              </NeoCard>
             );
           })}
         </div>
@@ -254,21 +289,22 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
       <Modal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
-        title="Form a New Hackathon Team"
+        title="Form a New Team"
+        maxWidth="max-w-xl"
       >
-        <form onSubmit={handleCreateTeam} className="space-y-4">
+        <form onSubmit={handleCreateTeam} className="space-y-6">
           {modalError && (
-            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+            <div className="p-4 rounded-xl bg-neo-pastel-pink border-3 border-neo-ink text-neo-ink font-bold text-center">
               {modalError}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Select Hackathon</label>
+            <label className="block font-black text-neo-ink mb-2">Select Hackathon</label>
             <select
               value={selectedEventId}
               onChange={(e) => setSelectedEventId(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+              className={inputClass}
             >
               {events.map((ev) => (
                 <option key={ev.id} value={ev.id}>
@@ -279,32 +315,24 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Team Name</label>
+            <label className="block font-black text-neo-ink mb-2">Team Name</label>
             <input
               type="text"
               required
               placeholder="e.g. CyberVanguard"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className={inputClass}
             />
           </div>
 
-          <div className="pt-2 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setIsCreateOpen(false)}
-              className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700"
-            >
+          <div className="pt-6 flex justify-end gap-4">
+            <NeoButton type="button" onClick={() => setIsCreateOpen(false)} color="bg-white" textColor="text-neo-ink">
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 shadow-md shadow-indigo-600/30"
-            >
-              {submitting ? 'Creating...' : 'Create Team & Generate Invite Code'}
-            </button>
+            </NeoButton>
+            <NeoButton type="submit" disabled={submitting} color="bg-neo-ink" textColor="text-white">
+              {submitting ? 'Creating...' : 'Create Team'}
+            </NeoButton>
           </div>
         </form>
       </Modal>
@@ -314,44 +342,37 @@ export const TeamsPage = ({ onOpenSubmit, onSelectEvent }) => {
         isOpen={isJoinOpen}
         onClose={() => setIsJoinOpen(false)}
         title="Join an Existing Team"
+        maxWidth="max-w-xl"
       >
-        <form onSubmit={handleJoinTeam} className="space-y-4">
+        <form onSubmit={handleJoinTeam} className="space-y-6">
           {modalError && (
-            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+            <div className="p-4 rounded-xl bg-neo-pastel-pink border-3 border-neo-ink text-neo-ink font-bold text-center">
               {modalError}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Invite Code</label>
+            <label className="block font-black text-neo-ink mb-2">Invite Code</label>
             <input
               type="text"
               required
               placeholder="e.g. TEAM-XXXX"
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-              className="w-full px-3 py-2 text-sm font-mono uppercase bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className={`${inputClass} font-mono uppercase`}
             />
-            <p className="text-[11px] text-slate-500 mt-1">
+            <p className="font-bold text-sm text-neo-ink/60 mt-2">
               Obtain the invite code from your team leader to join their roster.
             </p>
           </div>
 
-          <div className="pt-2 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setIsJoinOpen(false)}
-              className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700"
-            >
+          <div className="pt-6 flex justify-end gap-4">
+            <NeoButton type="button" onClick={() => setIsJoinOpen(false)} color="bg-white" textColor="text-neo-ink">
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 shadow-md shadow-indigo-600/30"
-            >
+            </NeoButton>
+            <NeoButton type="submit" disabled={submitting} color="bg-neo-ink" textColor="text-white">
               {submitting ? 'Joining...' : 'Join Team'}
-            </button>
+            </NeoButton>
           </div>
         </form>
       </Modal>

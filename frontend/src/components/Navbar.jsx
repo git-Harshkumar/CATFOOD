@@ -1,113 +1,98 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Badge } from './Badge';
+import { Trophy, Award, Users, PlusCircle, LogOut, Settings } from 'lucide-react';
 import { getRoleBadge } from '../utils/formatters';
-import { Trophy, Award, Users, PlusCircle, LogOut, CheckCircle, ShieldAlert } from 'lucide-react';
 
 export const Navbar = ({ currentView, setView }) => {
-  const { user, logout, isOrganizer, isJudge, isParticipant } = useAuth();
-  const roleBadge = user ? getRoleBadge(user.role) : null;
+  const { user, logout, isOrganizer, isJudge, isGlobalAdmin } = useAuth();
+  
+  // Custom nav item component
+  const NavItem = ({ id, label, icon: Icon }) => {
+    const isActive = currentView === id;
+    return (
+      <button
+        onClick={() => setView(id)}
+        className={`flex items-center gap-2 px-5 py-2 rounded-full font-bold text-sm transition-colors ${
+          isActive 
+            ? 'bg-neo-pastel-green text-neo-ink' 
+            : 'text-white hover:bg-white/10'
+        }`}
+      >
+        {Icon && <Icon className="w-4 h-4" />}
+        <span>{label}</span>
+      </button>
+    );
+  };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <div className="flex items-center gap-8">
+    <header className="w-full pt-6 pb-8 px-4 flex justify-center">
+      {/* Pill-shaped Navbar */}
+      <div className="w-full max-w-6xl flex items-center justify-between gap-4">
+        
+        {/* Nav Links Pill Container */}
+        <div className="bg-neo-ink rounded-full px-2 py-2 flex items-center gap-1 shadow-lg neo-shadow">
           <button
             onClick={() => setView('events')}
-            className="flex items-center gap-2.5 text-left group"
+            className="flex items-center gap-2 px-4 py-2 text-white font-black text-lg tracking-tight hover:scale-105 transition-transform"
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-              <Trophy className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent">
-                JuryFlow
-              </span>
-              <span className="block text-[10px] uppercase tracking-wider font-semibold text-indigo-400 -mt-1">
-                Judgment Platform
-              </span>
-            </div>
+            <Trophy className="w-5 h-5 text-neo-yellow" />
+            JuryFlow
           </button>
-
-          {/* Nav Items */}
+          
+          <div className="w-px h-6 bg-white/20 mx-2"></div>
+          
+          <NavItem id="events" label="Hackathons" />
+          
           {user && (
-            <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
-              <button
-                onClick={() => setView('events')}
-                className={`px-3 py-1.5 rounded-lg transition-colors ${
-                  currentView === 'events'
-                    ? 'bg-slate-800 text-white font-semibold'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                }`}
-              >
-                Hackathons
-              </button>
-
-              <button
-                onClick={() => setView('teams')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${
-                  currentView === 'teams'
-                    ? 'bg-slate-800 text-white font-semibold'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                }`}
-              >
-                <Users className="w-4 h-4 text-indigo-400" />
-                <span>My Teams</span>
-              </button>
-
+            <>
+              <NavItem id="teams" label="My Teams" icon={Users} />
               {(isJudge || isOrganizer) && (
-                <button
-                  onClick={() => setView('judging')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${
-                    currentView === 'judging'
-                      ? 'bg-slate-800 text-white font-semibold'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                  }`}
-                >
-                  <Award className="w-4 h-4 text-emerald-400" />
-                  <span>Judging Queue</span>
-                </button>
+                <NavItem id="judging" label="Judging Queue" icon={Award} />
               )}
-            </nav>
+            </>
           )}
         </div>
 
-        {/* User Profile & Actions */}
-        <div className="flex items-center gap-3">
+        {/* User / Actions Area */}
+        <div className="flex items-center gap-4">
           {user ? (
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex flex-col items-end">
-                <span className="text-xs font-semibold text-slate-200">{user.name}</span>
-                <span
-                  className={`text-[10px] font-mono px-1.5 py-0.2 rounded border ${roleBadge.bg} ${roleBadge.text} ${roleBadge.border}`}
-                >
-                  {roleBadge.label}
-                </span>
-              </div>
-
+            <>
               {isOrganizer && (
                 <button
                   onClick={() => setView('create-event')}
-                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md shadow-purple-500/20 transition-all"
+                  className="flex items-center gap-2 px-5 py-3 rounded-full border-3 border-neo-ink bg-neo-pastel-purple font-bold text-sm text-neo-ink hover:neo-active neo-shadow"
                 >
-                  <PlusCircle className="w-4 h-4" />
-                  <span>New Event</span>
+                  <PlusCircle className="w-5 h-5" />
+                  New Event
                 </button>
               )}
+              
+              {/* Avatar Pill */}
+              <div className="flex items-center gap-3 bg-neo-pastel-orange rounded-full py-1.5 pl-2 pr-6 border-3 border-neo-ink neo-shadow">
+                <div className="w-10 h-10 rounded-full bg-white border-2 border-neo-ink flex items-center justify-center font-black text-neo-ink text-lg">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex flex-col items-start leading-tight">
+                  <span className="font-bold text-sm text-neo-ink">{user.name}</span>
+                  <span className="text-[10px] font-bold text-neo-ink/70 uppercase">
+                    {isGlobalAdmin ? 'Admin' : (isOrganizer ? 'Organizer' : (isJudge ? 'Judge' : 'Participant'))}
+                  </span>
+                </div>
+              </div>
 
+              {/* Settings / Logout */}
               <button
                 onClick={logout}
+                className="w-12 h-12 rounded-full border-3 border-neo-ink bg-neo-pastel-pink flex items-center justify-center hover:neo-active neo-shadow"
                 title="Sign out"
-                className="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-colors"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-5 h-5 text-neo-ink" />
               </button>
-            </div>
+            </>
           ) : (
             <button
               onClick={() => setView('auth')}
-              className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 transition-all"
+              className="px-6 py-3 rounded-full border-3 border-neo-ink bg-neo-pastel-purple font-bold text-neo-ink hover:neo-active neo-shadow"
             >
               Sign In
             </button>
