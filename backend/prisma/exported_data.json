@@ -1,0 +1,794 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "organizer@hack.com",
+      "passwordHash": "$2b$10$E/.PjtBaSMv3aSmG9iX2Ve6ZiBhTfSD7e.8MqtprI4SnaMQGs.iDO",
+      "name": "Sarah Connor (Organizer)",
+      "role": "ORGANIZER",
+      "createdAt": "2026-09-21T19:35:30.282Z",
+      "updatedAt": "2026-09-21T19:35:30.282Z"
+    },
+    {
+      "id": 2,
+      "email": "judge1@hack.com",
+      "passwordHash": "$2b$10$E/.PjtBaSMv3aSmG9iX2Ve6ZiBhTfSD7e.8MqtprI4SnaMQGs.iDO",
+      "name": "Dr. Alan Turing (Judge)",
+      "role": "JUDGE",
+      "createdAt": "2026-09-21T19:35:30.290Z",
+      "updatedAt": "2026-09-21T19:35:30.290Z"
+    },
+    {
+      "id": 3,
+      "email": "judge2@hack.com",
+      "passwordHash": "$2b$10$E/.PjtBaSMv3aSmG9iX2Ve6ZiBhTfSD7e.8MqtprI4SnaMQGs.iDO",
+      "name": "Ada Lovelace (Judge)",
+      "role": "JUDGE",
+      "createdAt": "2026-09-21T19:35:30.297Z",
+      "updatedAt": "2026-09-21T19:35:30.297Z"
+    },
+    {
+      "id": 4,
+      "email": "alice@hack.com",
+      "passwordHash": "$2b$10$E/.PjtBaSMv3aSmG9iX2Ve6ZiBhTfSD7e.8MqtprI4SnaMQGs.iDO",
+      "name": "Alice Johnson",
+      "role": "PARTICIPANT",
+      "createdAt": "2026-09-21T19:35:30.304Z",
+      "updatedAt": "2026-09-21T19:35:30.304Z"
+    },
+    {
+      "id": 5,
+      "email": "bob@hack.com",
+      "passwordHash": "$2b$10$E/.PjtBaSMv3aSmG9iX2Ve6ZiBhTfSD7e.8MqtprI4SnaMQGs.iDO",
+      "name": "Bob Smith",
+      "role": "PARTICIPANT",
+      "createdAt": "2026-09-21T19:35:30.311Z",
+      "updatedAt": "2026-09-21T19:35:30.311Z"
+    },
+    {
+      "id": 6,
+      "email": "charlie@hack.com",
+      "passwordHash": "$2b$10$E/.PjtBaSMv3aSmG9iX2Ve6ZiBhTfSD7e.8MqtprI4SnaMQGs.iDO",
+      "name": "Charlie Brown",
+      "role": "PARTICIPANT",
+      "createdAt": "2026-09-21T19:35:30.318Z",
+      "updatedAt": "2026-09-21T19:35:30.318Z"
+    },
+    {
+      "id": 7,
+      "email": "dana@hack.com",
+      "passwordHash": "$2b$10$E/.PjtBaSMv3aSmG9iX2Ve6ZiBhTfSD7e.8MqtprI4SnaMQGs.iDO",
+      "name": "Dana Scully",
+      "role": "PARTICIPANT",
+      "createdAt": "2026-09-21T19:35:30.324Z",
+      "updatedAt": "2026-09-21T19:35:30.324Z"
+    },
+    {
+      "id": 8,
+      "email": "test_1790019678297@example.com",
+      "passwordHash": "$2b$10$CnEyumqn1K3XncjYmU5MZOhxLj8hPehy8Fb2A2TnwMWzpR86SgPG.",
+      "name": "Test New User",
+      "role": "PARTICIPANT",
+      "createdAt": "2026-09-21T19:41:18.612Z",
+      "updatedAt": "2026-09-21T19:41:18.612Z"
+    },
+    {
+      "id": 9,
+      "email": "sub_lead_1790019678611@hack.com",
+      "passwordHash": "$2b$10$u6bR8ZBi2yqa/4MID7d3ZOFkYSq9bPk0JFuE3JW6CRRhPhhhcJ1pC",
+      "name": "Submission Leader",
+      "role": "PARTICIPANT",
+      "createdAt": "2026-09-21T19:41:18.743Z",
+      "updatedAt": "2026-09-21T19:41:18.743Z"
+    },
+    {
+      "id": 10,
+      "email": "tuser1_1790019678644@hack.com",
+      "passwordHash": "$2b$10$fiUWlMYuJX4yxz39JZ0RA.OT/eUlahdb4lPQ4coNc/mHuhD4Xr9Rq",
+      "name": "Team User 1",
+      "role": "PARTICIPANT",
+      "createdAt": "2026-09-21T19:41:18.810Z",
+      "updatedAt": "2026-09-21T19:41:18.810Z"
+    },
+    {
+      "id": 11,
+      "email": "sub_out_1790019678611@hack.com",
+      "passwordHash": "$2b$10$bN3h3LUlXJV/ylnmD8zFeuHQcViA36wKxaVmdxxiWCNmmq8qYzFHG",
+      "name": "Outsider User",
+      "role": "PARTICIPANT",
+      "createdAt": "2026-09-21T19:41:18.908Z",
+      "updatedAt": "2026-09-21T19:41:18.908Z"
+    },
+    {
+      "id": 12,
+      "email": "e2e_user_1790019678766@hack.com",
+      "passwordHash": "$2b$10$9XdEPvG8EBjYOXA8nckm5uVecTcUbVT6UCBJXlx/507uhlV4AQ0vO",
+      "name": "E2E Hacker",
+      "role": "PARTICIPANT",
+      "createdAt": "2026-09-21T19:41:18.948Z",
+      "updatedAt": "2026-09-21T19:41:18.948Z"
+    },
+    {
+      "id": 13,
+      "email": "tuser2_1790019678644@hack.com",
+      "passwordHash": "$2b$10$INLlClB7vUm6QSzRtPfvGeW9hraXLQ2XKbJq9GRCCo/GEYKUpEIyK",
+      "name": "Team User 2",
+      "role": "PARTICIPANT",
+      "createdAt": "2026-09-21T19:41:18.990Z",
+      "updatedAt": "2026-09-21T19:41:18.990Z"
+    },
+    {
+      "id": 14,
+      "email": "tuser3_1790019678644@hack.com",
+      "passwordHash": "$2b$10$C7TuwP/BiDMY5btyJKH.tucJQrADqhoKWzRIl9AdH5krZCFsO4/aG",
+      "name": "Team User 3",
+      "role": "PARTICIPANT",
+      "createdAt": "2026-09-21T19:41:19.131Z",
+      "updatedAt": "2026-09-21T19:41:19.131Z"
+    },
+    {
+      "id": 15,
+      "email": "expired_lead_1790019678611@hack.com",
+      "passwordHash": "$2b$10$3w0jBS/tKcPTGHzQqphMjOOybZ.R3z/8PgQaxDeg2eaWL/6Q1IY26",
+      "name": "Expired Leader",
+      "role": "PARTICIPANT",
+      "createdAt": "2026-09-21T19:41:19.169Z",
+      "updatedAt": "2026-09-21T19:41:19.169Z"
+    }
+  ],
+  "events": [
+    {
+      "id": 1,
+      "title": "Global AI & Cloud Hackathon 2026",
+      "tagline": "Build next-generation intelligent applications for real-world impact",
+      "description": "Join 500+ developers worldwide in building state-of-the-art AI, developer tools, and cloud platforms. Showcase your creativity, technical rigor, and product design.",
+      "rules": "1. All code must be written during the hackathon.\n2. Teams can consist of 1 to 4 members.\n3. Projects must include a public repository and a working demo or video.",
+      "minTeamSize": 1,
+      "maxTeamSize": 4,
+      "startDate": "2026-09-19T19:35:30.329Z",
+      "deadline": "2026-09-28T19:35:30.329Z",
+      "judgingDeadline": null,
+      "status": "ACTIVE",
+      "isLeaderboardPublished": false,
+      "organizerId": 1,
+      "createdAt": "2026-09-21T19:35:30.331Z",
+      "updatedAt": "2026-09-21T19:35:30.331Z"
+    },
+    {
+      "id": 2,
+      "title": "Winter Web3 & FinTech Sprint 2025",
+      "tagline": "Reinventing decentralized finance and consumer payments",
+      "description": "A 48-hour global sprint to design consumer-friendly crypto experiences.",
+      "rules": "Standard hackathon rules apply.",
+      "minTeamSize": 1,
+      "maxTeamSize": 3,
+      "startDate": "2026-09-07T19:35:30.329Z",
+      "deadline": "2026-09-11T19:35:30.329Z",
+      "judgingDeadline": null,
+      "status": "COMPLETED",
+      "isLeaderboardPublished": true,
+      "organizerId": 1,
+      "createdAt": "2026-09-21T19:35:30.433Z",
+      "updatedAt": "2026-09-21T19:35:30.433Z"
+    },
+    {
+      "id": 3,
+      "title": "Quantum Computing Hackathon 2026",
+      "tagline": null,
+      "description": "Building algorithms on quantum simulators.",
+      "rules": null,
+      "minTeamSize": 1,
+      "maxTeamSize": 4,
+      "startDate": "2026-09-21T19:41:18.606Z",
+      "deadline": "2026-10-05T19:41:18.606Z",
+      "judgingDeadline": null,
+      "status": "ACTIVE",
+      "isLeaderboardPublished": false,
+      "organizerId": 1,
+      "createdAt": "2026-09-21T19:41:18.625Z",
+      "updatedAt": "2026-09-21T19:41:18.625Z"
+    },
+    {
+      "id": 4,
+      "title": "Active Hackathon 1790019678611",
+      "tagline": null,
+      "description": "Testing active submissions.",
+      "rules": null,
+      "minTeamSize": 1,
+      "maxTeamSize": 4,
+      "startDate": "2026-09-21T19:41:18.917Z",
+      "deadline": "2026-09-23T19:41:18.917Z",
+      "judgingDeadline": null,
+      "status": "ACTIVE",
+      "isLeaderboardPublished": false,
+      "organizerId": 1,
+      "createdAt": "2026-09-21T19:41:18.926Z",
+      "updatedAt": "2026-09-21T19:41:18.926Z"
+    },
+    {
+      "id": 5,
+      "title": "E2E Championship 1790019678957",
+      "tagline": null,
+      "description": "Complete lifecycle test hackathon.",
+      "rules": null,
+      "minTeamSize": 1,
+      "maxTeamSize": 4,
+      "startDate": "2026-09-21T19:41:18.957Z",
+      "deadline": "2026-09-22T19:41:18.957Z",
+      "judgingDeadline": null,
+      "status": "COMPLETED",
+      "isLeaderboardPublished": true,
+      "organizerId": 1,
+      "createdAt": "2026-09-21T19:41:18.980Z",
+      "updatedAt": "2026-09-21T19:41:19.140Z"
+    },
+    {
+      "id": 6,
+      "title": "Expired Hackathon 1790019678611",
+      "tagline": null,
+      "description": "Testing deadline enforcement.",
+      "rules": null,
+      "minTeamSize": 1,
+      "maxTeamSize": 4,
+      "startDate": "2026-09-16T19:41:18.974Z",
+      "deadline": "2026-09-21T19:41:17.974Z",
+      "judgingDeadline": null,
+      "status": "ACTIVE",
+      "isLeaderboardPublished": false,
+      "organizerId": 1,
+      "createdAt": "2026-09-21T19:41:19.003Z",
+      "updatedAt": "2026-09-21T19:41:19.003Z"
+    },
+    {
+      "id": 7,
+      "title": "Team Isolation Event 1790019678644",
+      "tagline": null,
+      "description": "Testing team constraints and invite codes.",
+      "rules": null,
+      "minTeamSize": 1,
+      "maxTeamSize": 2,
+      "startDate": "2026-09-21T19:41:19.141Z",
+      "deadline": "2026-09-22T19:41:19.141Z",
+      "judgingDeadline": null,
+      "status": "ACTIVE",
+      "isLeaderboardPublished": false,
+      "organizerId": 1,
+      "createdAt": "2026-09-21T19:41:19.152Z",
+      "updatedAt": "2026-09-21T19:41:19.152Z"
+    }
+  ],
+  "teams": [
+    {
+      "id": 1,
+      "eventId": 1,
+      "name": "NeuralPulse",
+      "inviteCode": "TEAM-NP01",
+      "leaderId": 4,
+      "createdAt": "2026-09-21T19:35:30.339Z",
+      "updatedAt": "2026-09-21T19:35:30.339Z"
+    },
+    {
+      "id": 2,
+      "eventId": 1,
+      "name": "QuantumLeap",
+      "inviteCode": "TEAM-QL02",
+      "leaderId": 6,
+      "createdAt": "2026-09-21T19:35:30.347Z",
+      "updatedAt": "2026-09-21T19:35:30.347Z"
+    },
+    {
+      "id": 3,
+      "eventId": 4,
+      "name": "Team Alpha 1790019678611",
+      "inviteCode": "TEAM-E3DC5D2B",
+      "leaderId": 9,
+      "createdAt": "2026-09-21T19:41:18.961Z",
+      "updatedAt": "2026-09-21T19:41:18.961Z"
+    },
+    {
+      "id": 4,
+      "eventId": 5,
+      "name": "CyberTeam 1790019679022",
+      "inviteCode": "TEAM-BC2C84F7",
+      "leaderId": 12,
+      "createdAt": "2026-09-21T19:41:19.038Z",
+      "updatedAt": "2026-09-21T19:41:19.038Z"
+    },
+    {
+      "id": 5,
+      "eventId": 7,
+      "name": "Apex Innovators",
+      "inviteCode": "TEAM-D7FF51F9",
+      "leaderId": 10,
+      "createdAt": "2026-09-21T19:41:19.182Z",
+      "updatedAt": "2026-09-21T19:41:19.182Z"
+    },
+    {
+      "id": 6,
+      "eventId": 6,
+      "name": "Expired Team 1790019678611",
+      "inviteCode": "TEAM-CBDDA259",
+      "leaderId": 15,
+      "createdAt": "2026-09-21T19:41:19.193Z",
+      "updatedAt": "2026-09-21T19:41:19.193Z"
+    }
+  ],
+  "teamMembers": [
+    {
+      "id": 1,
+      "teamId": 1,
+      "userId": 4,
+      "joinedAt": "2026-09-21T19:35:30.339Z"
+    },
+    {
+      "id": 2,
+      "teamId": 1,
+      "userId": 5,
+      "joinedAt": "2026-09-21T19:35:30.339Z"
+    },
+    {
+      "id": 3,
+      "teamId": 2,
+      "userId": 6,
+      "joinedAt": "2026-09-21T19:35:30.347Z"
+    },
+    {
+      "id": 4,
+      "teamId": 2,
+      "userId": 7,
+      "joinedAt": "2026-09-21T19:35:30.347Z"
+    },
+    {
+      "id": 5,
+      "teamId": 3,
+      "userId": 9,
+      "joinedAt": "2026-09-21T19:41:18.963Z"
+    },
+    {
+      "id": 6,
+      "teamId": 4,
+      "userId": 12,
+      "joinedAt": "2026-09-21T19:41:19.039Z"
+    },
+    {
+      "id": 7,
+      "teamId": 5,
+      "userId": 10,
+      "joinedAt": "2026-09-21T19:41:19.183Z"
+    },
+    {
+      "id": 8,
+      "teamId": 6,
+      "userId": 15,
+      "joinedAt": "2026-09-21T19:41:19.194Z"
+    },
+    {
+      "id": 9,
+      "teamId": 5,
+      "userId": 13,
+      "joinedAt": "2026-09-21T19:41:19.241Z"
+    }
+  ],
+  "judgeAssignments": [
+    {
+      "id": 1,
+      "eventId": 1,
+      "judgeId": 2,
+      "createdAt": "2026-09-21T19:35:30.331Z"
+    },
+    {
+      "id": 2,
+      "eventId": 1,
+      "judgeId": 3,
+      "createdAt": "2026-09-21T19:35:30.331Z"
+    },
+    {
+      "id": 3,
+      "eventId": 5,
+      "judgeId": 2,
+      "createdAt": "2026-09-21T19:41:19.005Z"
+    }
+  ],
+  "criteria": [
+    {
+      "id": 1,
+      "eventId": 1,
+      "name": "Innovation & Novelty",
+      "description": "Originality of concept and creative problem solving",
+      "maxScore": 10,
+      "weight": 1.2,
+      "createdAt": "2026-09-21T19:35:30.331Z",
+      "updatedAt": "2026-09-21T19:35:30.331Z"
+    },
+    {
+      "id": 2,
+      "eventId": 1,
+      "name": "Technical Depth & Architecture",
+      "description": "Code architecture, robustness, and execution excellence",
+      "maxScore": 10,
+      "weight": 1,
+      "createdAt": "2026-09-21T19:35:30.331Z",
+      "updatedAt": "2026-09-21T19:35:30.331Z"
+    },
+    {
+      "id": 3,
+      "eventId": 1,
+      "name": "UI / UX Design",
+      "description": "Visual polish, intuition, accessibility and responsiveness",
+      "maxScore": 10,
+      "weight": 0.8,
+      "createdAt": "2026-09-21T19:35:30.331Z",
+      "updatedAt": "2026-09-21T19:35:30.331Z"
+    },
+    {
+      "id": 4,
+      "eventId": 1,
+      "name": "Impact & Commercial Viability",
+      "description": "Practical business or social value delivered",
+      "maxScore": 10,
+      "weight": 1,
+      "createdAt": "2026-09-21T19:35:30.331Z",
+      "updatedAt": "2026-09-21T19:35:30.331Z"
+    },
+    {
+      "id": 5,
+      "eventId": 2,
+      "name": "Innovation",
+      "description": null,
+      "maxScore": 10,
+      "weight": 1,
+      "createdAt": "2026-09-21T19:35:30.433Z",
+      "updatedAt": "2026-09-21T19:35:30.433Z"
+    },
+    {
+      "id": 6,
+      "eventId": 2,
+      "name": "Execution",
+      "description": null,
+      "maxScore": 10,
+      "weight": 1,
+      "createdAt": "2026-09-21T19:35:30.433Z",
+      "updatedAt": "2026-09-21T19:35:30.433Z"
+    },
+    {
+      "id": 7,
+      "eventId": 3,
+      "name": "Innovation & Originality",
+      "description": "Uniqueness and creativity of idea",
+      "maxScore": 10,
+      "weight": 1,
+      "createdAt": "2026-09-21T19:41:18.625Z",
+      "updatedAt": "2026-09-21T19:41:18.625Z"
+    },
+    {
+      "id": 8,
+      "eventId": 3,
+      "name": "Technical Execution",
+      "description": "Architecture, code quality and technical complexity",
+      "maxScore": 10,
+      "weight": 1,
+      "createdAt": "2026-09-21T19:41:18.625Z",
+      "updatedAt": "2026-09-21T19:41:18.625Z"
+    },
+    {
+      "id": 9,
+      "eventId": 3,
+      "name": "UI & UX Design",
+      "description": "Visual aesthetic, responsiveness and user experience",
+      "maxScore": 10,
+      "weight": 0.8,
+      "createdAt": "2026-09-21T19:41:18.625Z",
+      "updatedAt": "2026-09-21T19:41:18.625Z"
+    },
+    {
+      "id": 10,
+      "eventId": 3,
+      "name": "Practical Impact & Utility",
+      "description": "Real-world usefulness and problem-solving capability",
+      "maxScore": 10,
+      "weight": 1.2,
+      "createdAt": "2026-09-21T19:41:18.625Z",
+      "updatedAt": "2026-09-21T19:41:18.625Z"
+    },
+    {
+      "id": 11,
+      "eventId": 4,
+      "name": "Innovation & Originality",
+      "description": "Uniqueness and creativity of idea",
+      "maxScore": 10,
+      "weight": 1,
+      "createdAt": "2026-09-21T19:41:18.926Z",
+      "updatedAt": "2026-09-21T19:41:18.926Z"
+    },
+    {
+      "id": 12,
+      "eventId": 4,
+      "name": "Technical Execution",
+      "description": "Architecture, code quality and technical complexity",
+      "maxScore": 10,
+      "weight": 1,
+      "createdAt": "2026-09-21T19:41:18.926Z",
+      "updatedAt": "2026-09-21T19:41:18.926Z"
+    },
+    {
+      "id": 13,
+      "eventId": 4,
+      "name": "UI & UX Design",
+      "description": "Visual aesthetic, responsiveness and user experience",
+      "maxScore": 10,
+      "weight": 0.8,
+      "createdAt": "2026-09-21T19:41:18.926Z",
+      "updatedAt": "2026-09-21T19:41:18.926Z"
+    },
+    {
+      "id": 14,
+      "eventId": 4,
+      "name": "Practical Impact & Utility",
+      "description": "Real-world usefulness and problem-solving capability",
+      "maxScore": 10,
+      "weight": 1.2,
+      "createdAt": "2026-09-21T19:41:18.926Z",
+      "updatedAt": "2026-09-21T19:41:18.926Z"
+    },
+    {
+      "id": 15,
+      "eventId": 5,
+      "name": "Innovation",
+      "description": null,
+      "maxScore": 10,
+      "weight": 1.5,
+      "createdAt": "2026-09-21T19:41:18.980Z",
+      "updatedAt": "2026-09-21T19:41:18.980Z"
+    },
+    {
+      "id": 16,
+      "eventId": 5,
+      "name": "Architecture",
+      "description": null,
+      "maxScore": 10,
+      "weight": 1,
+      "createdAt": "2026-09-21T19:41:18.980Z",
+      "updatedAt": "2026-09-21T19:41:18.980Z"
+    },
+    {
+      "id": 17,
+      "eventId": 6,
+      "name": "Innovation & Originality",
+      "description": "Uniqueness and creativity of idea",
+      "maxScore": 10,
+      "weight": 1,
+      "createdAt": "2026-09-21T19:41:19.003Z",
+      "updatedAt": "2026-09-21T19:41:19.003Z"
+    },
+    {
+      "id": 18,
+      "eventId": 6,
+      "name": "Technical Execution",
+      "description": "Architecture, code quality and technical complexity",
+      "maxScore": 10,
+      "weight": 1,
+      "createdAt": "2026-09-21T19:41:19.003Z",
+      "updatedAt": "2026-09-21T19:41:19.003Z"
+    },
+    {
+      "id": 19,
+      "eventId": 6,
+      "name": "UI & UX Design",
+      "description": "Visual aesthetic, responsiveness and user experience",
+      "maxScore": 10,
+      "weight": 0.8,
+      "createdAt": "2026-09-21T19:41:19.003Z",
+      "updatedAt": "2026-09-21T19:41:19.003Z"
+    },
+    {
+      "id": 20,
+      "eventId": 6,
+      "name": "Practical Impact & Utility",
+      "description": "Real-world usefulness and problem-solving capability",
+      "maxScore": 10,
+      "weight": 1.2,
+      "createdAt": "2026-09-21T19:41:19.003Z",
+      "updatedAt": "2026-09-21T19:41:19.003Z"
+    },
+    {
+      "id": 21,
+      "eventId": 7,
+      "name": "Innovation & Originality",
+      "description": "Uniqueness and creativity of idea",
+      "maxScore": 10,
+      "weight": 1,
+      "createdAt": "2026-09-21T19:41:19.152Z",
+      "updatedAt": "2026-09-21T19:41:19.152Z"
+    },
+    {
+      "id": 22,
+      "eventId": 7,
+      "name": "Technical Execution",
+      "description": "Architecture, code quality and technical complexity",
+      "maxScore": 10,
+      "weight": 1,
+      "createdAt": "2026-09-21T19:41:19.152Z",
+      "updatedAt": "2026-09-21T19:41:19.152Z"
+    },
+    {
+      "id": 23,
+      "eventId": 7,
+      "name": "UI & UX Design",
+      "description": "Visual aesthetic, responsiveness and user experience",
+      "maxScore": 10,
+      "weight": 0.8,
+      "createdAt": "2026-09-21T19:41:19.152Z",
+      "updatedAt": "2026-09-21T19:41:19.152Z"
+    },
+    {
+      "id": 24,
+      "eventId": 7,
+      "name": "Practical Impact & Utility",
+      "description": "Real-world usefulness and problem-solving capability",
+      "maxScore": 10,
+      "weight": 1.2,
+      "createdAt": "2026-09-21T19:41:19.152Z",
+      "updatedAt": "2026-09-21T19:41:19.152Z"
+    }
+  ],
+  "submissions": [
+    {
+      "id": 1,
+      "teamId": 1,
+      "eventId": 1,
+      "title": "NeuralPulse: Realtime Autonomous Medical Diagnostics",
+      "tagline": "AI copilot for emergency room triage and radiology anomaly detection",
+      "description": "NeuralPulse processes multimodal clinical telemetry, vital signs, and X-ray imaging in real time with sub-100ms inference to alert triage physicians of critical cardiac and pulmonary anomalies before decompensation occurs.",
+      "repoUrl": "https://github.com/neuralpulse/hackathon-2026",
+      "demoUrl": "https://neuralpulse.demo.app",
+      "videoUrl": "https://youtube.com/watch?v=sample1",
+      "techStack": "React, Vite, Node.js, PyTorch, FastAPI, WebSockets, TailwindCSS",
+      "submittedAt": "2026-09-21T19:35:30.355Z",
+      "updatedAt": "2026-09-21T19:35:30.355Z"
+    },
+    {
+      "id": 2,
+      "teamId": 2,
+      "eventId": 1,
+      "title": "QuantumLeap: Zero-Knowledge Supply Chain Traceability",
+      "tagline": "Cryptographically verifiable carbon accounting and logistics ledger",
+      "description": "QuantumLeap allows global enterprise manufacturers to prove net-zero compliance across multi-tier supplier networks without exposing proprietary trade secrets or sensitive pricing data using zk-SNARK proofs.",
+      "repoUrl": "https://github.com/quantumleap/hackathon-2026",
+      "demoUrl": "https://quantumleap.demo.app",
+      "videoUrl": "https://youtube.com/watch?v=sample2",
+      "techStack": "Next.js, Express, Prisma, Circom, SnarkJS, SQLite",
+      "submittedAt": "2026-09-21T19:35:30.365Z",
+      "updatedAt": "2026-09-21T19:35:30.365Z"
+    },
+    {
+      "id": 3,
+      "teamId": 4,
+      "eventId": 5,
+      "title": "Project Nebula",
+      "tagline": null,
+      "description": "Autonomous spatial computing mesh network.",
+      "repoUrl": "https://github.com/nebula/mesh",
+      "demoUrl": "https://nebula.mesh.io",
+      "videoUrl": null,
+      "techStack": null,
+      "submittedAt": "2026-09-21T19:41:19.058Z",
+      "updatedAt": "2026-09-21T19:41:19.058Z"
+    },
+    {
+      "id": 4,
+      "teamId": 3,
+      "eventId": 4,
+      "title": "Autonomous Drone Fleet",
+      "tagline": "AI for search and rescue",
+      "description": "Computer vision on edge devices detecting victims in disaster zones.",
+      "repoUrl": "https://github.com/teamalpha/drone-fleet",
+      "demoUrl": "https://drone-fleet.app",
+      "videoUrl": null,
+      "techStack": null,
+      "submittedAt": "2026-09-21T19:41:19.221Z",
+      "updatedAt": "2026-09-21T19:41:19.221Z"
+    }
+  ],
+  "scores": [
+    {
+      "id": 1,
+      "submissionId": 1,
+      "judgeId": 2,
+      "criterionId": 1,
+      "score": 9,
+      "feedback": "Brilliant technical execution and well thought out clinical architecture.",
+      "createdAt": "2026-09-21T19:35:30.373Z",
+      "updatedAt": "2026-09-21T19:35:30.373Z"
+    },
+    {
+      "id": 2,
+      "submissionId": 2,
+      "judgeId": 2,
+      "criterionId": 1,
+      "score": 9,
+      "feedback": "Very solid cryptographic formulation with clean UI implementation.",
+      "createdAt": "2026-09-21T19:35:30.381Z",
+      "updatedAt": "2026-09-21T19:35:30.381Z"
+    },
+    {
+      "id": 3,
+      "submissionId": 1,
+      "judgeId": 2,
+      "criterionId": 2,
+      "score": 10,
+      "feedback": "Brilliant technical execution and well thought out clinical architecture.",
+      "createdAt": "2026-09-21T19:35:30.388Z",
+      "updatedAt": "2026-09-21T19:35:30.388Z"
+    },
+    {
+      "id": 4,
+      "submissionId": 2,
+      "judgeId": 2,
+      "criterionId": 2,
+      "score": 8,
+      "feedback": "Very solid cryptographic formulation with clean UI implementation.",
+      "createdAt": "2026-09-21T19:35:30.395Z",
+      "updatedAt": "2026-09-21T19:35:30.395Z"
+    },
+    {
+      "id": 5,
+      "submissionId": 1,
+      "judgeId": 2,
+      "criterionId": 3,
+      "score": 10,
+      "feedback": "Brilliant technical execution and well thought out clinical architecture.",
+      "createdAt": "2026-09-21T19:35:30.403Z",
+      "updatedAt": "2026-09-21T19:35:30.403Z"
+    },
+    {
+      "id": 6,
+      "submissionId": 2,
+      "judgeId": 2,
+      "criterionId": 3,
+      "score": 8,
+      "feedback": "Very solid cryptographic formulation with clean UI implementation.",
+      "createdAt": "2026-09-21T19:35:30.410Z",
+      "updatedAt": "2026-09-21T19:35:30.410Z"
+    },
+    {
+      "id": 7,
+      "submissionId": 1,
+      "judgeId": 2,
+      "criterionId": 4,
+      "score": 8,
+      "feedback": "Brilliant technical execution and well thought out clinical architecture.",
+      "createdAt": "2026-09-21T19:35:30.417Z",
+      "updatedAt": "2026-09-21T19:35:30.417Z"
+    },
+    {
+      "id": 8,
+      "submissionId": 2,
+      "judgeId": 2,
+      "criterionId": 4,
+      "score": 9,
+      "feedback": "Very solid cryptographic formulation with clean UI implementation.",
+      "createdAt": "2026-09-21T19:35:30.425Z",
+      "updatedAt": "2026-09-21T19:35:30.425Z"
+    },
+    {
+      "id": 9,
+      "submissionId": 3,
+      "judgeId": 2,
+      "criterionId": 15,
+      "score": 8,
+      "feedback": "Great originality!",
+      "createdAt": "2026-09-21T19:41:19.108Z",
+      "updatedAt": "2026-09-21T19:41:19.108Z"
+    },
+    {
+      "id": 10,
+      "submissionId": 3,
+      "judgeId": 2,
+      "criterionId": 16,
+      "score": 9,
+      "feedback": "Clean architecture.",
+      "createdAt": "2026-09-21T19:41:19.108Z",
+      "updatedAt": "2026-09-21T19:41:19.108Z"
+    }
+  ]
+}

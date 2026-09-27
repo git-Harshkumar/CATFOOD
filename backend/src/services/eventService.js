@@ -25,7 +25,7 @@ const getEventById = async (id) => {
       criteria: true,
       judges: {
         include: {
-          judge: {
+          user: {
             select: { id: true, name: true, email: true },
           },
         },
@@ -96,7 +96,6 @@ const createEvent = async (organizerId, data) => {
             })),
           }
         : {
-            // Default hackathon criteria if none specified
             create: [
               { name: 'Innovation & Originality', description: 'Uniqueness and creativity of idea', maxScore: 10, weight: 1.0 },
               { name: 'Technical Execution', description: 'Architecture, code quality and technical complexity', maxScore: 10, weight: 1.0 },
@@ -104,6 +103,14 @@ const createEvent = async (organizerId, data) => {
               { name: 'Practical Impact & Utility', description: 'Real-world usefulness and problem-solving capability', maxScore: 10, weight: 1.2 },
             ],
           },
+      members: {
+        create: [
+          {
+            userId: organizerId,
+            role: 'ORGANIZER',
+          }
+        ]
+      }
     },
     include: {
       criteria: true,
@@ -137,7 +144,7 @@ const updateEvent = async (eventId, organizerId, data) => {
   if (updatePayload.judgingDeadline) updatePayload.judgingDeadline = new Date(updatePayload.judgingDeadline);
   if (updatePayload.minTeamSize) updatePayload.minTeamSize = parseInt(updatePayload.minTeamSize, 10);
   if (updatePayload.maxTeamSize) updatePayload.maxTeamSize = parseInt(updatePayload.maxTeamSize, 10);
-  delete updatePayload.criteria; // Managed separately
+  delete updatePayload.criteria;
 
   return prisma.event.update({
     where: { id: parseInt(eventId, 10) },
@@ -194,38 +201,54 @@ const assignJudge = async (eventId, organizerId, judgeEmail) => {
     throw error;
   }
 
-  const judge = await prisma.user.findUnique({
+  const judgeUser = await prisma.user.findUnique({
     where: { email: judgeEmail.toLowerCase() },
   });
 
-  if (!judge) {
+  if (!judgeUser) {
     const error = new Error('User with this email not found.');
     error.statusCode = 404;
     throw error;
   }
 
-  if (judge.role !== 'JUDGE' && judge.role !== 'ORGANIZER') {
-    const error = new Error(`User has role '${judge.role}'. Must have role 'JUDGE' to be assigned as judge.`);
-    error.statusCode = 400;
-    throw error;
-  }
-
-  return prisma.judgeAssignment.upsert({
-    where: {
-      eventId_judgeId: {
-        eventId: event.id,
-        judgeId: judge.id,
+  // Use a transaction to ensure both records are created together
+  const [judge, member] = await prisma.$transaction([
+    prisma.judge.upsert({
+      where: {
+        eventId_userId: {
+          eventId: event.id,
+          userId: judgeUser.id,
+        },
       },
-    },
-    update: {},
-    create: {
-      eventId: event.id,
-      judgeId: judge.id,
-    },
-    include: {
-      judge: { select: { id: true, name: true, email: true } },
-    },
-  });
+      update: {},
+      create: {
+        eventId: event.id,
+        userId: judgeUser.id,
+        status: 'INVITED',
+      },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+      },
+    }),
+    prisma.eventMember.upsert({
+      where: {
+        eventId_userId: {
+          eventId: event.id,
+          userId: judgeUser.id,
+        }
+      },
+      update: {
+        role: 'JUDGE' // If they were a participant, upgrade to Judge (or however you want to handle it)
+      },
+      create: {
+        eventId: event.id,
+        userId: judgeUser.id,
+        role: 'JUDGE'
+      }
+    })
+  ]);
+
+  return judge;
 };
 
 const publishLeaderboard = async (eventId, organizerId, publishState = true) => {

@@ -6,7 +6,7 @@ const createOrUpdateSubmission = async (req, res, next) => {
     const { teamId } = req.params;
     const submission = await submissionService.createOrUpdateSubmission(
       req.user.id,
-      req.user.role,
+      req.user,
       teamId,
       req.body
     );

@@ -70,6 +70,21 @@ const createTeam = async (userId, { eventId, name }) => {
       },
     });
 
+    await tx.eventMember.upsert({
+      where: {
+        eventId_userId: { eventId: event.id, userId }
+      },
+      update: {
+        // If they already exist as something else, don't downgrade an organizer, but maybe ensure participant?
+        // Actually, upsert update can be empty if we just want to ensure existence.
+      },
+      create: {
+        eventId: event.id,
+        userId,
+        role: 'PARTICIPANT',
+      }
+    });
+
     return newTeam;
   });
 
@@ -112,12 +127,25 @@ const joinTeam = async (userId, inviteCode) => {
     throw error;
   }
 
-  await prisma.teamMember.create({
-    data: {
-      teamId: team.id,
-      userId,
-    },
-  });
+  await prisma.$transaction([
+    prisma.teamMember.create({
+      data: {
+        teamId: team.id,
+        userId,
+      },
+    }),
+    prisma.eventMember.upsert({
+      where: {
+        eventId_userId: { eventId: team.eventId, userId }
+      },
+      update: {},
+      create: {
+        eventId: team.eventId,
+        userId,
+        role: 'PARTICIPANT',
+      }
+    })
+  ]);
 
   return getTeamById(team.id);
 };
@@ -142,7 +170,7 @@ const getTeamById = async (teamId) => {
       members: {
         include: {
           user: {
-            select: { id: true, name: true, email: true, role: true },
+            select: { id: true, name: true, email: true, isGlobalAdmin: true },
           },
         },
       },
