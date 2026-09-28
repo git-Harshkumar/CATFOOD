@@ -1,12 +1,21 @@
 # DOGFOOD 2026 Acceptance Checker Configuration
-# Configures endpoints tested by python3 run.py .dogfood.toml
+
+[portal]
+base_url = "http://localhost:8080"
+
+[tiers]
+claimed = ["T1", "T2", "T3", "T4"]
+pitch = "A production-grade, mathematically defensible hackathon submission and judging engine with strict RBAC, cross-judge z-score normalization, Bradley-Terry pairwise voting, and offline zero-dependency architecture."
+
+[auth]
+organizer   = "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Mzc2LCJlbWFpbCI6Im9yZ2FuaXplckBoYWNrLmNvbSIsImlzR2xvYmFsQWRtaW4iOmZhbHNlLCJuYW1lIjoiU2FyYWggQ29ubm9yIChPcmdhbml6ZXIpIiwicm9sZSI6Ik9SR0FOSVpFUiIsImlhdCI6MTc5MDExNDUwNywiZXhwIjoxNzkyNzA2NTA3fQ._o2C_sC33gDEIXao1j2zQDsdIhShjQNx16EcMhz34Bw"
+judge_a     = "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Mzg1LCJlbWFpbCI6ImFkYUBleGFtcGxlLm9yZyIsImlzR2xvYmFsQWRtaW4iOmZhbHNlLCJuYW1lIjoiQWRhIE9rb25rd28iLCJyb2xlIjoiSlVER0UiLCJpYXQiOjE3OTAxMTQ1MDcsImV4cCI6MTc5MjcwNjUwN30.lgKx4HyUWEB4cbZ3VDtCQFWCg36u0rex2kWzvGqpaB8"
+judge_b     = "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Mzg2LCJlbWFpbCI6Im1hcmN1cy52QGV4YW1wbGUub3JnIiwiaXNHbG9iYWxBZG1pbiI6ZmFsc2UsIm5hbWUiOiJNYXJjdXMgVmFuY2UiLCJyb2xlIjoiSlVER0UiLCJpYXQiOjE3OTAxMTQ1MDcsImV4cCI6MTc5MjcwNjUwN30.hSdJSl8DHOaFu6xJfv0Il0SrUomcAaEJl1j19TRDx9Y"
+participant = "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NDE1LCJlbWFpbCI6InBhcnRpY2lwYW50QGhhY2suY29tIiwiaXNHbG9iYWxBZG1pbiI6ZmFsc2UsIm5hbWUiOiJQYXJ0aWNpcGFudCAoUGFydGljaXBhbnQpIiwicm9sZSI6IlBBUlRJQ0lQQU5UIiwiaWF0IjoxNzkwMTE0NTA3LCJleHAiOjE3OTI3MDY1MDd9.GT2H1cuws2RyW47G6lwLztL785y0HOOZEBJKBUZer9M"
 
 [routes]
+gallery      = "/projects"
+submit       = "/projects/new"
 judge_scores = "/api/judge/scores"
-peer_scores = "/api/judge/scores"
-csv_export = "/api/organizer/judging/export.csv"
-
-[endpoints]
-judge_scores = "/api/judge/scores"
-peer_scores = "/api/judge/scores"
-csv_export = "/api/organizer/judging/export.csv"
+peer_scores  = "/api/judge/scores?judge=judge_a"
+csv_export   = "/api/organizer/judging/export.csv"

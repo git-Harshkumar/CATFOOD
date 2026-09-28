@@ -1061,6 +1061,123 @@ const getLeaderboard = async (eventId, currentUser) => {
   };
 };
 
+/**
+ * Record a pairwise comparison evaluation between two projects by an authorized judge.
+ */
+const recordPairwiseComparison = async (eventId, userId, winnerId, loserId) => {
+  const parsedEventId = parseInt(eventId, 10);
+  const parsedWinnerId = parseInt(winnerId, 10);
+  const parsedLoserId = parseInt(loserId, 10);
+
+  if (parsedWinnerId === parsedLoserId) {
+    const error = new Error('Cannot compare a submission against itself.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const judge = await prisma.judge.findUnique({
+    where: { eventId_userId: { eventId: parsedEventId, userId } },
+  });
+
+  if (!judge) {
+    const error = new Error('Forbidden. You are not a registered judge for this event.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  const [winner, loser] = await Promise.all([
+    prisma.submission.findUnique({ where: { id: parsedWinnerId } }),
+    prisma.submission.findUnique({ where: { id: parsedLoserId } }),
+  ]);
+
+  if (!winner || winner.eventId !== parsedEventId || !loser || loser.eventId !== parsedEventId) {
+    const error = new Error('Both submissions must exist and belong to this event.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const comparison = await prisma.pairwiseComparison.create({
+    data: {
+      eventId: parsedEventId,
+      judgeId: judge.id,
+      winnerId: parsedWinnerId,
+      loserId: parsedLoserId,
+    },
+    include: {
+      winner: { select: { id: true, title: true } },
+      loser: { select: { id: true, title: true } },
+    },
+  });
+
+  await auditService.logAction({
+    actorId: userId,
+    action: 'PAIRWISE_COMPARISON_RECORDED',
+    targetType: 'PairwiseComparison',
+    targetId: comparison.id,
+    metadata: { winnerId: parsedWinnerId, loserId: parsedLoserId, eventId: parsedEventId },
+  });
+
+  return comparison;
+};
+
+/**
+ * Compute and return Bradley-Terry rankings for pairwise judged event.
+ */
+const getPairwiseStandings = async (eventId, currentUser) => {
+  const parsedEventId = parseInt(eventId, 10);
+  const event = await prisma.event.findUnique({
+    where: { id: parsedEventId },
+    include: {
+      submissions: {
+        include: {
+          team: { select: { id: true, name: true } },
+          track: true,
+        },
+      },
+      pairwiseComparisons: true,
+    },
+  });
+
+  if (!event) {
+    const error = new Error('Event not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const allSubmissionIds = event.submissions.map((s) => s.id);
+  const comparisons = event.pairwiseComparisons.map((c) => ({
+    winnerId: c.winnerId,
+    loserId: c.loserId,
+  }));
+
+  const btResult = judgingEngine.estimateBradleyTerry(comparisons, allSubmissionIds);
+
+  const subMap = new Map();
+  event.submissions.forEach((s) => subMap.set(s.id, s));
+
+  const enrichedRankings = btResult.rankings.map((r) => {
+    const sub = subMap.get(r.submissionId);
+    return {
+      ...r,
+      title: sub?.title || 'Unknown',
+      teamName: sub?.team?.name || 'Unknown',
+      trackName: sub?.track?.name || 'General',
+      repoUrl: sub?.repoUrl,
+    };
+  });
+
+  return {
+    eventId: event.id,
+    eventTitle: event.title,
+    totalComparisons: comparisons.length,
+    totalSubmissions: allSubmissionIds.length,
+    iterations: btResult.iterations,
+    converged: btResult.converged,
+    logLikelihood: btResult.logLikelihood,
+    rankings: enrichedRankings,
+  };
+};
+
 module.exports = {
   submitScores,
   getSubmissionScoresByJudge,
@@ -1070,4 +1187,6 @@ module.exports = {
   runEventNormalization,
   exportJudgingCsv,
   getLeaderboard,
+  recordPairwiseComparison,
+  getPairwiseStandings,
 };

@@ -43,9 +43,72 @@ const getPublicGallery = async (req, res, next) => {
   }
 };
 
+const prisma = require('../utils/prisma');
+
+const handleDirectSubmission = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    let event = null;
+    let team = null;
+
+    const teamMember = await prisma.teamMember.findFirst({
+      where: { userId },
+      include: { team: { include: { event: true } } },
+    });
+
+    if (teamMember && teamMember.team) {
+      team = teamMember.team;
+      event = team.event;
+    } else {
+      event = await prisma.event.findFirst({ orderBy: { id: 'asc' } });
+    }
+
+    if (!event) {
+      const error = new Error('No active hackathon event found.');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const now = new Date();
+    const deadline = new Date(event.deadline);
+    const isOrganizer = req.user.isGlobalAdmin || req.user.role === 'ORGANIZER' || event.organizerId === userId;
+
+    if (now > deadline && !isOrganizer) {
+      const error = new Error(
+        `Submission deadline has passed on ${deadline.toISOString()}. Modifications and late submissions are strictly prohibited.`
+      );
+      error.statusCode = 403;
+      throw error;
+    }
+
+    if (event.status === 'COMPLETED' && !isOrganizer) {
+      const error = new Error('This hackathon has already concluded. Submissions are closed.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (!team) {
+      const error = new Error('Participant must belong to a registered team to submit.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const submission = await submissionService.createOrUpdateSubmission(
+      userId,
+      req.user,
+      team.id,
+      req.body
+    );
+    return success(res, submission, 'Project submitted successfully', 201);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createOrUpdateSubmission,
   getSubmissionById,
   getSubmissionsByEvent,
   getPublicGallery,
+  handleDirectSubmission,
 };

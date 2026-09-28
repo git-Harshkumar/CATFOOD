@@ -1,0 +1,240 @@
+openapi: 3.0.3
+info:
+  title: DOGFOOD 2026 Hackathon Judgment Platform API
+  description: >
+    Production-ready REST API for hackathon submission, multi-criterion judging,
+    cross-judge z-score normalization, Bradley-Terry pairwise voting, community engagement,
+    webhooks, and cryptographically verifiable certificates.
+  version: 1.0.0
+  contact:
+    name: DOGFOOD 2026 Platform Team
+    email: organizer@hack.com
+servers:
+  - url: http://localhost:8080
+    description: Local / Docker compose deployment
+
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      description: Returns service status and current timestamp.
+      responses:
+        '200':
+          description: API is operational
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: "ok" }
+                  timestamp: { type: string, format: date-time }
+                  service: { type: string }
+
+  /projects:
+    get:
+      summary: Public project gallery
+      description: Returns list of submitted projects for public browsing.
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+          description: Filter projects by title or tagline
+        - in: query
+          name: trackId
+          schema: { type: integer }
+          description: Filter projects by track
+        - in: query
+          name: shuffle
+          schema: { type: boolean }
+          description: Randomize ballot order to avoid position bias
+      responses:
+        '200':
+          description: Project gallery list
+
+  /projects/new:
+    post:
+      summary: Submit a project
+      description: Creates a project submission. Strictly rejected with 403 once event deadline passes.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string }
+                tagline: { type: string }
+                description: { type: string }
+                repoUrl: { type: string }
+      responses:
+        '201':
+          description: Project submitted successfully
+        '403':
+          description: Submission deadline has passed
+
+  /api/judge/scores:
+    get:
+      summary: Get judge scores
+      description: Retrieves the scores submitted by the authenticated judge. Strictly blocks cross-judge inspection.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: judge
+          schema: { type: string }
+          description: Optional judge identifier. Request rejected with 403 if target judge differs from authenticated caller.
+      responses:
+        '200':
+          description: Judge's own scores
+        '403':
+          description: Access to peer scores forbidden
+
+  /api/organizer/judging/export.csv:
+    get:
+      summary: Export judging results CSV
+      description: Organizer-only CSV export of standings, raw scores, or progress.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          schema: { type: string, enum: [results, scores, progress] }
+      responses:
+        '200':
+          description: CSV file download
+          content:
+            text/csv:
+              schema: { type: string }
+
+  /api/judging/normalize:
+    post:
+      summary: Run cross-judge z-score normalization
+      description: Executes mathematically rigorous cross-judge z-score normalization across all rubric criteria.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Normalization computed and persisted
+
+  /api/judging/pairwise/compare:
+    post:
+      summary: Submit pairwise comparison
+      description: Records judge preference between Project A and Project B for Bradley-Terry model estimation.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [winnerId, loserId]
+              properties:
+                eventId: { type: integer }
+                winnerId: { type: integer }
+                loserId: { type: integer }
+      responses:
+        '201':
+          description: Comparison recorded
+
+  /api/judging/pairwise/standings:
+    get:
+      summary: Get Bradley-Terry pairwise standings
+      description: Computes maximum likelihood latent strength parameters and rankings via Hunter's MM algorithm.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Converged rankings and latent strengths
+
+  /api/community/vote:
+    post:
+      summary: Cast community vote
+      description: Community voting with rate-limiting and duplicate prevention.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [submissionId, voterEmail]
+              properties:
+                submissionId: { type: integer }
+                voterEmail: { type: string }
+      responses:
+        '201':
+          description: Vote recorded
+        '409':
+          description: Duplicate vote rejected
+
+  /api/community/{eventId}/results:
+    get:
+      summary: Community voting results
+      description: Standings hidden until organizer opens results window.
+      responses:
+        '200':
+          description: Community standings or sealed message
+
+  /api/community/comments/{submissionId}:
+    post:
+      summary: Add project comment
+      description: Post feedback or discussion comment on a submission.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content: { type: string }
+                authorName: { type: string }
+                authorEmail: { type: string }
+      responses:
+        '201':
+          description: Comment created
+
+  /api/webhooks:
+    post:
+      summary: Register webhook
+      description: Register webhook URL for asynchronous notifications with HMAC signatures.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                eventId: { type: integer }
+                url: { type: string }
+                events: { type: string }
+                secret: { type: string }
+      responses:
+        '201':
+          description: Webhook registered
+
+  /api/certificates/verify/{id}:
+    get:
+      summary: Verify certificate
+      description: Publicly verifies a digital participation or judging certificate using HMAC-SHA256.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Verification report with cryptographic validity
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

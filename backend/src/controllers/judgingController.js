@@ -209,6 +209,43 @@ const getAuditLogs = async (req, res, next) => {
   }
 };
 
+const recordPairwiseComparison = async (req, res, next) => {
+  try {
+    let { eventId } = req.params;
+    const { winnerId, loserId } = req.body;
+    if (!eventId && req.body.eventId) eventId = req.body.eventId;
+
+    if (!eventId) {
+      const evt = await prisma.event.findFirst({ orderBy: { id: 'asc' } });
+      if (evt) eventId = evt.id;
+    }
+
+    const comparison = await judgingService.recordPairwiseComparison(
+      eventId,
+      req.user.id,
+      winnerId,
+      loserId
+    );
+    return success(res, comparison, 'Pairwise evaluation recorded successfully', 201);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getPairwiseStandings = async (req, res, next) => {
+  try {
+    let { eventId } = req.params;
+    if (!eventId) {
+      const evt = await prisma.event.findFirst({ orderBy: { id: 'asc' } });
+      if (evt) eventId = evt.id;
+    }
+    const standings = await judgingService.getPairwiseStandings(eventId, req.user);
+    return success(res, standings, 'Bradley-Terry pairwise standings computed successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   submitScores,
   getSubmissionScores,
@@ -225,4 +262,6 @@ module.exports = {
   getEventJudges,
   updateJudgeStatus,
   getAuditLogs,
+  recordPairwiseComparison,
+  getPairwiseStandings,
 };

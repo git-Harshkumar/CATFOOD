@@ -37,20 +37,26 @@ model Event {
   deadline               DateTime
   judgingDeadline        DateTime?
   status                 String   @default("ACTIVE")
-  isLeaderboardPublished Boolean  @default(false)
+  isLeaderboardPublished     Boolean  @default(false)
+  isCommunityVotingOpen      Boolean  @default(true)
+  isCommunityResultsRevealed Boolean  @default(false)
 
   organizerId Int
   organizer   User @relation("OrganizerEvents", fields: [organizerId], references: [id], onDelete: Cascade)
 
-  members          EventMember[]
-  criteria         Criterion[]
-  tracks           Track[]
-  prizes           Prize[]
-  questions        EventQuestion[]
-  teams            Team[]
-  submissions      Submission[]
-  judges           Judge[]
-  normalizedScores NormalizedScore[]
+  members             EventMember[]
+  criteria            Criterion[]
+  tracks              Track[]
+  prizes              Prize[]
+  questions           EventQuestion[]
+  teams               Team[]
+  submissions         Submission[]
+  judges              Judge[]
+  normalizedScores    NormalizedScore[]
+  communityVotes      CommunityVote[]
+  webhooks            Webhook[]
+  pairwiseComparisons PairwiseComparison[]
+  certificates        Certificate[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -122,10 +128,11 @@ model Judge {
 
   status String @default("INVITED")
 
-  tracks           JudgeTrack[]
-  assignments      JudgeAssignment[]
-  scores           Score[]           @relation("JudgeScores")
-  normalizedScores NormalizedScore[]
+  tracks              JudgeTrack[]
+  assignments         JudgeAssignment[]
+  scores              Score[]              @relation("JudgeScores")
+  normalizedScores    NormalizedScore[]
+  pairwiseComparisons PairwiseComparison[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -235,10 +242,14 @@ model Submission {
   submittedAt DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  scores           Score[]
-  assignments      JudgeAssignment[]
-  answers          SubmissionAnswer[]
-  normalizedScores NormalizedScore[]
+  scores              Score[]
+  assignments         JudgeAssignment[]
+  answers             SubmissionAnswer[]
+  normalizedScores    NormalizedScore[]
+  comments            Comment[]
+  communityVotes      CommunityVote[]
+  pairwiseWins        PairwiseComparison[] @relation("PairwiseWinner")
+  pairwiseLosses      PairwiseComparison[] @relation("PairwiseLoser")
 }
 
 model SubmissionAnswer {
@@ -306,5 +317,77 @@ model AuditLog {
   @@index([actorId])
   @@index([action])
   @@index([timestamp])
+}
+
+model CommunityVote {
+  id           Int        @id @default(autoincrement())
+  eventId      Int
+  event        Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  submissionId Int
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  voterEmail   String
+  voterIp      String?
+  createdAt    DateTime   @default(now())
+
+  @@unique([submissionId, voterEmail])
+  @@index([eventId])
+  @@index([voterEmail])
+}
+
+model Comment {
+  id           Int        @id @default(autoincrement())
+  submissionId Int
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  authorName   String
+  authorEmail  String
+  content      String
+  createdAt    DateTime   @default(now())
+
+  @@index([submissionId])
+}
+
+model Webhook {
+  id        Int      @id @default(autoincrement())
+  eventId   Int
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  url       String
+  secret    String
+  events    String   // Comma-separated list: "submission.created,score.submitted,judging.finalized"
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+}
+
+model PairwiseComparison {
+  id        Int        @id @default(autoincrement())
+  eventId   Int
+  event     Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  judgeId   Int?
+  judge     Judge?     @relation(fields: [judgeId], references: [id], onDelete: SetNull)
+  winnerId  Int
+  loserId   Int
+  winner    Submission @relation("PairwiseWinner", fields: [winnerId], references: [id], onDelete: Cascade)
+  loser     Submission @relation("PairwiseLoser", fields: [loserId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+
+  @@index([eventId])
+  @@index([winnerId, loserId])
+}
+
+model Certificate {
+  id             String   @id // e.g. "cert-uuid" or hash
+  eventId        Int
+  event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  recipientName  String
+  recipientEmail String
+  role           String   // "JUDGE", "PARTICIPANT", "WINNER", "ORGANIZER"
+  signature      String   // HMAC-SHA256 digital signature
+  metadata       String?  // JSON string storing details (hours, track, score, etc.)
+  issuedAt       DateTime @default(now())
+
+  @@index([eventId])
+  @@index([recipientEmail])
 }
 

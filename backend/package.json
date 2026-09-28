@@ -8,10 +8,10 @@
     "start": "node src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
-    "prisma:reset": "prisma db push --force-reset && node prisma/seed.js",
+    "prisma:reset": "prisma db push --force-reset && node prisma/seed_fixtures.js",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed_fixtures.js"
   },
   "dependencies": {
     "@prisma/client": "^6.4.0",

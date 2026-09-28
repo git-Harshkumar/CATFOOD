@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: dogfood-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - DATABASE_URL=file:/app/prisma/dev.db
+      - JWT_SECRET=super-secure-hackathon-platform-secret-key-2026
+      - JWT_EXPIRES_IN=30d
+      - NODE_ENV=production
+      - FRONTEND_URL=http://localhost:5173
+    volumes:
+      - backend-db:/app/prisma
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dogfood-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    depends_on:
+      - backend
+
+volumes:
+  backend-db:

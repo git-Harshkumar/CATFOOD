@@ -1,0 +1,2061 @@
+{
+  "event": {
+    "id": "evt_01",
+    "name": "Sample Hack 2026",
+    "submissions_close": "2026-03-01T18:00:00Z"
+  },
+  "tracks": [
+    {
+      "id": "trk_01",
+      "name": "Developer tools"
+    },
+    {
+      "id": "trk_02",
+      "name": "AI & Machine Learning"
+    },
+    {
+      "id": "trk_03",
+      "name": "FinTech & Payments"
+    },
+    {
+      "id": "trk_04",
+      "name": "HealthTech & Bio"
+    },
+    {
+      "id": "trk_05",
+      "name": "Climate & Sustainability"
+    },
+    {
+      "id": "trk_06",
+      "name": "Security & Privacy"
+    },
+    {
+      "id": "trk_07",
+      "name": "Web3 & Decentralization"
+    },
+    {
+      "id": "trk_08",
+      "name": "Open Innovation"
+    }
+  ],
+  "judges": [
+    {
+      "id": "jdg_01",
+      "name": "Ada Okonkwo",
+      "email": "ada@example.org",
+      "tracks": [
+        "trk_01",
+        "trk_02"
+      ]
+    },
+    {
+      "id": "jdg_02",
+      "name": "Marcus Vance",
+      "email": "marcus.v@example.org",
+      "tracks": [
+        "trk_02",
+        "trk_03"
+      ]
+    },
+    {
+      "id": "jdg_03",
+      "name": "Dr. Alan Turing",
+      "email": "dralanturing@example.org",
+      "tracks": [
+        "trk_03",
+        "trk_04"
+      ]
+    },
+    {
+      "id": "jdg_04",
+      "name": "Claude Shannon",
+      "email": "claudeshannon@example.org",
+      "tracks": [
+        "trk_04",
+        "trk_05"
+      ]
+    },
+    {
+      "id": "jdg_05",
+      "name": "Grace Hopper",
+      "email": "gracehopper@example.org",
+      "tracks": [
+        "trk_05",
+        "trk_06"
+      ]
+    },
+    {
+      "id": "jdg_06",
+      "name": "Katherine Johnson",
+      "email": "katherinejohnson@example.org",
+      "tracks": [
+        "trk_06",
+        "trk_07"
+      ]
+    },
+    {
+      "id": "jdg_07",
+      "name": "Linus Torvalds",
+      "email": "linustorvalds@example.org",
+      "tracks": [
+        "trk_07",
+        "trk_08"
+      ]
+    },
+    {
+      "id": "jdg_08",
+      "name": "Barbara Liskov",
+      "email": "barbaraliskov@example.org",
+      "tracks": [
+        "trk_08",
+        "trk_01"
+      ]
+    },
+    {
+      "id": "jdg_09",
+      "name": "Tim Berners-Lee",
+      "email": "timbernerslee@example.org",
+      "tracks": [
+        "trk_01",
+        "trk_02"
+      ]
+    },
+    {
+      "id": "jdg_10",
+      "name": "Margaret Hamilton",
+      "email": "margarethamilton@example.org",
+      "tracks": [
+        "trk_02",
+        "trk_03"
+      ]
+    },
+    {
+      "id": "jdg_11",
+      "name": "Ken Thompson",
+      "email": "kenthompson@example.org",
+      "tracks": [
+        "trk_03",
+        "trk_04"
+      ]
+    },
+    {
+      "id": "jdg_12",
+      "name": "Dennis Ritchie",
+      "email": "dennisritchie@example.org",
+      "tracks": [
+        "trk_04",
+        "trk_05"
+      ]
+    },
+    {
+      "id": "jdg_13",
+      "name": "Radia Perlman",
+      "email": "radiaperlman@example.org",
+      "tracks": [
+        "trk_05",
+        "trk_06"
+      ]
+    },
+    {
+      "id": "jdg_14",
+      "name": "Donald Knuth",
+      "email": "donaldknuth@example.org",
+      "tracks": [
+        "trk_06",
+        "trk_07"
+      ]
+    },
+    {
+      "id": "jdg_15",
+      "name": "Leslie Lamport",
+      "email": "leslielamport@example.org",
+      "tracks": [
+        "trk_07",
+        "trk_08"
+      ]
+    },
+    {
+      "id": "jdg_16",
+      "name": "Guido van Rossum",
+      "email": "guidovanrossum@example.org",
+      "tracks": [
+        "trk_08",
+        "trk_01"
+      ]
+    },
+    {
+      "id": "jdg_17",
+      "name": "Bjarne Stroustrup",
+      "email": "bjarnestroustrup@example.org",
+      "tracks": [
+        "trk_01",
+        "trk_02"
+      ]
+    },
+    {
+      "id": "jdg_18",
+      "name": "James Gosling",
+      "email": "jamesgosling@example.org",
+      "tracks": [
+        "trk_02",
+        "trk_03"
+      ]
+    },
+    {
+      "id": "jdg_19",
+      "name": "Brendan Eich",
+      "email": "brendaneich@example.org",
+      "tracks": [
+        "trk_03",
+        "trk_04"
+      ]
+    },
+    {
+      "id": "jdg_20",
+      "name": "John Carmack",
+      "email": "johncarmack@example.org",
+      "tracks": [
+        "trk_04",
+        "trk_05"
+      ]
+    },
+    {
+      "id": "jdg_21",
+      "name": "Satoshi Nakamoto",
+      "email": "satoshinakamoto@example.org",
+      "tracks": [
+        "trk_05",
+        "trk_06"
+      ]
+    },
+    {
+      "id": "jdg_22",
+      "name": "Vitalik Buterin",
+      "email": "vitalikbuterin@example.org",
+      "tracks": [
+        "trk_06",
+        "trk_07"
+      ]
+    },
+    {
+      "id": "jdg_23",
+      "name": "Hal Finney",
+      "email": "halfinney@example.org",
+      "tracks": [
+        "trk_07",
+        "trk_08"
+      ]
+    },
+    {
+      "id": "jdg_24",
+      "name": "Dorothy Vaughan",
+      "email": "dorothyvaughan@example.org",
+      "tracks": [
+        "trk_08",
+        "trk_01"
+      ]
+    },
+    {
+      "id": "jdg_25",
+      "name": "Mary Jackson",
+      "email": "maryjackson@example.org",
+      "tracks": [
+        "trk_01",
+        "trk_02"
+      ]
+    },
+    {
+      "id": "jdg_26",
+      "name": "Joan Clarke",
+      "email": "joanclarke@example.org",
+      "tracks": [
+        "trk_02",
+        "trk_03"
+      ]
+    },
+    {
+      "id": "jdg_27",
+      "name": "Hedy Lamarr",
+      "email": "hedylamarr@example.org",
+      "tracks": [
+        "trk_03",
+        "trk_04"
+      ]
+    },
+    {
+      "id": "jdg_28",
+      "name": "Vint Cerf",
+      "email": "vintcerf@example.org",
+      "tracks": [
+        "trk_04",
+        "trk_05"
+      ]
+    },
+    {
+      "id": "jdg_29",
+      "name": "Bob Kahn",
+      "email": "bobkahn@example.org",
+      "tracks": [
+        "trk_05",
+        "trk_06"
+      ]
+    },
+    {
+      "id": "jdg_30",
+      "name": "Richard Stallman",
+      "email": "richardstallman@example.org",
+      "tracks": [
+        "trk_06",
+        "trk_07"
+      ]
+    }
+  ],
+  "teams": [
+    {
+      "id": "tm_01",
+      "name": "Nightshift",
+      "members": [
+        "ada@example.org",
+        "participant@hack.com"
+      ]
+    },
+    {
+      "id": "tm_02",
+      "name": "Team NeuroFlow",
+      "members": [
+        "lead_02@example.com",
+        "member_02@example.com"
+      ]
+    },
+    {
+      "id": "tm_03",
+      "name": "Team PayMesh",
+      "members": [
+        "lead_03@example.com",
+        "member_03@example.com"
+      ]
+    },
+    {
+      "id": "tm_04",
+      "name": "Team PulseGuard",
+      "members": [
+        "lead_04@example.com",
+        "member_04@example.com"
+      ]
+    },
+    {
+      "id": "tm_05",
+      "name": "Team EcoSense",
+      "members": [
+        "lead_05@example.com",
+        "member_05@example.com"
+      ]
+    },
+    {
+      "id": "tm_06",
+      "name": "Team KeyVault",
+      "members": [
+        "lead_06@example.com",
+        "member_06@example.com"
+      ]
+    },
+    {
+      "id": "tm_07",
+      "name": "Team ChainVote",
+      "members": [
+        "lead_07@example.com",
+        "member_07@example.com"
+      ]
+    },
+    {
+      "id": "tm_08",
+      "name": "Team DevPulse",
+      "members": [
+        "lead_08@example.com",
+        "member_08@example.com"
+      ]
+    },
+    {
+      "id": "tm_09",
+      "name": "Team QuantumLeap",
+      "members": [
+        "lead_09@example.com",
+        "member_09@example.com"
+      ]
+    },
+    {
+      "id": "tm_10",
+      "name": "Team BioScan",
+      "members": [
+        "lead_10@example.com",
+        "member_10@example.com"
+      ]
+    },
+    {
+      "id": "tm_11",
+      "name": "Team GreenLedger",
+      "members": [
+        "lead_11@example.com",
+        "member_11@example.com"
+      ]
+    },
+    {
+      "id": "tm_12",
+      "name": "Team CipherShield",
+      "members": [
+        "lead_12@example.com",
+        "member_12@example.com"
+      ]
+    },
+    {
+      "id": "tm_13",
+      "name": "Team HyperGraph",
+      "members": [
+        "lead_13@example.com",
+        "member_13@example.com"
+      ]
+    },
+    {
+      "id": "tm_14",
+      "name": "Team OmniRoute",
+      "members": [
+        "lead_14@example.com",
+        "member_14@example.com"
+      ]
+    },
+    {
+      "id": "tm_15",
+      "name": "Team ClearSky",
+      "members": [
+        "lead_15@example.com",
+        "member_15@example.com"
+      ]
+    },
+    {
+      "id": "tm_16",
+      "name": "Team ZeroTrust",
+      "members": [
+        "lead_16@example.com",
+        "member_16@example.com"
+      ]
+    },
+    {
+      "id": "tm_17",
+      "name": "Team SmartYield",
+      "members": [
+        "lead_17@example.com",
+        "member_17@example.com"
+      ]
+    },
+    {
+      "id": "tm_18",
+      "name": "Team PathFinder",
+      "members": [
+        "lead_18@example.com",
+        "member_18@example.com"
+      ]
+    },
+    {
+      "id": "tm_19",
+      "name": "Team AuraVision",
+      "members": [
+        "lead_19@example.com",
+        "member_19@example.com"
+      ]
+    },
+    {
+      "id": "tm_20",
+      "name": "Team TerraTrace",
+      "members": [
+        "lead_20@example.com",
+        "member_20@example.com"
+      ]
+    },
+    {
+      "id": "tm_21",
+      "name": "Team TrustLayer",
+      "members": [
+        "lead_21@example.com",
+        "member_21@example.com"
+      ]
+    },
+    {
+      "id": "tm_22",
+      "name": "Team CodeAudit",
+      "members": [
+        "lead_22@example.com",
+        "member_22@example.com"
+      ]
+    },
+    {
+      "id": "tm_23",
+      "name": "Team MicroGrid",
+      "members": [
+        "lead_23@example.com",
+        "member_23@example.com"
+      ]
+    },
+    {
+      "id": "tm_24",
+      "name": "Team HealthBridge",
+      "members": [
+        "lead_24@example.com",
+        "member_24@example.com"
+      ]
+    },
+    {
+      "id": "tm_25",
+      "name": "Team DataWeave",
+      "members": [
+        "lead_25@example.com",
+        "member_25@example.com"
+      ]
+    },
+    {
+      "id": "tm_26",
+      "name": "Team SafeVault",
+      "members": [
+        "lead_26@example.com",
+        "member_26@example.com"
+      ]
+    },
+    {
+      "id": "tm_27",
+      "name": "Team CloudNative",
+      "members": [
+        "lead_27@example.com",
+        "member_27@example.com"
+      ]
+    },
+    {
+      "id": "tm_28",
+      "name": "Team EdgeCompute",
+      "members": [
+        "lead_28@example.com",
+        "member_28@example.com"
+      ]
+    },
+    {
+      "id": "tm_29",
+      "name": "Team BioSynth",
+      "members": [
+        "lead_29@example.com",
+        "member_29@example.com"
+      ]
+    },
+    {
+      "id": "tm_30",
+      "name": "Team AquaMonitor",
+      "members": [
+        "lead_30@example.com",
+        "member_30@example.com"
+      ]
+    },
+    {
+      "id": "tm_31",
+      "name": "Team TrueIdentity",
+      "members": [
+        "lead_31@example.com",
+        "member_31@example.com"
+      ]
+    },
+    {
+      "id": "tm_32",
+      "name": "Team PromptOps",
+      "members": [
+        "lead_32@example.com",
+        "member_32@example.com"
+      ]
+    },
+    {
+      "id": "tm_33",
+      "name": "Team CleanEnergy",
+      "members": [
+        "lead_33@example.com",
+        "member_33@example.com"
+      ]
+    },
+    {
+      "id": "tm_34",
+      "name": "Team ShieldVPN",
+      "members": [
+        "lead_34@example.com",
+        "member_34@example.com"
+      ]
+    },
+    {
+      "id": "tm_35",
+      "name": "Team DeepSynthetics",
+      "members": [
+        "lead_35@example.com",
+        "member_35@example.com"
+      ]
+    },
+    {
+      "id": "tm_36",
+      "name": "Team UrbanFlow",
+      "members": [
+        "lead_36@example.com",
+        "member_36@example.com"
+      ]
+    },
+    {
+      "id": "tm_37",
+      "name": "Team SolarLink",
+      "members": [
+        "lead_37@example.com",
+        "member_37@example.com"
+      ]
+    },
+    {
+      "id": "tm_38",
+      "name": "Team ThreatHunter",
+      "members": [
+        "lead_38@example.com",
+        "member_38@example.com"
+      ]
+    },
+    {
+      "id": "tm_39",
+      "name": "Team DupliCheck",
+      "members": [
+        "lead_39@example.com",
+        "member_39@example.com"
+      ]
+    },
+    {
+      "id": "tm_40",
+      "name": "Team DupliCheck 40",
+      "members": [
+        "lead_40@example.com",
+        "member_40@example.com"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "prj_01",
+      "team": "tm_01",
+      "track": "trk_01",
+      "title": "Quiet Hours",
+      "summary": "Innovative hackathon solution for Quiet Hours: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_01",
+      "submitted_at": "2026-02-28T10:00:00Z"
+    },
+    {
+      "id": "prj_02",
+      "team": "tm_02",
+      "track": "trk_02",
+      "title": "NeuroFlow",
+      "summary": "Innovative hackathon solution for NeuroFlow: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_02",
+      "submitted_at": "2026-02-28T11:07:00Z"
+    },
+    {
+      "id": "prj_03",
+      "team": "tm_03",
+      "track": "trk_03",
+      "title": "PayMesh",
+      "summary": "Innovative hackathon solution for PayMesh: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_03",
+      "submitted_at": "2026-02-28T12:14:00Z"
+    },
+    {
+      "id": "prj_04",
+      "team": "tm_04",
+      "track": "trk_04",
+      "title": "PulseGuard",
+      "summary": "Innovative hackathon solution for PulseGuard: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_04",
+      "submitted_at": "2026-02-28T13:21:00Z"
+    },
+    {
+      "id": "prj_05",
+      "team": "tm_05",
+      "track": "trk_05",
+      "title": "EcoSense",
+      "summary": "Innovative hackathon solution for EcoSense: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_05",
+      "submitted_at": "2026-02-28T14:28:00Z"
+    },
+    {
+      "id": "prj_06",
+      "team": "tm_06",
+      "track": "trk_06",
+      "title": "KeyVault",
+      "summary": "Innovative hackathon solution for KeyVault: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_06",
+      "submitted_at": "2026-02-28T15:35:00Z"
+    },
+    {
+      "id": "prj_07",
+      "team": "tm_07",
+      "track": "trk_07",
+      "title": "ChainVote",
+      "summary": "Innovative hackathon solution for ChainVote: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_07",
+      "submitted_at": "2026-02-28T16:42:00Z"
+    },
+    {
+      "id": "prj_08",
+      "team": "tm_08",
+      "track": "trk_08",
+      "title": "DevPulse",
+      "summary": "Innovative hackathon solution for DevPulse: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_08",
+      "submitted_at": "2026-02-28T17:49:00Z"
+    },
+    {
+      "id": "prj_09",
+      "team": "tm_09",
+      "track": "trk_01",
+      "title": "QuantumLeap",
+      "summary": "Innovative hackathon solution for QuantumLeap: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_09",
+      "submitted_at": "2026-02-28T18:56:00Z"
+    },
+    {
+      "id": "prj_10",
+      "team": "tm_10",
+      "track": "trk_02",
+      "title": "BioScan",
+      "summary": "Innovative hackathon solution for BioScan: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_10",
+      "submitted_at": "2026-02-28T19:03:00Z"
+    },
+    {
+      "id": "prj_11",
+      "team": "tm_11",
+      "track": "trk_03",
+      "title": "GreenLedger",
+      "summary": "Innovative hackathon solution for GreenLedger: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_11",
+      "submitted_at": "2026-02-28T20:10:00Z"
+    },
+    {
+      "id": "prj_12",
+      "team": "tm_12",
+      "track": "trk_04",
+      "title": "CipherShield",
+      "summary": "Innovative hackathon solution for CipherShield: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_12",
+      "submitted_at": "2026-02-28T21:17:00Z"
+    },
+    {
+      "id": "prj_13",
+      "team": "tm_13",
+      "track": "trk_05",
+      "title": "HyperGraph",
+      "summary": "Innovative hackathon solution for HyperGraph: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_13",
+      "submitted_at": "2026-02-28T10:24:00Z"
+    },
+    {
+      "id": "prj_14",
+      "team": "tm_14",
+      "track": "trk_06",
+      "title": "OmniRoute",
+      "summary": "Innovative hackathon solution for OmniRoute: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_14",
+      "submitted_at": "2026-02-28T11:31:00Z"
+    },
+    {
+      "id": "prj_15",
+      "team": "tm_15",
+      "track": "trk_07",
+      "title": "ClearSky",
+      "summary": "Innovative hackathon solution for ClearSky: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_15",
+      "submitted_at": "2026-02-28T12:38:00Z"
+    },
+    {
+      "id": "prj_16",
+      "team": "tm_16",
+      "track": "trk_08",
+      "title": "ZeroTrust Auth",
+      "summary": "Innovative hackathon solution for ZeroTrust Auth: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_16",
+      "submitted_at": "2026-02-28T13:45:00Z"
+    },
+    {
+      "id": "prj_17",
+      "team": "tm_17",
+      "track": "trk_01",
+      "title": "SmartYield",
+      "summary": "Innovative hackathon solution for SmartYield: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_17",
+      "submitted_at": "2026-02-28T14:52:00Z"
+    },
+    {
+      "id": "prj_18",
+      "team": "tm_18",
+      "track": "trk_02",
+      "title": "PathFinder",
+      "summary": "Innovative hackathon solution for PathFinder: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_18",
+      "submitted_at": "2026-02-28T15:59:00Z"
+    },
+    {
+      "id": "prj_19",
+      "team": "tm_19",
+      "track": "trk_03",
+      "title": "AuraVision",
+      "summary": "Innovative hackathon solution for AuraVision: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_19",
+      "submitted_at": "2026-02-28T16:06:00Z"
+    },
+    {
+      "id": "prj_20",
+      "team": "tm_20",
+      "track": "trk_04",
+      "title": "TerraTrace",
+      "summary": "Innovative hackathon solution for TerraTrace: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_20",
+      "submitted_at": "2026-02-28T17:13:00Z"
+    },
+    {
+      "id": "prj_21",
+      "team": "tm_21",
+      "track": "trk_05",
+      "title": "TrustLayer",
+      "summary": "Innovative hackathon solution for TrustLayer: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_21",
+      "submitted_at": "2026-02-28T18:20:00Z"
+    },
+    {
+      "id": "prj_22",
+      "team": "tm_22",
+      "track": "trk_06",
+      "title": "CodeAudit",
+      "summary": "Innovative hackathon solution for CodeAudit: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_22",
+      "submitted_at": "2026-02-28T19:27:00Z"
+    },
+    {
+      "id": "prj_23",
+      "team": "tm_23",
+      "track": "trk_07",
+      "title": "MicroGrid",
+      "summary": "Innovative hackathon solution for MicroGrid: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_23",
+      "submitted_at": "2026-02-28T20:34:00Z"
+    },
+    {
+      "id": "prj_24",
+      "team": "tm_24",
+      "track": "trk_08",
+      "title": "HealthBridge",
+      "summary": "Innovative hackathon solution for HealthBridge: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_24",
+      "submitted_at": "2026-02-28T21:41:00Z"
+    },
+    {
+      "id": "prj_25",
+      "team": "tm_25",
+      "track": "trk_01",
+      "title": "DataWeave",
+      "summary": "Innovative hackathon solution for DataWeave: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_25",
+      "submitted_at": "2026-02-28T10:48:00Z"
+    },
+    {
+      "id": "prj_26",
+      "team": "tm_26",
+      "track": "trk_02",
+      "title": "SafeVault",
+      "summary": "Innovative hackathon solution for SafeVault: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_26",
+      "submitted_at": "2026-02-28T11:55:00Z"
+    },
+    {
+      "id": "prj_27",
+      "team": "tm_27",
+      "track": "trk_03",
+      "title": "CloudNative Log",
+      "summary": "Innovative hackathon solution for CloudNative Log: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_27",
+      "submitted_at": "2026-02-28T12:02:00Z"
+    },
+    {
+      "id": "prj_28",
+      "team": "tm_28",
+      "track": "trk_04",
+      "title": "EdgeCompute AI",
+      "summary": "Innovative hackathon solution for EdgeCompute AI: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_28",
+      "submitted_at": "2026-02-28T13:09:00Z"
+    },
+    {
+      "id": "prj_29",
+      "team": "tm_29",
+      "track": "trk_05",
+      "title": "BioSynth",
+      "summary": "Innovative hackathon solution for BioSynth: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_29",
+      "submitted_at": "2026-02-28T14:16:00Z"
+    },
+    {
+      "id": "prj_30",
+      "team": "tm_30",
+      "track": "trk_06",
+      "title": "AquaMonitor",
+      "summary": "Innovative hackathon solution for AquaMonitor: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_30",
+      "submitted_at": "2026-02-28T15:23:00Z"
+    },
+    {
+      "id": "prj_31",
+      "team": "tm_31",
+      "track": "trk_07",
+      "title": "TrueIdentity",
+      "summary": "Innovative hackathon solution for TrueIdentity: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_31",
+      "submitted_at": "2026-02-28T16:30:00Z"
+    },
+    {
+      "id": "prj_32",
+      "team": "tm_32",
+      "track": "trk_08",
+      "title": "PromptOps",
+      "summary": "Innovative hackathon solution for PromptOps: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_32",
+      "submitted_at": "2026-02-28T17:37:00Z"
+    },
+    {
+      "id": "prj_33",
+      "team": "tm_33",
+      "track": "trk_01",
+      "title": "CleanEnergy Co",
+      "summary": "Innovative hackathon solution for CleanEnergy Co: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_33",
+      "submitted_at": "2026-02-28T18:44:00Z"
+    },
+    {
+      "id": "prj_34",
+      "team": "tm_34",
+      "track": "trk_02",
+      "title": "ShieldVPN",
+      "summary": "Innovative hackathon solution for ShieldVPN: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_34",
+      "submitted_at": "2026-02-28T19:51:00Z"
+    },
+    {
+      "id": "prj_35",
+      "team": "tm_35",
+      "track": "trk_03",
+      "title": "DeepSynthetics",
+      "summary": "Innovative hackathon solution for DeepSynthetics: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_35",
+      "submitted_at": "2026-02-28T20:58:00Z"
+    },
+    {
+      "id": "prj_36",
+      "team": "tm_36",
+      "track": "trk_04",
+      "title": "UrbanFlow",
+      "summary": "Innovative hackathon solution for UrbanFlow: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_36",
+      "submitted_at": "2026-02-28T21:05:00Z"
+    },
+    {
+      "id": "prj_37",
+      "team": "tm_37",
+      "track": "trk_05",
+      "title": "SolarLink",
+      "summary": "Innovative hackathon solution for SolarLink: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_37",
+      "submitted_at": "2026-02-28T10:12:00Z"
+    },
+    {
+      "id": "prj_38",
+      "team": "tm_38",
+      "track": "trk_06",
+      "title": "ThreatHunter",
+      "summary": "Innovative hackathon solution for ThreatHunter: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_38",
+      "submitted_at": "2026-02-28T11:19:00Z"
+    },
+    {
+      "id": "prj_39",
+      "team": "tm_39",
+      "track": "trk_07",
+      "title": "DupliCheck A",
+      "summary": "Innovative hackathon solution for DupliCheck A: built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_39",
+      "submitted_at": "2026-02-28T12:26:00Z"
+    },
+    {
+      "id": "prj_40",
+      "team": "tm_40",
+      "track": "trk_08",
+      "title": "DupliCheck A (Resubmission)",
+      "summary": "Innovative hackathon solution for DupliCheck A (Resubmission): built for high performance and real-world impact.",
+      "repo_url": "https://example.org/repo/prj_40",
+      "submitted_at": "2026-02-28T13:33:00Z"
+    }
+  ],
+  "scores": [
+    {
+      "judge": "jdg_01",
+      "project": "prj_01",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_04",
+      "project": "prj_01",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_08",
+      "project": "prj_01",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_02",
+      "project": "prj_02",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_05",
+      "project": "prj_02",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_09",
+      "project": "prj_02",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_03",
+      "project": "prj_03",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_06",
+      "project": "prj_03",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_10",
+      "project": "prj_03",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_04",
+      "project": "prj_04",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_07",
+      "project": "prj_04",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_11",
+      "project": "prj_04",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_05",
+      "project": "prj_05",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_08",
+      "project": "prj_05",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_12",
+      "project": "prj_05",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_06",
+      "project": "prj_06",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_09",
+      "project": "prj_06",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_13",
+      "project": "prj_06",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_07",
+      "project": "prj_07",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_10",
+      "project": "prj_07",
+      "criteria": {
+        "functionality": 4,
+        "quality": 3
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_14",
+      "project": "prj_07",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_08",
+      "project": "prj_08",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_11",
+      "project": "prj_08",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_15",
+      "project": "prj_08",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_09",
+      "project": "prj_09",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_12",
+      "project": "prj_09",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_16",
+      "project": "prj_09",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_10",
+      "project": "prj_10",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_13",
+      "project": "prj_10",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_17",
+      "project": "prj_10",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_11",
+      "project": "prj_11",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_14",
+      "project": "prj_11",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_18",
+      "project": "prj_11",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_12",
+      "project": "prj_12",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_15",
+      "project": "prj_12",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_19",
+      "project": "prj_12",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_13",
+      "project": "prj_13",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_16",
+      "project": "prj_13",
+      "criteria": {
+        "functionality": 4,
+        "quality": 3
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_20",
+      "project": "prj_13",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_14",
+      "project": "prj_14",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_17",
+      "project": "prj_14",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_21",
+      "project": "prj_14",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_15",
+      "project": "prj_15",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_18",
+      "project": "prj_15",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_22",
+      "project": "prj_15",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_16",
+      "project": "prj_16",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_19",
+      "project": "prj_16",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_23",
+      "project": "prj_16",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_17",
+      "project": "prj_17",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_20",
+      "project": "prj_17",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_24",
+      "project": "prj_17",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_18",
+      "project": "prj_18",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_21",
+      "project": "prj_18",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_25",
+      "project": "prj_18",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_19",
+      "project": "prj_19",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_22",
+      "project": "prj_19",
+      "criteria": {
+        "functionality": 4,
+        "quality": 3
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_26",
+      "project": "prj_19",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_20",
+      "project": "prj_20",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_23",
+      "project": "prj_20",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_27",
+      "project": "prj_20",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_21",
+      "project": "prj_21",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_24",
+      "project": "prj_21",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_28",
+      "project": "prj_21",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_22",
+      "project": "prj_22",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_25",
+      "project": "prj_22",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_29",
+      "project": "prj_22",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_23",
+      "project": "prj_23",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_26",
+      "project": "prj_23",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_30",
+      "project": "prj_23",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_24",
+      "project": "prj_24",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_27",
+      "project": "prj_24",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_01",
+      "project": "prj_24",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_25",
+      "project": "prj_25",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_28",
+      "project": "prj_25",
+      "criteria": {
+        "functionality": 4,
+        "quality": 3
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_02",
+      "project": "prj_25",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_26",
+      "project": "prj_26",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_29",
+      "project": "prj_26",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_03",
+      "project": "prj_26",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_27",
+      "project": "prj_27",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_30",
+      "project": "prj_27",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_04",
+      "project": "prj_27",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_28",
+      "project": "prj_28",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_01",
+      "project": "prj_28",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_05",
+      "project": "prj_28",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_29",
+      "project": "prj_29",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_02",
+      "project": "prj_29",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_06",
+      "project": "prj_29",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_30",
+      "project": "prj_30",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_03",
+      "project": "prj_30",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_07",
+      "project": "prj_30",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_01",
+      "project": "prj_31",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_04",
+      "project": "prj_31",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_08",
+      "project": "prj_31",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_02",
+      "project": "prj_32",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_05",
+      "project": "prj_32",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_09",
+      "project": "prj_32",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_03",
+      "project": "prj_33",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_06",
+      "project": "prj_33",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_10",
+      "project": "prj_33",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_04",
+      "project": "prj_34",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_07",
+      "project": "prj_34",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_11",
+      "project": "prj_34",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_05",
+      "project": "prj_35",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_08",
+      "project": "prj_35",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_12",
+      "project": "prj_35",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_06",
+      "project": "prj_36",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_09",
+      "project": "prj_36",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_13",
+      "project": "prj_36",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_07",
+      "project": "prj_37",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_10",
+      "project": "prj_37",
+      "criteria": {
+        "functionality": 4,
+        "quality": 3
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_08",
+      "project": "prj_38",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_11",
+      "project": "prj_38",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5
+      },
+      "comment": "Great architecture, needs slight polish on UX."
+    },
+    {
+      "judge": "jdg_09",
+      "project": "prj_39",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_12",
+      "project": "prj_39",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_16",
+      "project": "prj_39",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4
+      },
+      "comment": ""
+    },
+    {
+      "judge": "jdg_10",
+      "project": "prj_40",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_13",
+      "project": "prj_40",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5
+      },
+      "comment": "Solid implementation and clean code structure."
+    },
+    {
+      "judge": "jdg_17",
+      "project": "prj_40",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2
+      },
+      "comment": "Solid implementation and clean code structure."
+    }
+  ]
+}
