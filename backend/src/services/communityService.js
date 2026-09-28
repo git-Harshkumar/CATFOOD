@@ -138,14 +138,9 @@ const getCommunityResults = async (eventId, currentUser) => {
 
   // T3 requirement: hide results during the voting window until organizer reveals
   if (!isRevealed && !isOrganizer) {
-    return {
-      eventId: event.id,
-      eventTitle: event.title,
-      isCommunityVotingOpen: event.isCommunityVotingOpen,
-      isCommunityResultsRevealed: false,
-      message: 'Community voting results are sealed until the voting window concludes.',
-      submissionsCount: event.submissions.length,
-    };
+    const error = new Error('Community voting results are sealed until the voting window concludes.');
+    error.statusCode = 403;
+    throw error;
   }
 
   const standings = event.submissions.map((s) => {

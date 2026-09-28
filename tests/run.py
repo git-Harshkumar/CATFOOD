@@ -184,12 +184,191 @@ def build_checks(cfg, fixture):
             c.note("got 200 but the first line has no comma in it")
     checks.append(c)
 
+    # --- T3 (extension) ---------------------------------------------------
+    project_id = first_project_id(fixture) or "1"
+
+    c = Check("T3", "vote can be cast")
+    status, _ = request(
+        url("vote"),
+        header=auth.get("voter") or auth.get("participant"),
+        method="POST",
+        body={"project_id": project_id},
+    )
+    c.ok = status in (200, 201, 204)
+    if not c.ok:
+        c.note(f"POST {url('vote')}")
+        c.note(f"body: project_id={project_id!r}")
+        c.note(f"got {status or 'no response'}, wanted 200/201/204")
+    checks.append(c)
+
+    c = Check("T3", "duplicate vote rejected")
+    status, _ = request(
+        url("vote"),
+        header=auth.get("voter") or auth.get("participant"),
+        method="POST",
+        body={"project_id": project_id},
+    )
+    c.ok = 400 <= status < 500
+    if not c.ok:
+        c.note(f"POST {url('vote')} (same voter, same project, second time)")
+        c.note(f"got {status or 'no response'}, wanted 4xx")
+        c.note("if this is 200 again, duplicate-vote protection is missing")
+    checks.append(c)
+
+    c = Check("T3", "results hidden from non-organizers during voting window")
+    status, _ = request(url("results"), header=auth.get("participant"))
+    c.ok = status in (401, 403)
+    if not c.ok:
+        c.note(f"GET {url('results')}")
+        c.note("sent as participant, during the fixture's voting window")
+        c.note(f"got {status or 'no response'}, wanted 401 or 403")
+    checks.append(c)
+
+    c = Check("T3", "organizer can see results")
+    status, _ = request(url("results"), header=auth.get("organizer"))
+    c.ok = status == 200
+    if not c.ok:
+        c.note(f"GET {url('results')}")
+        c.note("sent as organizer")
+        c.note(f"got {status or 'no response'}, wanted 200")
+    checks.append(c)
+
+    c = Check("T3", "comment can be posted and read back")
+    post_status, _ = request(
+        url("comments"),
+        header=auth.get("participant"),
+        method="POST",
+        body={"project_id": project_id, "body": "dogfood-comment-probe"},
+    )
+    get_status, get_body = request(url("comments") + f"?project_id={project_id}")
+    c.ok = post_status in (200, 201) and "dogfood-comment-probe" in get_body
+    if not c.ok:
+        c.note(f"POST then GET {url('comments')}")
+        c.note(f"post status {post_status or 'no response'}, get status {get_status or 'no response'}")
+        c.note("probe comment text was not found in the read-back")
+    checks.append(c)
+
+    c = Check("T3", "ballot ordering is randomised")
+    _, body_a = request(url("gallery"), header=auth.get("voter") or auth.get("participant"))
+    _, body_b = request(url("gallery"), header=auth.get("voter") or auth.get("participant"))
+    titles_a = re.findall(r'"title"\s*:\s*"([^"]*)"', body_a)
+    titles_b = re.findall(r'"title"\s*:\s*"([^"]*)"', body_b)
+    c.ok = len(titles_a) > 1 and titles_a != titles_b
+    if not c.ok:
+        c.note(f"GET {url('gallery')} twice, comparing project order")
+        c.note("heuristic check: with only one project, or a fixed shuffle seed, this can false-negative")
+        c.note(f"got identical order both times: {titles_a!r}" if titles_a == titles_b
+               else "fewer than 2 projects were returned, ordering can't be judged")
+    checks.append(c)
+
+    c = Check("T3", "anti-abuse: duplicate vote leaves an audit trail")
+    status, body = request(url("audit_log"), header=auth.get("organizer"))
+    c.ok = status == 200 and "vote" in body.lower()
+    if not c.ok:
+        c.note(f"GET {url('audit_log')}")
+        c.note("sent as organizer, after the duplicate-vote probe above")
+        if status != 200:
+            c.note(f"got {status or 'no response'}, wanted 200")
+        else:
+            c.note("got 200 but no vote-related entry was found in the body")
+    checks.append(c)
+
+    # --- T4 (extension) ---------------------------------------------------
+    c = Check("T4", "REST API root is reachable")
+    status, _ = request(url("api"))
+    c.ok = status in (200, 401)
+    if not c.ok:
+        c.note(f"GET {url('api')}")
+        c.note(f"got {status or 'no response'}, wanted 200 or 401 (exists, may require auth)")
+    checks.append(c)
+
+    c = Check("T4", "REST API covers a core action (submission)")
+    status, _ = request(url("api") + "/submissions", header=auth.get("participant"))
+    c.ok = status in (200, 201)
+    if not c.ok:
+        c.note(f"GET {url('api')}/submissions")
+        c.note("sent as participant")
+        c.note(f"got {status or 'no response'}, wanted 200 or 201")
+    checks.append(c)
+
+    c = Check("T4", "webhook can be registered")
+    status, _ = request(
+        url("webhooks"),
+        header=auth.get("organizer"),
+        method="POST",
+        body={"url": "https://example.invalid/dogfood-hook", "event": "submission.created"},
+    )
+    c.ok = status in (200, 201)
+    if not c.ok:
+        c.note(f"POST {url('webhooks')}")
+        c.note("sent as organizer")
+        c.note(f"got {status or 'no response'}, wanted 200 or 201")
+    checks.append(c)
+
+    c = Check("T4", "certificate can be generated")
+    status, _ = request(url("certificates"), header=auth.get("participant"))
+    c.ok = status == 200
+    if not c.ok:
+        c.note(f"GET {url('certificates')}")
+        c.note("sent as participant")
+        c.note(f"got {status or 'no response'}, wanted 200")
+    checks.append(c)
+
+    c = Check("T4", "judge participation record is public and signed")
+    status, body = request(url("judge_participation"))
+    has_signature = bool(re.search(r'"sig(nature)?"\s*:', body)) or "BEGIN SIGNATURE" in body
+    c.ok = status == 200 and has_signature
+    if not c.ok:
+        c.note(f"GET {url('judge_participation')}")
+        c.note("no auth header, this should be publicly verifiable")
+        if status != 200:
+            c.note(f"got {status or 'no response'}, wanted 200")
+        else:
+            c.note("got 200 but no signature-like field was found in the body")
+    checks.append(c)
+
+    c = Check("T4", "embeddable gallery widget is served")
+    status, body = request(url("embed"))
+    c.ok = status == 200 and ("<script" in body.lower() or "<iframe" in body.lower() or len(body.strip()) > 0)
+    if not c.ok:
+        c.note(f"GET {url('embed')}")
+        c.note(f"got {status or 'no response'}, wanted 200 with embeddable html/js content")
+    checks.append(c)
+
+    c = Check("T4", "bulk export returns data")
+    status, body = request(url("bulk_export"), header=auth.get("organizer"))
+    c.ok = status == 200 and len(body.strip()) > 0
+    if not c.ok:
+        c.note(f"GET {url('bulk_export')}")
+        c.note("sent as organizer")
+        c.note(f"got {status or 'no response'}, wanted 200 with a non-empty body")
+    checks.append(c)
+
+    c = Check("T4", "bulk import accepts data")
+    status, _ = request(
+        url("bulk_import"),
+        header=auth.get("organizer"),
+        method="POST",
+        body={"projects": [{"title": "dogfood-bulk-import-probe"}]},
+    )
+    c.ok = status in (200, 201, 202)
+    if not c.ok:
+        c.note(f"POST {url('bulk_import')}")
+        c.note("sent as organizer")
+        c.note(f"got {status or 'no response'}, wanted 200/201/202")
+    checks.append(c)
+
     return checks
 
 
 def fixture_titles(fixture, n=3):
     projects = (fixture or {}).get("projects") or []
     return [p.get("title", "") for p in projects[:n] if p.get("title")]
+
+
+def first_project_id(fixture):
+    projects = (fixture or {}).get("projects") or []
+    return projects[0].get("id") if projects else None
 
 
 def load_fixture(explicit, config_path):

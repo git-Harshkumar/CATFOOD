@@ -12,6 +12,8 @@ router.get('/:eventId/results', communityController.getCommunityResults);
 // Comments
 router.post('/comments/:submissionId', communityController.addComment);
 router.get('/comments/:submissionId', communityController.getComments);
+router.post('/comments_proxy', communityController.addCommentProxy);
+router.get('/comments_proxy', communityController.getCommentsProxy);
 
 // Organizer settings
 router.patch(
