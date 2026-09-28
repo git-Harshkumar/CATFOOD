@@ -5,7 +5,19 @@ const prisma = require('../utils/prisma');
  * Register a new webhook endpoint for an event.
  */
 const registerWebhook = async ({ eventId, url, events, secret, currentUser }) => {
+  if (eventId === undefined || eventId === null) {
+    const error = new Error('Event ID is required to register a webhook.');
+    error.statusCode = 400;
+    throw error;
+  }
+
   const parsedEventId = parseInt(eventId, 10);
+  if (isNaN(parsedEventId)) {
+    const error = new Error('Invalid event ID. Event ID must be a valid integer.');
+    error.statusCode = 400;
+    throw error;
+  }
+
   const event = await prisma.event.findUnique({ where: { id: parsedEventId } });
 
   if (!event) {
@@ -21,7 +33,7 @@ const registerWebhook = async ({ eventId, url, events, secret, currentUser }) =>
     throw error;
   }
 
-  if (!url || !url.startsWith('http')) {
+  if (!url || typeof url !== 'string' || !url.startsWith('http')) {
     const error = new Error('A valid HTTP/HTTPS webhook URL is required.');
     error.statusCode = 400;
     throw error;

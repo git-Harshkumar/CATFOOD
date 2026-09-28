@@ -10,6 +10,7 @@ const error = (res, message = 'An error occurred', statusCode = 500, errors = nu
   const response = {
     success: false,
     message,
+    error: message,
   };
   if (errors) {
     response.errors = errors;

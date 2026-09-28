@@ -1,10 +1,18 @@
 const webhookService = require('../services/webhookService');
 const { success } = require('../utils/response');
+const prisma = require('../utils/prisma');
 
 const registerWebhook = async (req, res, next) => {
   try {
     const { url, events, secret } = req.body;
-    const eventId = req.params.eventId || req.body.eventId;
+    let eventId = req.params.eventId || req.body.eventId;
+
+    if (!eventId) {
+      const defaultEvent = await prisma.event.findFirst({ orderBy: { id: 'asc' } });
+      if (defaultEvent) {
+        eventId = defaultEvent.id;
+      }
+    }
 
     const webhook = await webhookService.registerWebhook({
       eventId,
