@@ -94,12 +94,10 @@ export const EventsPage = ({ onSelectEvent, onOpenCreateEvent }) => {
               />
             </div>
             
-            {isOrganizer && (
-              <NeoButton onClick={onOpenCreateEvent} color="bg-neo-ink" textColor="text-white" className="shrink-0 whitespace-nowrap">
-                <PlusCircle className="w-5 h-5 mr-2" />
-                New Event
-              </NeoButton>
-            )}
+            <NeoButton onClick={onOpenCreateEvent} color="bg-neo-ink" textColor="text-white" className="shrink-0 whitespace-nowrap">
+              <PlusCircle className="w-5 h-5 mr-2" />
+              New Event
+            </NeoButton>
           </div>
         </div>
 

@@ -246,6 +246,103 @@ class ApiService {
     a.remove();
     window.URL.revokeObjectURL(downloadUrl);
   }
+  // Community Voting & Comments
+  async castVote(eventId, submissionId) {
+    return this.request(`/community/${eventId}/vote`, { method: 'POST', body: { submissionId } });
+  }
+
+  async getCommunityResults(eventId) {
+    return this.request(`/community/${eventId}/results`);
+  }
+
+  async addComment(submissionId, content) {
+    return this.request(`/community/comments/${submissionId}`, { method: 'POST', body: { content } });
+  }
+
+  async getComments(submissionId) {
+    return this.request(`/community/comments/${submissionId}`);
+  }
+
+  async updateVotingSettings(eventId, settings) {
+    return this.request(`/community/${eventId}/settings`, { method: 'PATCH', body: settings });
+  }
+
+  // Pairwise Judging
+  async recordPairwiseComparison(eventId, winnerId, loserId) {
+    return this.request(`/judging/${eventId}/pairwise/compare`, {
+      method: 'POST',
+      body: { winnerId, loserId }
+    });
+  }
+
+  async getPairwiseStandings(eventId) {
+    return this.request(`/judging/${eventId}/pairwise/standings`);
+  }
+
+  // Certificates
+  async getMyCertificates() {
+    return this.request('/certificates');
+  }
+
+  async verifyCertificate(id) {
+    return this.request(`/certificates/verify/${id}`);
+  }
+
+  async verifyJudgeCertificate(userId) {
+    return this.request(`/certificates/judge/${userId}/verify`);
+  }
+
+  async issueCertificate(eventId, data) {
+    return this.request(`/certificates/${eventId}/issue`, { method: 'POST', body: data });
+  }
+
+  // Webhooks
+  async registerWebhook(eventId, data) {
+    return this.request(`/webhooks/${eventId}`, { method: 'POST', body: data });
+  }
+
+  async getWebhooks(eventId) {
+    return this.request(`/webhooks/${eventId}`);
+  }
+
+  async deleteWebhook(id) {
+    return this.request(`/webhooks/${id}`, { method: 'DELETE' });
+  }
+
+  async testWebhook(eventId, webhookId) {
+    return this.request(`/webhooks/${eventId}/test`, { method: 'POST', body: { webhookId } });
+  }
+
+  // Bulk Operations
+  async importProjects(eventId, data) {
+    return this.request(`/bulk/${eventId}/import`, { method: 'POST', body: data });
+  }
+
+  async importJudges(eventId, data) {
+    return this.request(`/bulk/import/judges/${eventId}`, { method: 'POST', body: data });
+  }
+
+  async exportEvent(eventId) {
+    const token = this.getToken();
+    const url = `${API_BASE}/bulk/${eventId}/export`;
+    const response = await fetch(url, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to export event: ${response.statusText}`);
+    }
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = `event-${eventId}-export.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  }
 }
 
 export const api = new ApiService();

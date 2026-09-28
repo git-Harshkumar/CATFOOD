@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { CountdownTimer } from '../components/CountdownTimer';
@@ -11,7 +12,7 @@ import { EventImage } from '../components/EventImage';
 import { CreateTeamModal } from './CreateTeamModal';
 import { JoinTeamModal } from './JoinTeamModal';
 import { getStatusBadge, formatDate } from '../utils/formatters';
-import { Trophy, FileText, Award, Github, Globe, Users, Lock, ArrowLeft, PlusCircle } from 'lucide-react';
+import { Trophy, FileText, Award, Github, Globe, Users, Lock, ArrowLeft, PlusCircle, ShieldCheck, Settings } from 'lucide-react';
 import JudgingProgressSection from '../components/JudgingProgressSection';
 
 export const EventDetailPage = ({
@@ -22,6 +23,8 @@ export const EventDetailPage = ({
   onViewLeaderboard,
   onViewGallery,
 }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user, isOrganizer, isJudge, isParticipant } = useAuth();
   const [event, setEvent] = useState(null);
   const [submissions, setSubmissions] = useState([]);
@@ -101,6 +104,8 @@ export const EventDetailPage = ({
   const userTeam = event.teams?.find((t) =>
     t.members?.some((m) => m.userId === user?.id) || t.leaderId === user?.id
   );
+  const isEventOrganizer = user && event.organizerId === user.id;
+  const isEventJudge = user && event.judges?.some(j => j.userId === user.id);
 
   return (
     <div className="max-w-7xl mx-auto px-4 space-y-10 pb-16 pt-6">
@@ -180,7 +185,15 @@ export const EventDetailPage = ({
           </div>
 
           {/* Action Buttons inside Hero */}
-          {userTeam ? (
+          {isEventOrganizer ? (
+            <NeoButton onClick={() => navigate(`/organizer/events/${event.id}/edit`)} color="bg-white" textColor="text-neo-ink" className="w-full justify-center mt-2 border-3 border-neo-ink neo-shadow">
+              <ShieldCheck className="w-5 h-5 mr-2" /> Organizer Portal
+            </NeoButton>
+          ) : isEventJudge ? (
+            <NeoButton onClick={() => navigate(`/judge/${event.id}/queue`)} color="bg-neo-pastel-green" textColor="text-neo-ink" className="w-full justify-center mt-2 border-3 border-neo-ink neo-shadow">
+              <Award className="w-5 h-5 mr-2" /> Judge Portal
+            </NeoButton>
+          ) : userTeam ? (
             <NeoButton 
               onClick={() => onOpenSubmit(userTeam.id, userTeam.submission)} 
               disabled={isDeadlinePassed}
@@ -191,7 +204,7 @@ export const EventDetailPage = ({
               <FileText className="w-5 h-5 mr-2" />
               {userTeam.submission ? (isDeadlinePassed ? 'View Submission (Locked)' : 'Edit Submission') : 'Submit Project'}
             </NeoButton>
-          ) : isParticipant ? (
+          ) : user ? (
             <div className="flex flex-col gap-3 w-full mt-2">
               <NeoButton onClick={() => setIsCreateOpen(true)} color="bg-neo-ink" textColor="text-white" className="w-full justify-center">
                 <PlusCircle className="w-5 h-5 mr-2" /> Register Team
@@ -200,7 +213,11 @@ export const EventDetailPage = ({
                 <Users className="w-5 h-5 mr-2" /> Join with Code
               </NeoButton>
             </div>
-          ) : null}
+          ) : (
+            <NeoButton onClick={() => navigate('/login', { state: { from: location } })} color="bg-neo-ink" textColor="text-white" className="w-full justify-center mt-2">
+              <Lock className="w-5 h-5 mr-2" /> Login to Participate
+            </NeoButton>
+          )}
         </div>
       </NeoCard>
 
@@ -231,8 +248,10 @@ export const EventDetailPage = ({
           { key: 'overview', label: 'Rules & Guidelines' },
           { key: 'criteria', label: `Judging Rubric (${event.criteria?.length || 0})` },
           { key: 'submissions', label: `Projects (${submissions?.length || 0})` },
-          { key: 'teams', label: `Teams (${event.teams?.length || 0})` },
-          ...(isOrganizer && event.organizerId === user?.id
+          ...(isEventOrganizer
+            ? [{ key: 'teams', label: `Teams (${event.teams?.length || 0})` }]
+            : []),
+          ...(isEventOrganizer
             ? [{ key: 'judging', label: '⚖ Judging Progress' }]
             : []),
         ].map((tab) => (
@@ -383,6 +402,45 @@ export const EventDetailPage = ({
       {activeTab === 'judging' && isOrganizer && event.organizerId === user?.id && (
         <JudgingProgressSection eventId={event.id} />
       )}
+
+      {/* Organizer Floating Action Menu */}
+      {isEventOrganizer && (
+        <div className="fixed right-6 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-50">
+          <button
+            onClick={() => navigate(`/organizer/events/${event.id}/edit`)}
+            title="Manage Event"
+            className="w-14 h-14 rounded-full border-3 border-neo-ink bg-neo-pastel-purple flex items-center justify-center hover:neo-active neo-shadow text-neo-ink group relative"
+          >
+            <Settings className="w-6 h-6 group-hover:rotate-90 transition-transform" />
+            <span className="absolute right-full mr-4 bg-white border-3 border-neo-ink text-neo-ink px-3 py-1 font-black text-sm uppercase tracking-wide rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap neo-shadow">
+              Manage
+            </span>
+          </button>
+          
+          <button
+            onClick={() => navigate(`/organizer/events/${event.id}/judges`)}
+            title="Manage Users"
+            className="w-14 h-14 rounded-full border-3 border-neo-ink bg-neo-pastel-orange flex items-center justify-center hover:neo-active neo-shadow text-neo-ink group relative"
+          >
+            <Users className="w-6 h-6 group-hover:-translate-y-1 transition-transform" />
+            <span className="absolute right-full mr-4 bg-white border-3 border-neo-ink text-neo-ink px-3 py-1 font-black text-sm uppercase tracking-wide rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap neo-shadow">
+              Users
+            </span>
+          </button>
+
+          <button
+            onClick={() => navigate(`/organizer/events/${event.id}/leaderboard`)}
+            title="Leaderboard"
+            className="w-14 h-14 rounded-full border-3 border-neo-ink bg-neo-pastel-yellow flex items-center justify-center hover:neo-active neo-shadow text-neo-ink group relative"
+          >
+            <Trophy className="w-6 h-6 group-hover:-translate-y-1 transition-transform" />
+            <span className="absolute right-full mr-4 bg-white border-3 border-neo-ink text-neo-ink px-3 py-1 font-black text-sm uppercase tracking-wide rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap neo-shadow">
+              Leaderboard
+            </span>
+          </button>
+        </div>
+      )}
+
       {/* Local Modals */}
       <CreateTeamModal 
         isOpen={isCreateOpen} 

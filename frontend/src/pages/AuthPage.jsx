@@ -132,21 +132,6 @@ export const AuthPage = ({ onSuccess }) => {
                   </div>
                 </div>
 
-                <div>
-                  <label className={labelClass}>Platform Role</label>
-                  <div className="relative">
-                    <Shield className="w-5 h-5 text-neo-ink absolute left-4 top-3.5" />
-                    <select
-                      value={role}
-                      onChange={(e) => setRole(e.target.value)}
-                      className={inputClass}
-                    >
-                      <option value="PARTICIPANT">Participant (Hacker)</option>
-                      <option value="JUDGE">Judge (Reviewer)</option>
-                      <option value="ORGANIZER">Organizer (Host)</option>
-                    </select>
-                  </div>
-                </div>
               </>
             )}
 

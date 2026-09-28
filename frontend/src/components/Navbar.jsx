@@ -2,16 +2,20 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Trophy, Award, Users, PlusCircle, LogOut, Settings } from 'lucide-react';
 import { getRoleBadge } from '../utils/formatters';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-export const Navbar = ({ currentView, setView }) => {
+export const Navbar = () => {
   const { user, logout, isOrganizer, isJudge, isGlobalAdmin } = useAuth();
-  
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentView = location.pathname.split('/')[1] || 'events';
+
   // Custom nav item component
-  const NavItem = ({ id, label, icon: Icon }) => {
-    const isActive = currentView === id;
+  const NavItem = ({ id, label, icon: Icon, path }) => {
+    const isActive = location.pathname.startsWith(path);
     return (
       <button
-        onClick={() => setView(id)}
+        onClick={() => navigate(path)}
         className={`flex items-center gap-2 px-5 py-2 rounded-full font-bold text-sm transition-colors ${
           isActive 
             ? 'bg-neo-pastel-green text-neo-ink' 
@@ -32,7 +36,7 @@ export const Navbar = ({ currentView, setView }) => {
         {/* Nav Links Pill Container */}
         <div className="bg-neo-ink rounded-full px-2 py-2 flex items-center gap-1 shadow-lg neo-shadow">
           <button
-            onClick={() => setView('events')}
+            onClick={() => navigate('/events')}
             className="flex items-center gap-2 px-4 py-2 text-white font-black text-lg tracking-tight hover:scale-105 transition-transform"
           >
             <Trophy className="w-5 h-5 text-neo-yellow" />
@@ -41,13 +45,13 @@ export const Navbar = ({ currentView, setView }) => {
           
           <div className="w-px h-6 bg-white/20 mx-2"></div>
           
-          <NavItem id="events" label="Hackathons" />
+          <NavItem id="events" label="Hackathons" path="/events" />
           
           {user && (
             <>
-              <NavItem id="activity" label="My Activity" icon={Users} />
+              <NavItem id="activity" label="My Activity" icon={Users} path="/teams/my" />
               {(isJudge || isOrganizer) && (
-                <NavItem id="judging" label="Judging Queue" icon={Award} />
+                <NavItem id="judging" label="Judging Queue" icon={Award} path="/judge/queue" />
               )}
             </>
           )}
@@ -55,18 +59,16 @@ export const Navbar = ({ currentView, setView }) => {
 
         {/* User / Actions Area */}
         <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/organizer/events/new')}
+            className="flex items-center gap-2 px-5 py-3 rounded-full border-3 border-neo-ink bg-neo-pastel-yellow font-bold text-sm text-neo-ink hover:neo-active neo-shadow"
+          >
+            <PlusCircle className="w-5 h-5" />
+            New Event
+          </button>
+          
           {user ? (
             <>
-              {isOrganizer && (
-                <button
-                  onClick={() => setView('create-event')}
-                  className="flex items-center gap-2 px-5 py-3 rounded-full border-3 border-neo-ink bg-neo-pastel-purple font-bold text-sm text-neo-ink hover:neo-active neo-shadow"
-                >
-                  <PlusCircle className="w-5 h-5" />
-                  New Event
-                </button>
-              )}
-              
               {/* Avatar Pill */}
               <div className="flex items-center gap-3 bg-neo-pastel-orange rounded-full py-1.5 pl-2 pr-6 border-3 border-neo-ink neo-shadow">
                 <div className="w-10 h-10 rounded-full bg-white border-2 border-neo-ink flex items-center justify-center font-black text-neo-ink text-lg">
@@ -91,7 +93,7 @@ export const Navbar = ({ currentView, setView }) => {
             </>
           ) : (
             <button
-              onClick={() => setView('auth')}
+              onClick={() => navigate('/login')}
               className="px-6 py-3 rounded-full border-3 border-neo-ink bg-neo-pastel-purple font-bold text-neo-ink hover:neo-active neo-shadow"
             >
               Sign In
