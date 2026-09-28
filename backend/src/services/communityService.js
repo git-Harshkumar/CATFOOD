@@ -1,4 +1,5 @@
 const prisma = require('../utils/prisma');
+const { dispatchEvent } = require('./webhookService');
 
 // Simple in-memory sliding window rate limiter for IP voting: ip -> array of timestamps
 const ipVoteHistory = new Map();
@@ -19,14 +20,7 @@ const checkIpRateLimit = (ip) => {
   ipVoteHistory.set(ip, recent);
 };
 
-const castVote = async ({ eventId, submissionId, voterEmail, voterIp, currentUser }) => {
-  const email = (currentUser?.email || voterEmail || '').trim().toLowerCase();
-  if (!email || !email.includes('@')) {
-    const error = new Error('Valid email address is required to cast a community vote.');
-    error.statusCode = 400;
-    throw error;
-  }
-
+const castVote = async ({ eventId, submissionId, voterEmail, voterIp, currentUser, credits = 1 }) => {
   const subId = parseInt(submissionId, 10);
   const submission = await prisma.submission.findUnique({
     where: { id: subId },
@@ -46,17 +40,38 @@ const castVote = async ({ eventId, submissionId, voterEmail, voterIp, currentUse
     throw error;
   }
 
+  const mode = event.communityVotingMode;
+  let email = (currentUser?.email || voterEmail || '').trim().toLowerCase();
+
+  if (mode === 'AUTHENTICATED') {
+    if (!currentUser) {
+      const error = new Error('You must be logged in to vote.');
+      error.statusCode = 401;
+      throw error;
+    }
+    email = currentUser.email.trim().toLowerCase();
+  } else if (mode === 'EMAIL') {
+    if (!email || !email.includes('@')) {
+      const error = new Error('Valid email address is required to cast a community vote.');
+      error.statusCode = 400;
+      throw error;
+    }
+  } else if (mode === 'OPEN') {
+    email = email || null;
+  }
+
   checkIpRateLimit(voterIp);
 
-  // Check duplicate vote for this project
-  const existingVote = await prisma.communityVote.findUnique({
-    where: {
-      submissionId_voterEmail: {
-        submissionId: subId,
-        voterEmail: email,
-      },
-    },
-  });
+  let existingVote;
+  if (email) {
+    existingVote = await prisma.communityVote.findFirst({
+      where: { submissionId: subId, voterEmail: email },
+    });
+  } else if (voterIp) {
+    existingVote = await prisma.communityVote.findFirst({
+      where: { submissionId: subId, voterIp: voterIp, voterEmail: null },
+    });
+  }
 
   if (existingVote) {
     const error = new Error('You have already cast a vote for this project.');
@@ -64,14 +79,28 @@ const castVote = async ({ eventId, submissionId, voterEmail, voterIp, currentUse
     throw error;
   }
 
+  const parsedCredits = parseInt(credits, 10) || 1;
+
   const vote = await prisma.communityVote.create({
     data: {
       eventId: event.id,
       submissionId: subId,
       voterEmail: email,
       voterIp: voterIp || null,
+      credits: parsedCredits,
     },
   });
+
+  await prisma.auditLog.create({
+    data: {
+      action: 'COMMUNITY_VOTE_CAST',
+      targetType: 'Submission',
+      targetId: String(subId),
+      metadata: JSON.stringify({ ip: voterIp, email, credits: parsedCredits }),
+    },
+  });
+
+  dispatchEvent('vote.cast', event.id, { submissionId: subId, voteId: vote.id }).catch(console.error);
 
   return {
     success: true,
@@ -92,7 +121,7 @@ const getCommunityResults = async (eventId, currentUser) => {
         include: {
           team: { select: { id: true, name: true } },
           track: true,
-          _count: { select: { communityVotes: true } },
+          communityVotes: { select: { credits: true } },
         },
       },
     },
@@ -119,13 +148,19 @@ const getCommunityResults = async (eventId, currentUser) => {
     };
   }
 
-  const standings = event.submissions.map((s) => ({
-    submissionId: s.id,
-    title: s.title,
-    teamName: s.team?.name || 'Unknown',
-    trackName: s.track?.name || 'General',
-    voteCount: s._count.communityVotes,
-  }));
+  const standings = event.submissions.map((s) => {
+    let calculatedScore = 0;
+    for (const v of s.communityVotes) {
+      calculatedScore += Math.sqrt(v.credits);
+    }
+    return {
+      submissionId: s.id,
+      title: s.title,
+      teamName: s.team?.name || 'Unknown',
+      trackName: s.track?.name || 'General',
+      voteCount: calculatedScore,
+    };
+  });
 
   standings.sort((a, b) => b.voteCount - a.voteCount);
   standings.forEach((item, index) => {
@@ -207,6 +242,7 @@ const updateVotingSettings = async (eventId, { isCommunityVotingOpen, isCommunit
     data: {
       isCommunityVotingOpen: isCommunityVotingOpen !== undefined ? Boolean(isCommunityVotingOpen) : event.isCommunityVotingOpen,
       isCommunityResultsRevealed: isCommunityResultsRevealed !== undefined ? Boolean(isCommunityResultsRevealed) : event.isCommunityResultsRevealed,
+      communityVotingMode: arguments[1].communityVotingMode !== undefined ? arguments[1].communityVotingMode : event.communityVotingMode,
     },
   });
 

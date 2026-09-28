@@ -40,6 +40,7 @@ model Event {
   isLeaderboardPublished     Boolean  @default(false)
   isCommunityVotingOpen      Boolean  @default(true)
   isCommunityResultsRevealed Boolean  @default(false)
+  communityVotingMode        String   @default("EMAIL") // "OPEN", "EMAIL", "AUTHENTICATED"
 
   organizerId Int
   organizer   User @relation("OrganizerEvents", fields: [organizerId], references: [id], onDelete: Cascade)
@@ -325,8 +326,9 @@ model CommunityVote {
   event        Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
   submissionId Int
   submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  voterEmail   String
+  voterEmail   String?
   voterIp      String?
+  credits      Int        @default(1)
   createdAt    DateTime   @default(now())
 
   @@unique([submissionId, voterEmail])
