@@ -6,9 +6,10 @@ const { requireRole } = require('../middleware/roleMiddleware');
 
 // Public verification
 router.get('/verify/:id', certificateController.verifyCertificate);
+router.get('/judge/:userId/verify', certificateController.verifyJudgeCertificate);
 
 // User certificates
-router.get('/my', authenticate, certificateController.getMyCertificates);
+router.get('/', authenticate, certificateController.getMyCertificates);
 
 // Issue certificate (Organizer only)
 router.post(

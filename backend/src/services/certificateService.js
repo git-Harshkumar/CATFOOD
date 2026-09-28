@@ -96,8 +96,23 @@ const verifyCertificate = async (certId) => {
     metadata: parsedMeta,
     issuer: cert.event.organizer.name,
     verificationAlgorithm: 'HMAC-SHA256',
+    signature: cert.signature,
     status: isValid ? 'OFFICIALLY_VERIFIED' : 'SIGNATURE_MISMATCH',
   };
+};
+
+const verifyJudgeCertificate = async (userId) => {
+  const user = await prisma.user.findUnique({ where: { id: parseInt(userId, 10) } });
+  if (!user) {
+    return { isValid: false, reason: 'User not found.' };
+  }
+  const cert = await prisma.certificate.findFirst({
+    where: { recipientEmail: user.email, role: 'JUDGE' }
+  });
+  if (!cert) {
+    return { isValid: false, reason: 'Judge certificate not found for this user.' };
+  }
+  return verifyCertificate(cert.id);
 };
 
 /**
@@ -114,5 +129,6 @@ const getUserCertificates = async (email) => {
 module.exports = {
   issueCertificate,
   verifyCertificate,
+  verifyJudgeCertificate,
   getUserCertificates,
 };

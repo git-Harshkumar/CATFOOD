@@ -62,6 +62,48 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+const optionalAuthenticate = async (req, res, next) => {
+  try {
+    let token = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+      if (authHeader.startsWith('Bearer ')) token = authHeader.split(' ')[1];
+      else token = authHeader.trim();
+    }
+    if (!token && req.headers.cookie) {
+      const cookies = req.headers.cookie.split(';');
+      for (const cookie of cookies) {
+        const [k, v] = cookie.trim().split('=');
+        if (k === 'session' || k === 'token' || k === 'jwt') {
+          token = decodeURIComponent(v);
+          break;
+        }
+      }
+    }
+
+    if (!token) {
+      return next();
+    }
+
+    const decoded = verifyToken(token);
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { id: true, email: true, name: true, isGlobalAdmin: true },
+    });
+
+    if (user) {
+      req.user = {
+        ...user,
+        role: decoded.role || (user.isGlobalAdmin ? 'ADMIN' : 'PARTICIPANT'),
+      };
+    }
+    next();
+  } catch (err) {
+    next();
+  }
+};
+
 module.exports = {
   authenticate,
+  optionalAuthenticate,
 };

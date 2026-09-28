@@ -1,18 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const communityController = require('../controllers/communityController');
-const { authenticate } = require('../middleware/authMiddleware');
+const { authenticate, optionalAuthenticate } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
 
 // Voting
-router.post('/vote', communityController.castVote);
-router.post('/:eventId/vote', communityController.castVote);
-router.get('/:eventId/results', communityController.getCommunityResults);
+router.post('/vote', optionalAuthenticate, communityController.castVote);
+router.post('/:eventId/vote', optionalAuthenticate, communityController.castVote);
+router.get('/:eventId/results', optionalAuthenticate, communityController.getCommunityResults);
 
 // Comments
-router.post('/comments/:submissionId', communityController.addComment);
+router.post('/comments/:submissionId', optionalAuthenticate, communityController.addComment);
 router.get('/comments/:submissionId', communityController.getComments);
-router.post('/comments_proxy', communityController.addCommentProxy);
+router.post('/comments_proxy', optionalAuthenticate, communityController.addCommentProxy);
 router.get('/comments_proxy', communityController.getCommentsProxy);
 
 // Organizer settings
