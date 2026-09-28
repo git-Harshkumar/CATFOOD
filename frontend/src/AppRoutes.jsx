@@ -26,14 +26,12 @@ import { CreateEventPage } from './pages/CreateEventPage';
 import { OrganizerDashboard } from './pages/OrganizerDashboard';
 import { OrganizerEventDashboard } from './pages/OrganizerEventDashboard';
 import { SubmitProjectModal } from './pages/SubmitProjectModal';
-
-// Simple placeholder component for missing views to prevent crashing
-const Placeholder = ({ name }) => (
-  <div className="flex flex-col items-center justify-center p-12 bg-neo-pastel-blue rounded-neo border-3 border-neo-ink neo-shadow text-neo-ink m-8">
-    <h2 className="text-3xl font-black mb-2 uppercase tracking-tight">{name}</h2>
-    <p className="text-neo-ink/70 font-bold">This view is currently under construction.</p>
-  </div>
-);
+import { SubmissionDetailPage } from './pages/SubmissionDetailPage';
+import { PairwiseJudgingPage } from './pages/PairwiseJudgingPage';
+import { JudgeStatusPage } from './pages/JudgeStatusPage';
+import { MyCertificatesPage } from './pages/MyCertificatesPage';
+import { VerifyCertificatePage } from './pages/VerifyCertificatePage';
+import { JoinTeamByLinkPage } from './pages/JoinTeamByLinkPage';
 
 const NotFound = () => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-neo-bg text-neo-ink">
@@ -64,12 +62,12 @@ function EventDetailWrapper({ handleOpenSubmit }) {
     onOpenSubmit={handleOpenSubmit}
     onOpenScore={(evId, subId) => {
       if (subId) navigate(`/judge/submissions/${subId}/score`);
-      else navigate('/judge/queue');
+      else navigate(`/judge/${evId || id}/queue`);
     }}
-    onViewLeaderboard={(evId) => navigate(`/organizer/events/${evId}/leaderboard`)}
+    onViewLeaderboard={(evId) => navigate(`/events/${evId || id}/leaderboard`)}
     onOpenCreateTeam={(fromEventId) => navigate(`/teams/my?create=${fromEventId || ''}`)}
     onOpenJoinTeam={(fromEventId) => navigate(`/teams/my?join=${fromEventId || ''}`)}
-    onViewGallery={(evId) => navigate(`/events/${evId}/gallery`)}
+    onViewGallery={(evId) => navigate(`/events/${evId || id}/gallery`)}
   />;
 }
 
@@ -109,8 +107,10 @@ function MyActivityWrapper({ handleOpenSubmit }) {
 }
 
 function JudgeQueueWrapper() {
+  const { eventId } = useParams();
   const navigate = useNavigate();
   return <JudgeQueuePage
+    eventId={eventId}
     onOpenScore={(evId, subId) => navigate(`/judge/submissions/${subId}/score`)}
   />;
 }
@@ -160,10 +160,14 @@ export const AppRoutes = () => {
           <Route path="/" element={<Navigate to="/events" replace />} />
           <Route path="/events" element={<EventsWrapper />} />
           <Route path="/events/:id" element={<EventDetailWrapper handleOpenSubmit={handleOpenSubmit} />} />
-          <Route path="/gallery" element={<Placeholder name="Global Gallery" />} />
+          <Route path="/events/:id/leaderboard" element={<LeaderboardWrapper />} />
+          <Route path="/gallery" element={<PublicGalleryPage />} />
           <Route path="/events/:eventId/gallery" element={<PublicGalleryWrapper />} />
-          <Route path="/submissions/:id" element={<Placeholder name="Submission Detail (Public)" />} />
-          <Route path="/certificates/verify/:id" element={<Placeholder name="Verify Certificate" />} />
+          <Route path="/submissions/:id" element={<SubmissionDetailPage />} />
+          <Route path="/certificates/verify/:id" element={<VerifyCertificatePage />} />
+          <Route path="/certificates/verify" element={<VerifyCertificatePage />} />
+          <Route path="/join" element={<JoinTeamByLinkPage />} />
+          <Route path="/teams/join/:token" element={<JoinTeamByLinkPage />} />
         </Route>
 
         {/* Protected Standalone Pages (with Navbar) */}
@@ -172,16 +176,14 @@ export const AppRoutes = () => {
             <Route path="/organizer/events/new" element={<CreateEventPage />} />
           </Route>
         </Route>
+
         {/* 3. Participant Flow */}
         <Route element={<ProtectedRoute allowedRoles={[]} />}>
           <Route element={<ParticipantLayout />}>
-            <Route path="/teams/new" element={<Placeholder name="Create Team" />} />
-            <Route path="/teams/join" element={<Placeholder name="Join Team (Code)" />} />
-            <Route path="/teams/join/:token" element={<Placeholder name="Join Team (Invite Link)" />} />
             <Route path="/teams/my" element={<MyActivityWrapper handleOpenSubmit={handleOpenSubmit} />} />
-            <Route path="/teams/:id" element={<Placeholder name="Team Detail" />} />
-            <Route path="/teams/:id/submit" element={<Placeholder name="Submit Project" />} />
-            <Route path="/certificates/mine" element={<Placeholder name="My Certificates" />} />
+            <Route path="/teams/new" element={<MyActivityWrapper handleOpenSubmit={handleOpenSubmit} />} />
+            <Route path="/teams/join" element={<MyActivityWrapper handleOpenSubmit={handleOpenSubmit} />} />
+            <Route path="/certificates/mine" element={<MyCertificatesPage />} />
           </Route>
         </Route>
 
@@ -189,10 +191,11 @@ export const AppRoutes = () => {
         <Route element={<ProtectedRoute allowedRoles={[]} />}>
           <Route element={<JudgeLayout />}>
             <Route path="/judge/queue" element={<JudgeQueueWrapper />} />
-            <Route path="/judge/:eventId/queue" element={<Placeholder name="Judge Event Queue" />} />
+            <Route path="/judge/:eventId/queue" element={<JudgeQueueWrapper />} />
             <Route path="/judge/submissions/:submissionId/score" element={<ScoringWrapper />} />
-            <Route path="/judge/:eventId/pairwise" element={<Placeholder name="Pairwise Comparison" />} />
-            <Route path="/judge/status" element={<Placeholder name="Judge Availability Status" />} />
+            <Route path="/judge/pairwise" element={<PairwiseJudgingPage />} />
+            <Route path="/judge/:eventId/pairwise" element={<PairwiseJudgingPage />} />
+            <Route path="/judge/status" element={<JudgeStatusPage />} />
           </Route>
         </Route>
 
@@ -205,6 +208,7 @@ export const AppRoutes = () => {
             <Route path="/organizer/events/:id/edit" element={<OrganizerEventDashboard />} />
             <Route path="/organizer/events/:id/judges" element={<OrganizerEventDashboard />} />
             <Route path="/organizer/events/:id/leaderboard" element={<OrganizerEventDashboard />} />
+            <Route path="/organizer/events/:id/developer" element={<OrganizerEventDashboard />} />
             <Route path="/organizer/events/:id/leaderboard-view" element={<LeaderboardWrapper />} />
           </Route>
         </Route>
@@ -214,14 +218,14 @@ export const AppRoutes = () => {
       </Routes>
 
       {/* Global Modals */}
-
       <SubmitProjectModal
         isOpen={submitModalState.isOpen}
         onClose={() => setSubmitModalState({ isOpen: false, teamId: null, existingSubmission: null })}
         teamId={submitModalState.teamId}
         existingSubmission={submitModalState.existingSubmission}
         onSuccess={() => {
-          // could reload or trigger refresh event
+          // Trigger refresh if needed
+          window.location.reload();
         }}
       />
     </>

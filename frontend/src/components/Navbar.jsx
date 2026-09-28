@@ -46,12 +46,16 @@ export const Navbar = () => {
           <div className="w-px h-6 bg-white/20 mx-2"></div>
           
           <NavItem id="events" label="Hackathons" path="/events" />
+          <NavItem id="gallery" label="Gallery" path="/gallery" />
           
           {user && (
             <>
               <NavItem id="activity" label="My Activity" icon={Users} path="/teams/my" />
               {(isJudge || isOrganizer) && (
-                <NavItem id="judging" label="Judging Queue" icon={Award} path="/judge/queue" />
+                <NavItem id="judging" label="Judging" icon={Award} path="/judge/queue" />
+              )}
+              {isOrganizer && (
+                <NavItem id="organizer" label="Organizer" icon={Settings} path="/organizer/events" />
               )}
             </>
           )}

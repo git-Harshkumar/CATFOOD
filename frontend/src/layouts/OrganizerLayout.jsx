@@ -1,20 +1,21 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Settings, Users, ShieldCheck, LogOut } from 'lucide-react';
+import { LayoutDashboard, Settings, Users, ShieldCheck, LogOut, Database } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const OrganizerLayout = () => {
   const location = useLocation();
   const { logout, user } = useAuth();
   
-  const eventMatch = location.pathname.match(/\/organizer\/events\/([a-zA-Z0-9-]+)\/(dashboard|edit|judges|leaderboard)/);
+  const eventMatch = location.pathname.match(/\/organizer\/events\/([a-zA-Z0-9-]+)\/(dashboard|edit|judges|leaderboard|developer)/);
   const eventId = eventMatch ? eventMatch[1] : null;
 
   const navItems = eventId ? [
     { name: 'Dashboard', path: `/organizer/events/${eventId}/dashboard`, icon: LayoutDashboard },
     { name: 'Manage Event', path: `/organizer/events/${eventId}/edit`, icon: Settings },
-    { name: 'Users', path: `/organizer/events/${eventId}/judges`, icon: Users },
-    { name: 'Leaderboard', path: `/organizer/events/${eventId}/leaderboard`, icon: ShieldCheck },
+    { name: 'Judges & Staff', path: `/organizer/events/${eventId}/judges`, icon: Users },
+    { name: 'Leaderboard & Voting', path: `/organizer/events/${eventId}/leaderboard`, icon: ShieldCheck },
+    { name: 'Developer & Tools', path: `/organizer/events/${eventId}/developer`, icon: Database },
   ] : [
     { name: 'Dashboard', path: '/organizer/events', icon: LayoutDashboard }
   ];

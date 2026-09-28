@@ -71,8 +71,9 @@ export const AuthProvider = ({ children }) => {
         logout,
         refreshProfile: loadUserProfile,
         isAuthenticated: !!user,
-        isOrganizer: user?.role === 'ORGANIZER',
-        isJudge: user?.role === 'JUDGE',
+        isGlobalAdmin: !!user?.isGlobalAdmin,
+        isOrganizer: user?.role === 'ORGANIZER' || !!user?.isGlobalAdmin,
+        isJudge: user?.role === 'JUDGE' || !!user?.isGlobalAdmin,
         isParticipant: user?.role === 'PARTICIPANT',
       }}
     >

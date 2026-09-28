@@ -5,7 +5,7 @@ import NeoButton from '../components/neo/NeoButton';
 import { Award, CheckCircle2, Clock, ArrowRight, Trophy } from 'lucide-react';
 import { formatDate } from '../utils/formatters';
 
-export const JudgeQueuePage = ({ onOpenScore }) => {
+export const JudgeQueuePage = ({ eventId, onOpenScore }) => {
   const [queue, setQueue] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,7 +40,7 @@ export const JudgeQueuePage = ({ onOpenScore }) => {
 
       {loading ? (
         <div className="text-center py-20 font-bold text-2xl text-neo-ink/50">Loading assigned projects...</div>
-      ) : queue.length === 0 ? (
+      ) : (eventId ? queue.filter(ev => String(ev.eventId) === String(eventId)) : queue).length === 0 ? (
         <NeoCard color="bg-white" className="text-center py-20 flex flex-col items-center justify-center">
           <Trophy className="w-16 h-16 text-neo-ink mb-6" />
           <h3 className="text-3xl font-black text-neo-ink mb-2">No projects in queue</h3>
@@ -50,7 +50,7 @@ export const JudgeQueuePage = ({ onOpenScore }) => {
         </NeoCard>
       ) : (
         <div className="space-y-12">
-          {queue.map((eventItem, eventIdx) => (
+          {(eventId ? queue.filter(ev => String(ev.eventId) === String(eventId)) : queue).map((eventItem, eventIdx) => (
             <NeoCard key={eventItem.eventId} color={['bg-neo-pastel-yellow', 'bg-neo-pastel-blue'][eventIdx % 2]} className="space-y-8">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-3 border-neo-ink pb-4">
                 <div>

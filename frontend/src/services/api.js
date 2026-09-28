@@ -99,6 +99,14 @@ class ApiService {
     return this.request(`/events/${eventId}/criteria`, { method: 'POST', body: data });
   }
 
+  async addPrize(eventId, data) {
+    return this.request(`/events/${eventId}/prizes`, { method: 'POST', body: data });
+  }
+
+  async addEventQuestion(eventId, data) {
+    return this.request(`/events/${eventId}/questions`, { method: 'POST', body: data });
+  }
+
   async assignJudge(eventId, judgeEmail, trackIds = []) {
     return this.request(`/events/${eventId}/judges`, {
       method: 'POST',
@@ -171,7 +179,14 @@ class ApiService {
   }
 
   async getGallery(eventId) {
-    return this.request(`/submissions/gallery/${eventId}`);
+    if (eventId) {
+      return this.request(`/submissions/gallery/${eventId}`);
+    }
+    return this.request('/submissions/gallery');
+  }
+
+  async getAllSubmissions() {
+    return this.request('/submissions');
   }
 
   // Judging
