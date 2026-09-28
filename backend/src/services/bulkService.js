@@ -75,6 +75,13 @@ const bulkImportProjects = async (eventId, projectsList, currentUser) => {
       if (track) trackId = track.id;
     }
 
+    const existingSubmission = await prisma.submission.findUnique({ where: { teamId: team.id } });
+    if (existingSubmission) {
+      const error = new Error('A submission for this team already exists.');
+      error.statusCode = 409;
+      throw error;
+    }
+
     const submission = await prisma.submission.create({
       data: {
         eventId: parsedEventId,

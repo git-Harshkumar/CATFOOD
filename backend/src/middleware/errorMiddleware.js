@@ -1,7 +1,11 @@
 const { error } = require('../utils/response');
 
 const errorHandler = (err, req, res, next) => {
-  console.error('[Unhandled Error]:', err);
+  const statusCode = err.statusCode || (err.code === 'P2002' ? 409 : (err.code === 'P2025' ? 404 : 500));
+  
+  if (statusCode >= 500) {
+    console.error('[Unhandled Server Error]:', err);
+  }
 
   // Prisma unique constraint violation (P2002)
   if (err.code === 'P2002') {
@@ -19,10 +23,10 @@ const errorHandler = (err, req, res, next) => {
     return error(res, 'Malformed JSON in request body.', 400);
   }
 
-  const statusCode = err.statusCode || 500;
+  const finalStatusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
 
-  return error(res, message, statusCode, process.env.NODE_ENV === 'development' ? err.stack : null);
+  return error(res, message, finalStatusCode, process.env.NODE_ENV === 'development' ? err.stack : null);
 };
 
 const notFoundHandler = (req, res) => {
