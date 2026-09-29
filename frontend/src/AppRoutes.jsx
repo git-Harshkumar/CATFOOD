@@ -32,6 +32,7 @@ import { JudgeStatusPage } from './pages/JudgeStatusPage';
 import { MyCertificatesPage } from './pages/MyCertificatesPage';
 import { VerifyCertificatePage } from './pages/VerifyCertificatePage';
 import { JoinTeamByLinkPage } from './pages/JoinTeamByLinkPage';
+import { ProfilePage } from './pages/ProfilePage';
 
 const NotFound = () => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-neo-bg text-neo-ink">
@@ -174,6 +175,7 @@ export const AppRoutes = () => {
         <Route element={<ProtectedRoute allowedRoles={[]} />}>
           <Route element={<PublicLayout />}>
             <Route path="/organizer/events/new" element={<CreateEventPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>
 

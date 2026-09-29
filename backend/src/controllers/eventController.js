@@ -64,6 +64,60 @@ const addEventQuestion = async (req, res, next) => {
   }
 };
 
+const updateCriterion = async (req, res, next) => {
+  try {
+    const criterion = await eventService.updateCriterion(req.params.id, req.user.id, req.params.criterionId, req.body);
+    return success(res, criterion, 'Criterion updated successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
+const deleteCriterion = async (req, res, next) => {
+  try {
+    await eventService.deleteCriterion(req.params.id, req.user.id, req.params.criterionId);
+    return success(res, null, 'Criterion deleted successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updatePrize = async (req, res, next) => {
+  try {
+    const prize = await eventService.updatePrize(req.params.id, req.user.id, req.params.prizeId, req.body);
+    return success(res, prize, 'Prize updated successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
+const deletePrize = async (req, res, next) => {
+  try {
+    await eventService.deletePrize(req.params.id, req.user.id, req.params.prizeId);
+    return success(res, null, 'Prize deleted successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateEventQuestion = async (req, res, next) => {
+  try {
+    const question = await eventService.updateEventQuestion(req.params.id, req.user.id, req.params.questionId, req.body);
+    return success(res, question, 'Event question updated successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
+const deleteEventQuestion = async (req, res, next) => {
+  try {
+    await eventService.deleteEventQuestion(req.params.id, req.user.id, req.params.questionId);
+    return success(res, null, 'Event question deleted successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
 const assignJudge = async (req, res, next) => {
   try {
     const assignment = await eventService.assignJudge(
@@ -94,8 +148,14 @@ module.exports = {
   createEvent,
   updateEvent,
   addCriterion,
+  updateCriterion,
+  deleteCriterion,
   addPrize,
+  updatePrize,
+  deletePrize,
   addEventQuestion,
+  updateEventQuestion,
+  deleteEventQuestion,
   assignJudge,
   publishLeaderboard,
 };

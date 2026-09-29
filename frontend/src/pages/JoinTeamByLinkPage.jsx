@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
 import { Users, CheckCircle2, AlertCircle, ArrowRight, Lock } from 'lucide-react';
@@ -16,26 +17,21 @@ export const JoinTeamByLinkPage = () => {
   const token = paramToken || searchParams.get('token');
 
   const [joining, setJoining] = useState(false);
-  const [status, setStatus] = useState(null); // { type: 'success' | 'error', message: '' }
+  const [hasJoined, setHasJoined] = useState(false);
+  const { showNotification } = useNotification();
 
   const handleJoin = async () => {
     if (!token) return;
     setJoining(true);
-    setStatus(null);
     try {
       await api.joinTeamByLink(token.trim());
-      setStatus({
-        type: 'success',
-        message: 'Successfully joined team! Redirecting to your workspace...',
-      });
+      setHasJoined(true);
+      showNotification('success', 'Successfully joined team! Redirecting to your workspace...');
       setTimeout(() => {
         navigate('/teams/my');
       }, 1500);
     } catch (err) {
-      setStatus({
-        type: 'error',
-        message: err.message || 'Failed to join team. The link may have expired or the team may be full.',
-      });
+      showNotification('error', err.message || 'Failed to join team. The link may have expired or the team may be full.');
     } finally {
       setJoining(false);
     }
@@ -56,21 +52,6 @@ export const JoinTeamByLinkPage = () => {
             You have received a secure invite link to join a hackathon team roster.
           </p>
         </div>
-
-        {status && (
-          <div
-            className={`p-4 rounded-xl border-3 border-neo-ink font-bold flex items-center justify-center gap-2 neo-shadow ${
-              status.type === 'success' ? 'bg-neo-pastel-green' : 'bg-neo-pastel-pink'
-            }`}
-          >
-            {status.type === 'success' ? (
-              <CheckCircle2 className="w-5 h-5 text-neo-ink shrink-0" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-neo-ink shrink-0" />
-            )}
-            <span>{status.message}</span>
-          </div>
-        )}
 
         {!token ? (
           <div className="py-6 space-y-4">
@@ -119,7 +100,7 @@ export const JoinTeamByLinkPage = () => {
 
             <NeoButton
               onClick={handleJoin}
-              disabled={joining || status?.type === 'success'}
+              disabled={joining || hasJoined}
               color="bg-neo-pastel-green"
               textColor="text-neo-ink"
               className="w-full justify-center !py-4 !text-lg"

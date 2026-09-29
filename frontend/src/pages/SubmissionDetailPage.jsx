@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
 import AvatarStack from '../components/neo/AvatarStack';
@@ -36,7 +37,7 @@ export const SubmissionDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [voting, setVoting] = useState(false);
-  const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', text: '' }
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     fetchSubmissionData();
@@ -45,7 +46,6 @@ export const SubmissionDetailPage = () => {
   const fetchSubmissionData = async () => {
     try {
       setLoading(true);
-      setFeedback(null);
       const subRes = await api.getSubmissionById(id);
       if (subRes?.data) {
         setSubmission(subRes.data);
@@ -63,7 +63,7 @@ export const SubmissionDetailPage = () => {
       }
     } catch (err) {
       console.error('Failed to load submission:', err);
-      setFeedback({ type: 'error', text: err.message || 'Failed to load project details.' });
+      showNotification('error', err.message || 'Failed to load project details.');
     } finally {
       setLoading(false);
     }
@@ -72,21 +72,14 @@ export const SubmissionDetailPage = () => {
   const handleVote = async () => {
     if (!submission) return;
     setVoting(true);
-    setFeedback(null);
     try {
       await api.castVote(submission.eventId, submission.id);
-      setFeedback({
-        type: 'success',
-        text: 'Your community vote has been counted!',
-      });
+      showNotification('success', 'Your community vote has been counted!');
       // Refresh details to reflect any vote count update
       const updated = await api.getSubmissionById(id);
       if (updated?.data) setSubmission(updated.data);
     } catch (err) {
-      setFeedback({
-        type: 'error',
-        text: err.message || 'Could not record vote. You may have already voted or hit the rate limit.',
-      });
+      showNotification('error', err.message || 'Could not record vote. You may have already voted or hit the rate limit.');
     } finally {
       setVoting(false);
     }
@@ -104,9 +97,9 @@ export const SubmissionDetailPage = () => {
       const commRes = await api.getComments(id);
       const list = Array.isArray(commRes) ? commRes : commRes?.data || [];
       setComments(list);
-      setFeedback({ type: 'success', text: 'Comment published successfully!' });
+      showNotification('success', 'Comment published successfully!');
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Failed to post comment.' });
+      showNotification('error', err.message || 'Failed to post comment.');
     } finally {
       setCommentSubmitting(false);
     }
@@ -127,7 +120,7 @@ export const SubmissionDetailPage = () => {
           <AlertCircle className="w-16 h-16 text-neo-ink mb-4" />
           <h2 className="text-3xl font-black text-neo-ink uppercase">Project Not Found</h2>
           <p className="font-bold text-neo-ink/70 mt-2 mb-6 max-w-md">
-            {feedback?.text || 'This submission does not exist or may have been deleted.'}
+            This submission does not exist or may have been deleted.
           </p>
           <NeoButton onClick={() => navigate(-1)} color="bg-white" textColor="text-neo-ink">
             <ArrowLeft className="w-4 h-4 mr-2" /> Go Back
@@ -158,22 +151,7 @@ export const SubmissionDetailPage = () => {
         )}
       </div>
 
-      {feedback && (
-        <div
-          className={`p-4 rounded-xl border-3 border-neo-ink font-bold text-center flex items-center justify-center gap-2 neo-shadow ${
-            feedback.type === 'success' ? 'bg-neo-pastel-green' : 'bg-neo-pastel-pink'
-          }`}
-        >
-          {feedback.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-neo-ink shrink-0" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-neo-ink shrink-0" />
-          )}
-          <span>{feedback.text}</span>
-        </div>
-      )}
 
-      {/* Main Hero Card */}
       <NeoCard color="bg-neo-pastel-yellow" className="space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-8">
           <div className="space-y-4 max-w-3xl">

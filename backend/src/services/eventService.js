@@ -238,6 +238,94 @@ const addEventQuestion = async (eventId, organizerId, questionData) => {
   });
 };
 
+const updateCriterion = async (eventId, organizerId, criterionId, criterionData) => {
+  const event = await prisma.event.findUnique({ where: { id: parseInt(eventId, 10) } });
+  if (!event || event.organizerId !== organizerId) {
+    const error = new Error('Unauthorized or event not found.');
+    error.statusCode = 403;
+    throw error;
+  }
+  return prisma.criterion.update({
+    where: { id: parseInt(criterionId, 10) },
+    data: {
+      name: criterionData.name,
+      description: criterionData.description || null,
+      maxScore: parseInt(criterionData.maxScore, 10) || 10,
+      weight: parseFloat(criterionData.weight) || 1.0,
+    },
+  });
+};
+
+const deleteCriterion = async (eventId, organizerId, criterionId) => {
+  const event = await prisma.event.findUnique({ where: { id: parseInt(eventId, 10) } });
+  if (!event || event.organizerId !== organizerId) {
+    const error = new Error('Unauthorized or event not found.');
+    error.statusCode = 403;
+    throw error;
+  }
+  return prisma.criterion.delete({
+    where: { id: parseInt(criterionId, 10) },
+  });
+};
+
+const updatePrize = async (eventId, organizerId, prizeId, prizeData) => {
+  const event = await prisma.event.findUnique({ where: { id: parseInt(eventId, 10) } });
+  if (!event || event.organizerId !== organizerId) {
+    const error = new Error('Unauthorized or event not found.');
+    error.statusCode = 403;
+    throw error;
+  }
+  return prisma.prize.update({
+    where: { id: parseInt(prizeId, 10) },
+    data: {
+      name: prizeData.name,
+      description: prizeData.description || null,
+      value: prizeData.value || null,
+    },
+  });
+};
+
+const deletePrize = async (eventId, organizerId, prizeId) => {
+  const event = await prisma.event.findUnique({ where: { id: parseInt(eventId, 10) } });
+  if (!event || event.organizerId !== organizerId) {
+    const error = new Error('Unauthorized or event not found.');
+    error.statusCode = 403;
+    throw error;
+  }
+  return prisma.prize.delete({
+    where: { id: parseInt(prizeId, 10) },
+  });
+};
+
+const updateEventQuestion = async (eventId, organizerId, questionId, questionData) => {
+  const event = await prisma.event.findUnique({ where: { id: parseInt(eventId, 10) } });
+  if (!event || event.organizerId !== organizerId) {
+    const error = new Error('Unauthorized or event not found.');
+    error.statusCode = 403;
+    throw error;
+  }
+  return prisma.eventQuestion.update({
+    where: { id: parseInt(questionId, 10) },
+    data: {
+      question: questionData.question,
+      isRequired: questionData.isRequired || false,
+      order: parseInt(questionData.order, 10) || 0,
+    },
+  });
+};
+
+const deleteEventQuestion = async (eventId, organizerId, questionId) => {
+  const event = await prisma.event.findUnique({ where: { id: parseInt(eventId, 10) } });
+  if (!event || event.organizerId !== organizerId) {
+    const error = new Error('Unauthorized or event not found.');
+    error.statusCode = 403;
+    throw error;
+  }
+  return prisma.eventQuestion.delete({
+    where: { id: parseInt(questionId, 10) },
+  });
+};
+
 const auditService = require('./auditService');
 
 const assignJudge = async (eventId, organizerId, judgeEmail, trackIds = []) => {
@@ -726,8 +814,14 @@ module.exports = {
   createEvent,
   updateEvent,
   addCriterion,
+  updateCriterion,
+  deleteCriterion,
   addPrize,
+  updatePrize,
+  deletePrize,
   addEventQuestion,
+  updateEventQuestion,
+  deleteEventQuestion,
   assignJudge,
   getEventJudges,
   updateJudgeStatus,

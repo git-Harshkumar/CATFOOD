@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
 import { ShieldCheck, ShieldAlert, Award, Search, ArrowLeft, CheckCircle2, Key, Calendar, User, Building } from 'lucide-react';
@@ -13,7 +14,8 @@ export const VerifyCertificatePage = () => {
   const [certId, setCertId] = useState(paramId || '');
   const [verification, setVerification] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(false);
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     if (paramId) {
@@ -25,7 +27,7 @@ export const VerifyCertificatePage = () => {
   const verify = async (idToVerify) => {
     if (!idToVerify || !idToVerify.trim()) return;
     setLoading(true);
-    setError(null);
+    setError(false);
     setVerification(null);
     try {
       const res = await api.verifyCertificate(idToVerify.trim());
@@ -34,7 +36,8 @@ export const VerifyCertificatePage = () => {
       setVerification(data);
     } catch (err) {
       console.error('Verification error:', err);
-      setError(err.message || 'Failed to verify credential against central registry.');
+      showNotification('error', err.message || 'Failed to verify credential against central registry.');
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -105,7 +108,7 @@ export const VerifyCertificatePage = () => {
         <NeoCard color="bg-neo-pastel-pink" className="text-center py-12 space-y-4">
           <ShieldAlert className="w-16 h-16 text-neo-ink mx-auto" />
           <h3 className="text-2xl font-black text-neo-ink uppercase">Verification Failed</h3>
-          <p className="font-bold text-neo-ink/80 max-w-md mx-auto">{error}</p>
+          <p className="font-bold text-neo-ink/80 max-w-md mx-auto">Please check the ID and try again.</p>
         </NeoCard>
       ) : verification ? (
         <div className="space-y-6">

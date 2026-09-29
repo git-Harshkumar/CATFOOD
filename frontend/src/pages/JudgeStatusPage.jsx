@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
 import StatCard from '../components/neo/StatCard';
@@ -17,8 +18,7 @@ export const JudgeStatusPage = () => {
   const [loading, setLoading] = useState(true);
   const [judgeStatuses, setJudgeStatuses] = useState({}); // { [eventId]: 'ACTIVE' | 'INACTIVE' | 'BUSY' }
   const [updating, setUpdating] = useState({});
-  const [feedback, setFeedback] = useState(null);
-
+  const { showNotification } = useNotification();
   useEffect(() => {
     loadJudgeData();
   }, []);
@@ -46,13 +46,12 @@ export const JudgeStatusPage = () => {
 
   const handleStatusChange = async (eventId, newStatus) => {
     setUpdating((prev) => ({ ...prev, [eventId]: true }));
-    setFeedback(null);
     try {
       await api.updateJudgeStatus(eventId, newStatus);
       setJudgeStatuses((prev) => ({ ...prev, [eventId]: newStatus }));
-      setFeedback({ type: 'success', text: `Status updated to ${newStatus} for event #${eventId}!` });
+      showNotification('success', `Status updated to ${newStatus} for event #${eventId}!`);
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Failed to update status.' });
+      showNotification('error', err.message || 'Failed to update status.');
     } finally {
       setUpdating((prev) => ({ ...prev, [eventId]: false }));
     }
@@ -77,16 +76,6 @@ export const JudgeStatusPage = () => {
         </p>
       </div>
 
-      {feedback && (
-        <div
-          className={`p-4 rounded-xl border-3 border-neo-ink font-bold text-center neo-shadow ${
-            feedback.type === 'success' ? 'bg-neo-pastel-green' : 'bg-neo-pastel-pink'
-          }`}
-        >
-          {feedback.text}
-        </div>
-      )}
-
       {/* Profile Overview Card */}
       <NeoCard color="bg-white" className="flex flex-col md:flex-row items-center justify-between gap-6 p-6">
         <div className="flex items-center gap-4">
@@ -96,9 +85,6 @@ export const JudgeStatusPage = () => {
           <div>
             <h2 className="text-2xl font-black text-neo-ink">{user?.name}</h2>
             <p className="font-bold text-neo-ink/60">{user?.email}</p>
-            <span className="inline-block mt-1 text-xs font-black uppercase px-2.5 py-0.5 bg-neo-pastel-green border-2 border-neo-ink rounded-full">
-              {user?.role || 'Judge'}
-            </span>
           </div>
         </div>
 

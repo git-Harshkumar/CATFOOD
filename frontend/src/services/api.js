@@ -99,12 +99,36 @@ class ApiService {
     return this.request(`/events/${eventId}/criteria`, { method: 'POST', body: data });
   }
 
+  async updateCriterion(eventId, criterionId, data) {
+    return this.request(`/events/${eventId}/criteria/${criterionId}`, { method: 'PUT', body: data });
+  }
+
+  async deleteCriterion(eventId, criterionId) {
+    return this.request(`/events/${eventId}/criteria/${criterionId}`, { method: 'DELETE' });
+  }
+
   async addPrize(eventId, data) {
     return this.request(`/events/${eventId}/prizes`, { method: 'POST', body: data });
   }
 
+  async updatePrize(eventId, prizeId, data) {
+    return this.request(`/events/${eventId}/prizes/${prizeId}`, { method: 'PUT', body: data });
+  }
+
+  async deletePrize(eventId, prizeId) {
+    return this.request(`/events/${eventId}/prizes/${prizeId}`, { method: 'DELETE' });
+  }
+
   async addEventQuestion(eventId, data) {
     return this.request(`/events/${eventId}/questions`, { method: 'POST', body: data });
+  }
+
+  async updateEventQuestion(eventId, questionId, data) {
+    return this.request(`/events/${eventId}/questions/${questionId}`, { method: 'PUT', body: data });
+  }
+
+  async deleteEventQuestion(eventId, questionId) {
+    return this.request(`/events/${eventId}/questions/${questionId}`, { method: 'DELETE' });
   }
 
   async assignJudge(eventId, judgeEmail, trackIds = []) {

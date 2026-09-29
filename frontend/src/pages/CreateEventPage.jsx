@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useNotification } from '../context/NotificationContext';
 import api from '../services/api';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
@@ -23,7 +24,7 @@ export const CreateEventPage = () => {
     { name: 'UI / UX Design', maxScore: 10, weight: 0.8 },
   ]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const { showNotification } = useNotification();
 
   const addCriterion = () => {
     setCriteria([...criteria, { name: '', maxScore: 10, weight: 1.0 }]);
@@ -41,7 +42,6 @@ export const CreateEventPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
 
     try {
@@ -64,7 +64,7 @@ export const CreateEventPage = () => {
       // Navigate to the newly created event detail page or organizer dashboard
       navigate(`/events/${res.data.id}`);
     } catch (err) {
-      setError(err.message || 'Failed to create hackathon');
+      showNotification('error', err.message || 'Failed to create hackathon');
     } finally {
       setLoading(false);
     }
@@ -90,11 +90,6 @@ export const CreateEventPage = () => {
 
       <NeoCard color="bg-neo-pastel-yellow" className="p-8">
         <form onSubmit={handleSubmit} className="space-y-8">
-          {error && (
-            <div className="p-4 rounded-xl bg-neo-pastel-pink border-3 border-neo-ink text-neo-ink font-bold text-center">
-              {error}
-            </div>
-          )}
 
           <div className="space-y-6">
             <h3 className="text-2xl font-black text-neo-ink border-b-3 border-neo-ink/20 pb-2">Basic Details</h3>

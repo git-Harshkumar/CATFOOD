@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
 import { Trophy, Medal, Award, ArrowLeft, Lock } from 'lucide-react';
@@ -9,8 +10,9 @@ export const LeaderboardPage = ({ eventId, onBack }) => {
   const { user, isOrganizer } = useAuth();
   const [leaderboard, setLeaderboard] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     fetchLeaderboard();
@@ -19,13 +21,14 @@ export const LeaderboardPage = ({ eventId, onBack }) => {
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
-      setError(null);
+      setError(false);
       const res = await api.getLeaderboard(eventId);
       if (res?.data) {
         setLeaderboard(res.data);
       }
     } catch (err) {
-      setError(err.message || 'Failed to load leaderboard');
+      showNotification('error', err.message || 'Failed to load leaderboard');
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -38,8 +41,9 @@ export const LeaderboardPage = ({ eventId, onBack }) => {
       const nextState = !leaderboard.isLeaderboardPublished;
       await api.publishLeaderboard(eventId, nextState);
       await fetchLeaderboard();
+      showNotification('success', nextState ? 'Leaderboard published successfully!' : 'Leaderboard hidden successfully!');
     } catch (err) {
-      alert(err.message);
+      showNotification('error', err.message || 'Failed to publish/unpublish leaderboard');
     } finally {
       setPublishing(false);
     }
@@ -56,7 +60,7 @@ export const LeaderboardPage = ({ eventId, onBack }) => {
           <Lock className="w-10 h-10 text-neo-ink" />
         </div>
         <h3 className="text-4xl font-black text-neo-ink">Leaderboard Hidden</h3>
-        <p className="text-xl font-bold text-neo-ink/60 max-w-md mx-auto">{error}</p>
+        <p className="text-xl font-bold text-neo-ink/60 max-w-md mx-auto">This leaderboard is not currently public.</p>
         <NeoButton onClick={onBack} color="bg-white" textColor="text-neo-ink">
           <ArrowLeft className="w-5 h-5 mr-2" /> Back to Hackathon
         </NeoButton>

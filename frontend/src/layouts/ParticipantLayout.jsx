@@ -23,7 +23,7 @@ export const ParticipantLayout = () => {
             J
           </div>
           <h1 className="text-2xl font-black text-neo-ink tracking-tight">
-            JuryFlow
+            CATFOOD
           </h1>
         </div>
         

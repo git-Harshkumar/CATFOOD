@@ -51,6 +51,51 @@ router.post(
   eventController.addEventQuestion
 );
 
+router.put(
+  '/:id/criteria/:criterionId',
+  authenticate,
+  requireRole('ORGANIZER'),
+  validate(validateCriterion),
+  eventController.updateCriterion
+);
+
+router.delete(
+  '/:id/criteria/:criterionId',
+  authenticate,
+  requireRole('ORGANIZER'),
+  eventController.deleteCriterion
+);
+
+router.put(
+  '/:id/prizes/:prizeId',
+  authenticate,
+  requireRole('ORGANIZER'),
+  validate(validatePrize),
+  eventController.updatePrize
+);
+
+router.delete(
+  '/:id/prizes/:prizeId',
+  authenticate,
+  requireRole('ORGANIZER'),
+  eventController.deletePrize
+);
+
+router.put(
+  '/:id/questions/:questionId',
+  authenticate,
+  requireRole('ORGANIZER'),
+  validate(validateEventQuestion),
+  eventController.updateEventQuestion
+);
+
+router.delete(
+  '/:id/questions/:questionId',
+  authenticate,
+  requireRole('ORGANIZER'),
+  eventController.deleteEventQuestion
+);
+
 router.post(
   '/:id/judges',
   authenticate,

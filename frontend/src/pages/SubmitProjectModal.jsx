@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 import { Modal } from '../components/Modal';
 import NeoButton from '../components/neo/NeoButton';
 import NeoCard from '../components/neo/NeoCard';
@@ -14,7 +15,7 @@ export const SubmitProjectModal = ({ isOpen, onClose, teamId, existingSubmission
   const [videoUrl, setVideoUrl] = useState('');
   const [techStack, setTechStack] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     if (existingSubmission) {
@@ -34,12 +35,10 @@ export const SubmitProjectModal = ({ isOpen, onClose, teamId, existingSubmission
       setVideoUrl('');
       setTechStack('');
     }
-    setError(null);
   }, [existingSubmission, isOpen]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, finalStatus = 'DRAFT') => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
 
     try {
@@ -51,11 +50,13 @@ export const SubmitProjectModal = ({ isOpen, onClose, teamId, existingSubmission
         demoUrl,
         videoUrl,
         techStack,
+        status: finalStatus,
       });
       if (onSuccess) onSuccess();
+      showNotification('success', `Project ${finalStatus === 'SUBMITTED' ? 'submitted' : 'saved as draft'} successfully!`);
       onClose();
     } catch (err) {
-      setError(err.message || 'Failed to submit project');
+      showNotification('error', err.message || 'Failed to submit project');
     } finally {
       setLoading(false);
     }
@@ -75,12 +76,6 @@ export const SubmitProjectModal = ({ isOpen, onClose, teamId, existingSubmission
       maxWidth="max-w-3xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        {error && (
-          <div className="p-4 rounded-xl bg-neo-pastel-pink border-3 border-neo-ink text-neo-ink font-bold text-center flex justify-center items-center gap-2">
-            <AlertTriangle className="w-5 h-5 shrink-0 text-neo-ink" />
-            <span>{error}</span>
-          </div>
-        )}
 
         {/* Status Pill */}
         <div className="flex justify-end">
@@ -198,9 +193,12 @@ export const SubmitProjectModal = ({ isOpen, onClose, teamId, existingSubmission
             <NeoButton type="button" onClick={onClose} color="bg-white" textColor="text-neo-ink">
               Cancel
             </NeoButton>
-            <NeoButton type="submit" disabled={loading} color="bg-neo-pastel-green" textColor="text-neo-ink">
+            <NeoButton type="button" onClick={(e) => handleSubmit(e, 'DRAFT')} disabled={loading} color="bg-neo-pastel-orange" textColor="text-neo-ink">
+              Save as Draft
+            </NeoButton>
+            <NeoButton type="button" onClick={(e) => handleSubmit(e, 'SUBMITTED')} disabled={loading} color="bg-neo-pastel-green" textColor="text-neo-ink">
               <CheckCircle className="w-5 h-5 mr-2" />
-              {loading ? 'Submitting...' : 'Save Deliverable'}
+              {loading ? 'Submitting...' : 'Final Submit'}
             </NeoButton>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 import NeoCard from './neo/NeoCard';
 import NeoButton from './neo/NeoButton';
 import { Modal } from './Modal';
@@ -21,7 +22,7 @@ export const JudgingProgressSection = ({ eventId }) => {
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState(null);
+  const { showNotification } = useNotification();
   const [activeView, setActiveView] = useState('judges'); // 'judges' | 'projects' | 'normalization'
   const [normalizationResult, setNormalizationResult] = useState(null);
   const [autoAssignModalOpen, setAutoAssignModalOpen] = useState(false);
@@ -42,7 +43,7 @@ export const JudgingProgressSection = ({ eventId }) => {
       }
     } catch (err) {
       console.error('Failed to load judging progress:', err);
-      setStatusMessage({ type: 'error', text: err.message || 'Failed to load progress' });
+      showNotification('error', err.message || 'Failed to load progress');
     } finally {
       setLoading(false);
     }
@@ -51,19 +52,15 @@ export const JudgingProgressSection = ({ eventId }) => {
   const handleRunNormalization = async () => {
     try {
       setActionLoading(true);
-      setStatusMessage(null);
       const res = await api.runNormalization(eventId);
       if (res?.data) {
         setNormalizationResult(res.data);
-        setStatusMessage({ 
-          type: 'success', 
-          text: `Normalization complete! ${res.data.evaluationsNormalized} evaluations calculated.` 
-        });
+        showNotification('success', `Normalization complete! ${res.data.evaluationsNormalized} evaluations calculated.`);
         fetchProgress();
       }
     } catch (err) {
       console.error('Normalization error:', err);
-      setStatusMessage({ type: 'error', text: err.message || 'Failed to execute score normalization' });
+      showNotification('error', err.message || 'Failed to execute score normalization');
     } finally {
       setActionLoading(false);
     }
@@ -73,10 +70,10 @@ export const JudgingProgressSection = ({ eventId }) => {
     try {
       setActionLoading(true);
       await api.downloadJudgingCsv(eventId, type);
-      setStatusMessage({ type: 'success', text: `Downloaded ${type} CSV export successfully.` });
+      showNotification('success', `Downloaded ${type} CSV export successfully.`);
     } catch (err) {
       console.error('CSV export error:', err);
-      setStatusMessage({ type: 'error', text: err.message || 'Failed to export CSV' });
+      showNotification('error', err.message || 'Failed to export CSV');
     } finally {
       setActionLoading(false);
     }
@@ -87,14 +84,11 @@ export const JudgingProgressSection = ({ eventId }) => {
       setActionLoading(true);
       const res = await api.autoAssignJudges(eventId, { judgesPerProject: Number(judgesPerProject) });
       setAutoAssignModalOpen(false);
-      setStatusMessage({ 
-        type: 'success', 
-        text: `Algorithmic assignment complete! Created ${res.data?.assignedCount || 0} assignments.` 
-      });
+      showNotification('success', `Algorithmic assignment complete! Created ${res.data?.assignedCount || 0} assignments.`);
       fetchProgress();
     } catch (err) {
       console.error('Auto assign error:', err);
-      setStatusMessage({ type: 'error', text: err.message || 'Failed to run auto-assignment' });
+      showNotification('error', err.message || 'Failed to run auto-assignment');
     } finally {
       setActionLoading(false);
     }
@@ -111,14 +105,7 @@ export const JudgingProgressSection = ({ eventId }) => {
 
   return (
     <div className="space-y-8">
-      {statusMessage && (
-        <div className={`p-4 rounded-xl border-3 border-neo-ink font-bold text-center neo-shadow flex items-center justify-center gap-2 ${
-          statusMessage.type === 'success' ? 'bg-neo-pastel-green text-neo-ink' : 'bg-neo-pastel-pink text-neo-ink'
-        }`}>
-          {statusMessage.type === 'success' ? <CheckCircle2 className="w-5 h-5 shrink-0" /> : <AlertCircle className="w-5 h-5 shrink-0" />}
-          <span>{statusMessage.text}</span>
-        </div>
-      )}
+
 
       {/* Organizer Action Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-5 rounded-2xl border-3 border-neo-ink neo-shadow">

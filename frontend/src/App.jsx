@@ -8,7 +8,7 @@ export function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-neo-bg flex items-center justify-center font-black text-2xl text-neo-ink/50">
-        Initializing JuryFlow Platform...
+        Initializing CATFOOD Platform...
       </div>
     );
   }

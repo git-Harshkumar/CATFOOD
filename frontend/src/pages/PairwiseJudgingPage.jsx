@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
 import { Award, Trophy, ArrowRight, RefreshCw, CheckCircle2, AlertCircle, ExternalLink, Github, Globe } from 'lucide-react';
@@ -16,7 +17,7 @@ export const PairwiseJudgingPage = () => {
   const [currentPair, setCurrentPair] = useState(null); // [subA, subB]
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState(null);
+  const { showNotification } = useNotification();
   const [activeTab, setActiveTab] = useState('matchup'); // 'matchup' | 'standings'
 
   useEffect(() => {
@@ -46,7 +47,6 @@ export const PairwiseJudgingPage = () => {
   const loadEventData = async (evId) => {
     try {
       setLoading(true);
-      setMessage(null);
 
       // Load submissions for event
       const subsRes = await api.getSubmissionsByEvent(evId);
@@ -72,7 +72,7 @@ export const PairwiseJudgingPage = () => {
       }
     } catch (err) {
       console.error('Failed to load event data for pairwise:', err);
-      setMessage({ type: 'error', text: err.message || 'Failed to load submissions for evaluation.' });
+      showNotification('error', err.message || 'Failed to load submissions for evaluation.');
     } finally {
       setLoading(false);
     }
@@ -94,10 +94,9 @@ export const PairwiseJudgingPage = () => {
 
   const handleVote = async (winnerId, loserId) => {
     setSubmitting(true);
-    setMessage(null);
     try {
       await api.recordPairwiseComparison(selectedEventId, winnerId, loserId);
-      setMessage({ type: 'success', text: 'Pairwise comparison successfully recorded!' });
+      showNotification('success', 'Pairwise comparison successfully recorded!');
 
       // Refresh standings
       const standingsRes = await api.getPairwiseStandings(selectedEventId);
@@ -109,7 +108,7 @@ export const PairwiseJudgingPage = () => {
       // Advance to next pair
       pickNextPair(submissions);
     } catch (err) {
-      setMessage({ type: 'error', text: err.message || 'Failed to record comparison.' });
+      showNotification('error', err.message || 'Failed to record comparison.');
     } finally {
       setSubmitting(false);
     }
@@ -157,22 +156,7 @@ export const PairwiseJudgingPage = () => {
         )}
       </div>
 
-      {message && (
-        <div
-          className={`p-4 rounded-xl border-3 border-neo-ink font-bold text-center flex items-center justify-center gap-2 neo-shadow ${
-            message.type === 'success' ? 'bg-neo-pastel-green' : 'bg-neo-pastel-pink'
-          }`}
-        >
-          {message.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-neo-ink shrink-0" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-neo-ink shrink-0" />
-          )}
-          <span>{message.text}</span>
-        </div>
-      )}
 
-      {/* Tabs */}
       <div className="flex items-center gap-4">
         <button
           onClick={() => setActiveTab('matchup')}

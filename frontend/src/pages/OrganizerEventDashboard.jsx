@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
 import StatCard from '../components/neo/StatCard';
@@ -43,7 +45,7 @@ export const OrganizerEventDashboard = () => {
 
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [feedback, setFeedback] = useState(null);
+  const { showNotification } = useNotification();
 
   // Active Tab
   const activeTab = location.pathname.includes('/developer') ? 'developer'
@@ -207,7 +209,6 @@ export const OrganizerEventDashboard = () => {
   const handleUpdateEvent = async (e) => {
     e.preventDefault();
     setUpdatingEvent(true);
-    setFeedback(null);
     try {
       await api.updateEvent(id, {
         title: editTitle,
@@ -216,12 +217,42 @@ export const OrganizerEventDashboard = () => {
         minTeamSize: parseInt(editMinTeam, 10),
         maxTeamSize: parseInt(editMaxTeam, 10),
       });
-      setFeedback({ type: 'success', text: 'Hackathon details successfully updated!' });
+      showNotification('success', 'Hackathon details successfully updated!');
       await fetchEventDetails();
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Failed to update event.' });
+      showNotification('error', err.message || 'Failed to update event.');
     } finally {
       setUpdatingEvent(false);
+    }
+  };
+
+  const handleDeleteCriterion = async (criterionId) => {
+    try {
+      await api.deleteCriterion(id, criterionId);
+      showNotification('success', 'Criterion deleted!');
+      await fetchEventDetails();
+    } catch (err) {
+      showNotification('error', err.message || 'Failed to delete criterion.');
+    }
+  };
+
+  const handleDeletePrize = async (prizeId) => {
+    try {
+      await api.deletePrize(id, prizeId);
+      showNotification('success', 'Prize deleted!');
+      await fetchEventDetails();
+    } catch (err) {
+      showNotification('error', err.message || 'Failed to delete prize.');
+    }
+  };
+
+  const handleDeleteQuestion = async (questionId) => {
+    try {
+      await api.deleteEventQuestion(id, questionId);
+      showNotification('success', 'Question deleted!');
+      await fetchEventDetails();
+    } catch (err) {
+      showNotification('error', err.message || 'Failed to delete question.');
     }
   };
 
@@ -229,7 +260,6 @@ export const OrganizerEventDashboard = () => {
     e.preventDefault();
     if (!newCritName.trim()) return;
     setAddingCriterion(true);
-    setFeedback(null);
     try {
       await api.addCriterion(id, {
         name: newCritName.trim(),
@@ -239,10 +269,10 @@ export const OrganizerEventDashboard = () => {
       });
       setNewCritName('');
       setNewCritDesc('');
-      setFeedback({ type: 'success', text: 'Judging rubric criterion added!' });
+      showNotification('success', 'Judging rubric criterion added!');
       await fetchEventDetails();
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Failed to add criterion.' });
+      showNotification('error', err.message || 'Failed to add criterion.');
     } finally {
       setAddingCriterion(false);
     }
@@ -252,20 +282,19 @@ export const OrganizerEventDashboard = () => {
     e.preventDefault();
     if (!prizeName.trim()) return;
     setAddingPrize(true);
-    setFeedback(null);
     try {
       await api.addPrize(id, {
         name: prizeName.trim(),
         description: prizeDesc.trim() || undefined,
-        amount: prizeAmount ? Number(prizeAmount) : undefined,
+        value: prizeAmount ? String(prizeAmount) : undefined,
       });
       setPrizeName('');
       setPrizeDesc('');
       setPrizeAmount('');
-      setFeedback({ type: 'success', text: 'Prize track added!' });
+      showNotification('success', 'Prize track added!');
       await fetchEventDetails();
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Failed to add prize.' });
+      showNotification('error', err.message || 'Failed to add prize.');
     } finally {
       setAddingPrize(false);
     }
@@ -275,7 +304,6 @@ export const OrganizerEventDashboard = () => {
     e.preventDefault();
     if (!questionText.trim()) return;
     setAddingQuestion(true);
-    setFeedback(null);
     try {
       await api.addEventQuestion(id, {
         question: questionText.trim(),
@@ -283,10 +311,10 @@ export const OrganizerEventDashboard = () => {
       });
       setQuestionText('');
       setQuestionRequired(false);
-      setFeedback({ type: 'success', text: 'Registration question added!' });
+      showNotification('success', 'Registration question added!');
       await fetchEventDetails();
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Failed to add question.' });
+      showNotification('error', err.message || 'Failed to add question.');
     } finally {
       setAddingQuestion(false);
     }
@@ -296,15 +324,14 @@ export const OrganizerEventDashboard = () => {
     e.preventDefault();
     if (!judgeEmail.trim()) return;
     setAssigningJudge(true);
-    setFeedback(null);
     try {
       await api.assignJudge(id, judgeEmail.trim());
-      setFeedback({ type: 'success', text: `Judge ${judgeEmail} appointed successfully!` });
+      showNotification('success', `Judge ${judgeEmail} appointed successfully!`);
       setJudgeEmail('');
       await fetchEventDetails();
       await fetchJudgeAssignments();
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Failed to assign judge.' });
+      showNotification('error', err.message || 'Failed to assign judge.');
     } finally {
       setAssigningJudge(false);
     }
@@ -313,13 +340,12 @@ export const OrganizerEventDashboard = () => {
   const handleAutoAssign = async (e) => {
     e.preventDefault();
     setAutoAssigning(true);
-    setFeedback(null);
     try {
       await api.autoAssignJudges(id, { judgesPerSubmission: parseInt(autoJudgesPerSub, 10) });
-      setFeedback({ type: 'success', text: 'Workload auto-distributed across judges evenly!' });
+      showNotification('success', 'Workload auto-distributed across judges evenly!');
       await fetchJudgeAssignments();
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Auto-assign failed.' });
+      showNotification('error', err.message || 'Auto-assign failed.');
     } finally {
       setAutoAssigning(false);
     }
@@ -329,16 +355,15 @@ export const OrganizerEventDashboard = () => {
     e.preventDefault();
     if (!batchEmails.trim()) return;
     setBatchAssigning(true);
-    setFeedback(null);
     try {
       const emailList = batchEmails.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
       await api.batchAssignJudges(id, { judgeEmails: emailList });
       setBatchEmails('');
-      setFeedback({ type: 'success', text: `Batch assigned ${emailList.length} judges!` });
+      showNotification('success', `Batch assigned ${emailList.length} judges!`);
       await fetchEventDetails();
       await fetchJudgeAssignments();
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Batch assign failed.' });
+      showNotification('error', err.message || 'Batch assign failed.');
     } finally {
       setBatchAssigning(false);
     }
@@ -347,39 +372,34 @@ export const OrganizerEventDashboard = () => {
   const handleRemoveAssignment = async (assignmentId) => {
     try {
       await api.removeJudgeAssignment(id, assignmentId);
-      setFeedback({ type: 'success', text: 'Judge assignment removed.' });
+      showNotification('success', 'Judge assignment removed.');
       await fetchJudgeAssignments();
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Failed to remove assignment.' });
+      showNotification('error', err.message || 'Failed to remove assignment.');
     }
   };
 
   const handleRunNormalization = async () => {
     setNormalizing(true);
-    setFeedback(null);
     try {
       const res = await api.runNormalization(id);
-      setFeedback({
-        type: 'success',
-        text: 'Z-score normalization completed across all judges and criteria!',
-      });
+      showNotification('success', 'Z-score normalization completed across all judges and criteria!');
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Normalization failed.' });
+      showNotification('error', err.message || 'Normalization failed.');
     } finally {
       setNormalizing(false);
     }
   };
 
   const handleToggleVotingSettings = async (updates) => {
-    setFeedback(null);
     try {
       await api.updateVotingSettings(id, updates);
       if (updates.isVotingActive !== undefined) setIsVotingActive(updates.isVotingActive);
       if (updates.areResultsRevealed !== undefined) setAreResultsRevealed(updates.areResultsRevealed);
-      setFeedback({ type: 'success', text: 'Voting settings updated successfully.' });
+      showNotification('success', 'Voting settings updated successfully.');
       await fetchCommunityResults();
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Failed to update voting settings.' });
+      showNotification('error', err.message || 'Failed to update voting settings.');
     }
   };
 
@@ -387,7 +407,6 @@ export const OrganizerEventDashboard = () => {
     e.preventDefault();
     if (!webhookUrl.trim()) return;
     setRegisteringHook(true);
-    setFeedback(null);
     try {
       const eventsArr = webhookEvents.split(',').map(s => s.trim()).filter(Boolean);
       await api.registerWebhook(id, {
@@ -397,10 +416,10 @@ export const OrganizerEventDashboard = () => {
       });
       setWebhookUrl('');
       setWebhookSecret('');
-      setFeedback({ type: 'success', text: 'Webhook successfully registered!' });
+      showNotification('success', 'Webhook successfully registered!');
       await fetchWebhooks();
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Failed to register webhook.' });
+      showNotification('error', err.message || 'Failed to register webhook.');
     } finally {
       setRegisteringHook(false);
     }
@@ -409,10 +428,10 @@ export const OrganizerEventDashboard = () => {
   const handleDeleteWebhook = async (whId) => {
     try {
       await api.deleteWebhook(whId);
-      setFeedback({ type: 'success', text: 'Webhook deleted.' });
+      showNotification('success', 'Webhook deleted.');
       await fetchWebhooks();
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Failed to delete webhook.' });
+      showNotification('error', err.message || 'Failed to delete webhook.');
     }
   };
 
@@ -423,9 +442,9 @@ export const OrganizerEventDashboard = () => {
       const res = await api.testWebhook(id);
       const attempts = res?.data || res || [];
       setHookTestResults(attempts);
-      setFeedback({ type: 'success', text: `Dispatched test payload to ${attempts.length} endpoint(s).` });
+      showNotification('success', `Dispatched test payload to ${attempts.length} endpoint(s).`);
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Test dispatch failed.' });
+      showNotification('error', err.message || 'Test dispatch failed.');
     } finally {
       setTestingHook(false);
     }
@@ -435,15 +454,14 @@ export const OrganizerEventDashboard = () => {
     e.preventDefault();
     if (!importJson.trim()) return;
     setImporting(true);
-    setFeedback(null);
     try {
       const parsed = JSON.parse(importJson);
       await api.importProjects(id, parsed);
       setImportJson('');
-      setFeedback({ type: 'success', text: 'Projects and teams imported successfully!' });
+      showNotification('success', 'Projects and teams imported successfully!');
       await fetchEventDetails();
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Invalid JSON format or import error.' });
+      showNotification('error', err.message || 'Invalid JSON format or import error.');
     } finally {
       setImporting(false);
     }
@@ -453,7 +471,6 @@ export const OrganizerEventDashboard = () => {
     e.preventDefault();
     if (!certRecipientName.trim() || !certRecipientEmail.trim()) return;
     setIssuingCert(true);
-    setFeedback(null);
     try {
       const res = await api.issueCertificate(id, {
         recipientName: certRecipientName.trim(),
@@ -463,11 +480,11 @@ export const OrganizerEventDashboard = () => {
       });
       const cert = res?.data || res;
       setIssuedCertId(cert.id);
-      setFeedback({ type: 'success', text: `Verifiable credential issued: ${cert.id}` });
+      showNotification('success', `Verifiable credential issued: ${cert.id}`);
       setCertRecipientName('');
       setCertRecipientEmail('');
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Failed to issue certificate.' });
+      showNotification('error', err.message || 'Failed to issue certificate.');
     } finally {
       setIssuingCert(false);
     }
@@ -520,21 +537,6 @@ export const OrganizerEventDashboard = () => {
           </NeoButton>
         </div>
       </div>
-
-      {feedback && (
-        <div
-          className={`p-4 rounded-xl border-3 border-neo-ink font-bold text-center flex items-center justify-center gap-2 neo-shadow ${
-            feedback.type === 'success' ? 'bg-neo-pastel-green' : 'bg-neo-pastel-pink'
-          }`}
-        >
-          {feedback.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-neo-ink shrink-0" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-neo-ink shrink-0" />
-          )}
-          <span>{feedback.text}</span>
-        </div>
-      )}
 
       {/* DASHBOARD OVERVIEW TAB */}
       {activeTab === 'dashboard' && (
@@ -689,6 +691,9 @@ export const OrganizerEventDashboard = () => {
                     <span className="font-black text-xs px-2.5 py-1 bg-neo-pastel-green border border-neo-ink rounded-lg">
                       Weight: {c.weight}x
                     </span>
+                    <button onClick={() => handleDeleteCriterion(c.id)} className="p-1.5 bg-neo-pastel-pink border-2 border-neo-ink rounded-lg hover:neo-active text-neo-ink" title="Delete Criterion">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -756,11 +761,16 @@ export const OrganizerEventDashboard = () => {
                     <h4 className="font-black text-lg text-neo-ink">{p.name}</h4>
                     {p.description && <p className="text-xs font-bold text-neo-ink/70">{p.description}</p>}
                   </div>
-                  {p.amount && (
-                    <span className="font-black text-sm px-3 py-1 bg-neo-pastel-green border-2 border-neo-ink rounded-full">
-                      ${p.amount}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {p.value && (
+                      <span className="font-black text-sm px-3 py-1 bg-neo-pastel-green border-2 border-neo-ink rounded-full">
+                        ${p.value}
+                      </span>
+                    )}
+                    <button onClick={() => handleDeletePrize(p.id)} className="p-1.5 bg-neo-pastel-pink border-2 border-neo-ink rounded-lg hover:neo-active text-neo-ink" title="Delete Prize">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -807,10 +817,15 @@ export const OrganizerEventDashboard = () => {
             <div className="space-y-3 mb-6">
               {event.questions?.map((q) => (
                 <div key={q.id} className="p-4 bg-white rounded-xl border-3 border-neo-ink flex items-center justify-between neo-shadow-sm">
-                  <span className="font-black text-base text-neo-ink">{q.question}</span>
-                  <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${q.isRequired ? 'bg-neo-pastel-orange' : 'bg-gray-100'}`}>
-                    {q.isRequired ? 'Required' : 'Optional'}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-base text-neo-ink">{q.question}</span>
+                    <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${q.isRequired ? 'bg-neo-pastel-orange' : 'bg-gray-100'}`}>
+                      {q.isRequired ? 'Required' : 'Optional'}
+                    </span>
+                  </div>
+                  <button onClick={() => handleDeleteQuestion(q.id)} className="p-1.5 bg-neo-pastel-pink border-2 border-neo-ink rounded-lg hover:neo-active text-neo-ink" title="Delete Question">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               ))}
             </div>

@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-The **Hackathon Judgment Platform** (JuryFlow) is designed to operate high-stakes hackathons, engineering competitions, and project showcases. The platform enforces strict separation between client-side user experience, server-side business rules, persistent storage, automated testing, and comprehensive technical documentation.
+The **Hackathon Judgment Platform** (CATFOOD) is designed to operate high-stakes hackathons, engineering competitions, and project showcases. The platform enforces strict separation between client-side user experience, server-side business rules, persistent storage, automated testing, and comprehensive technical documentation.
 
 ---
 

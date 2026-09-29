@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 import { RubricScoreSlider } from '../components/RubricScoreSlider';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
@@ -10,8 +11,7 @@ export const ScoringPage = ({ eventId, submissionId, onBack, onSuccess }) => {
   const [scores, setScores] = useState({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [statusMessage, setStatusMessage] = useState(null);
-
+  const { showNotification } = useNotification();
   useEffect(() => {
     fetchSubmissionAndScores();
   }, [submissionId]);
@@ -64,7 +64,6 @@ export const ScoringPage = ({ eventId, submissionId, onBack, onSuccess }) => {
 
   const handleSubmitScores = async () => {
     setSubmitting(true);
-    setStatusMessage(null);
 
     const payload = submission.event.criteria.map((c) => ({
       criterionId: c.id,
@@ -74,10 +73,10 @@ export const ScoringPage = ({ eventId, submissionId, onBack, onSuccess }) => {
 
     try {
       await api.submitScores(submission.id, payload);
-      setStatusMessage({ type: 'success', text: 'Scores and qualitative feedback saved successfully!' });
+      showNotification('success', 'Scores and qualitative feedback saved successfully!');
       if (onSuccess) onSuccess();
     } catch (err) {
-      setStatusMessage({ type: 'error', text: err.message || 'Failed to submit scores' });
+      showNotification('error', err.message || 'Failed to submit scores');
     } finally {
       setSubmitting(false);
     }
@@ -120,13 +119,7 @@ export const ScoringPage = ({ eventId, submissionId, onBack, onSuccess }) => {
         </div>
       </div>
 
-      {statusMessage && (
-        <div className={`p-4 rounded-xl border-3 border-neo-ink font-bold text-center ${statusMessage.type === 'success' ? 'bg-neo-pastel-green' : 'bg-neo-pastel-pink'}`}>
-          {statusMessage.text}
-        </div>
-      )}
 
-      {/* Project Overview Card */}
       <NeoCard color="bg-neo-pastel-purple" className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b-3 border-neo-ink pb-6">
           <div>

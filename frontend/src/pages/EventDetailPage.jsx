@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import { CountdownTimer } from '../components/CountdownTimer';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
@@ -32,7 +33,7 @@ export const EventDetailPage = ({
   const [activeTab, setActiveTab] = useState('overview'); // overview, criteria, submissions, teams
   const [judgeEmail, setJudgeEmail] = useState('');
   const [assigningJudge, setAssigningJudge] = useState(false);
-  const [message, setMessage] = useState(null);
+  const { showNotification } = useNotification();
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
@@ -67,14 +68,13 @@ export const EventDetailPage = ({
     e.preventDefault();
     if (!judgeEmail) return;
     setAssigningJudge(true);
-    setMessage(null);
     try {
       await api.assignJudge(eventId, judgeEmail);
-      setMessage({ type: 'success', text: `Judge ${judgeEmail} successfully assigned!` });
+      showNotification('success', `Judge ${judgeEmail} successfully assigned!`);
       setJudgeEmail('');
       await fetchEventDetails();
     } catch (err) {
-      setMessage({ type: 'error', text: err.message });
+      showNotification('error', err.message);
     } finally {
       setAssigningJudge(false);
     }
@@ -86,12 +86,9 @@ export const EventDetailPage = ({
       const nextState = !event.isLeaderboardPublished;
       await api.publishLeaderboard(event.id, nextState);
       await fetchEventDetails();
-      setMessage({
-        type: 'success',
-        text: `Leaderboard is now ${nextState ? 'PUBLISHED' : 'HIDDEN'}!`,
-      });
+      showNotification('success', `Leaderboard is now ${nextState ? 'PUBLISHED' : 'HIDDEN'}!`);
     } catch (err) {
-      setMessage({ type: 'error', text: err.message });
+      showNotification('error', err.message);
     }
   };
 
@@ -135,13 +132,6 @@ export const EventDetailPage = ({
           </NeoButton>
         </div>
       </div>
-
-      {message && (
-        <NeoCard color={message.type === 'success' ? 'bg-neo-pastel-green' : 'bg-neo-pastel-pink'} className="py-4 font-bold text-center">
-          {message.text}
-        </NeoCard>
-      )}
-
       {/* Hero Header Card */}
       <NeoCard color="bg-neo-pastel-purple" className="flex flex-col md:flex-row md:items-start justify-between gap-8">
         <div className="space-y-6 max-w-3xl">

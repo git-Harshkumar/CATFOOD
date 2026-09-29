@@ -40,7 +40,7 @@ export const Navbar = () => {
             className="flex items-center gap-2 px-4 py-2 text-white font-black text-lg tracking-tight hover:scale-105 transition-transform"
           >
             <Trophy className="w-5 h-5 text-neo-yellow" />
-            JuryFlow
+            CATFOOD
           </button>
           
           <div className="w-px h-6 bg-white/20 mx-2"></div>
@@ -74,17 +74,17 @@ export const Navbar = () => {
           {user ? (
             <>
               {/* Avatar Pill */}
-              <div className="flex items-center gap-3 bg-neo-pastel-orange rounded-full py-1.5 pl-2 pr-6 border-3 border-neo-ink neo-shadow">
-                <div className="w-10 h-10 rounded-full bg-white border-2 border-neo-ink flex items-center justify-center font-black text-neo-ink text-lg">
+              <button 
+                onClick={() => navigate('/profile')}
+                className="flex items-center gap-3 bg-neo-pastel-orange rounded-full py-1.5 pl-2 pr-6 border-3 border-neo-ink neo-shadow hover:neo-active transition-transform text-left"
+              >
+                <div className="w-10 h-10 rounded-full bg-white border-2 border-neo-ink flex items-center justify-center font-black text-neo-ink text-lg shrink-0">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex flex-col items-start leading-tight">
                   <span className="font-bold text-sm text-neo-ink">{user.name}</span>
-                  <span className="text-[10px] font-bold text-neo-ink/70 uppercase">
-                    {isGlobalAdmin ? 'Admin' : (isOrganizer ? 'Organizer' : (isJudge ? 'Judge' : 'Participant'))}
-                  </span>
                 </div>
-              </div>
+              </button>
 
               {/* Settings / Logout */}
               <button

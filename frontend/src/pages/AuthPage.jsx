@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
 import { Trophy, Lock, Mail, User, Shield, Sparkles } from 'lucide-react';
@@ -11,12 +12,11 @@ export const AuthPage = ({ onSuccess }) => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState('PARTICIPANT');
-  const [error, setError] = useState(null);
+  const { showNotification } = useNotification();
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
 
     try {
@@ -24,7 +24,7 @@ export const AuthPage = ({ onSuccess }) => {
         await login({ email, password });
       } else {
         if (!password || password.length < 6) {
-          setError('Password must be at least 6 characters long.');
+          showNotification('error', 'Password must be at least 6 characters long.');
           setLoading(false);
           return;
         }
@@ -33,20 +33,19 @@ export const AuthPage = ({ onSuccess }) => {
       if (onSuccess) onSuccess();
     } catch (err) {
       const msg = err.errors?.password || (err.errors ? Object.values(err.errors).join(', ') : err.message);
-      setError(msg || 'Authentication failed');
+      showNotification('error', msg || 'Authentication failed');
     } finally {
       setLoading(false);
     }
   };
 
   const quickLogin = async (demoEmail) => {
-    setError(null);
     setLoading(true);
     try {
       await login({ email: demoEmail, password: 'password123' });
       if (onSuccess) onSuccess();
     } catch (err) {
-      setError(err.message || 'Demo login failed');
+      showNotification('error', err.message || 'Demo login failed');
     } finally {
       setLoading(false);
     }
@@ -107,12 +106,6 @@ export const AuthPage = ({ onSuccess }) => {
                 : 'Join the premier hackathon platform'}
             </p>
           </div>
-
-          {error && (
-            <div className="mb-6 p-4 rounded-xl bg-neo-pastel-pink border-3 border-neo-ink font-bold text-neo-ink text-center">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {!isLogin && (
@@ -182,7 +175,7 @@ export const AuthPage = ({ onSuccess }) => {
               textColor="text-white"
               className="w-full mt-8 !py-4 text-lg"
             >
-              {loading ? 'Processing...' : isLogin ? 'Sign In to JuryFlow' : 'Create Account'}
+              {loading ? 'Processing...' : isLogin ? 'Sign In to CATFOOD' : 'Create Account'}
             </NeoButton>
           </form>
 
@@ -192,7 +185,6 @@ export const AuthPage = ({ onSuccess }) => {
               type="button"
               onClick={() => {
                 setIsLogin(!isLogin);
-                setError(null);
               }}
               className="font-black text-neo-ink hover:underline decoration-3 underline-offset-4"
             >
