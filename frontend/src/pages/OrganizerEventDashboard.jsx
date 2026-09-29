@@ -6,7 +6,7 @@ import { useNotification } from '../context/NotificationContext';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
 import StatCard from '../components/neo/StatCard';
-import { getStatusBadge, formatDate } from '../utils/formatters';
+import { getStatusBadge, formatDate, getDerivedEventStatus } from '../utils/formatters';
 import {
   ArrowLeft,
   Users,
@@ -42,6 +42,7 @@ export const OrganizerEventDashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
 
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -513,7 +514,8 @@ export const OrganizerEventDashboard = () => {
     return <div className="py-20 text-center font-bold text-2xl text-neo-ink/50">Loading event dashboard...</div>;
   }
 
-  const statusBadge = getStatusBadge(event.status);
+  const derivedStatus = getDerivedEventStatus(event);
+  const statusBadge = getStatusBadge(derivedStatus);
 
   // Mock Graph Data for the specific event
   const registrationTrends = [
@@ -543,7 +545,7 @@ export const OrganizerEventDashboard = () => {
             <h1 className="text-4xl md:text-5xl font-black text-neo-ink tracking-tight uppercase">
               {event.title}
             </h1>
-            <span className={`px-3 py-1 rounded-full border-3 border-neo-ink font-black text-[10px] uppercase ${event.status === 'ACTIVE' ? 'bg-neo-pastel-green' : 'bg-white'}`}>
+            <span className={`px-3 py-1 rounded-full border-3 border-neo-ink font-black text-[10px] uppercase ${derivedStatus === 'ACTIVE' ? 'bg-neo-pastel-green' : 'bg-white'}`}>
               {statusBadge.label}
             </span>
           </div>

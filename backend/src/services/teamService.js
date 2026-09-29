@@ -6,7 +6,7 @@ const generateInviteCode = () => {
   return 'TEAM-' + crypto.randomBytes(4).toString('hex').toUpperCase();
 };
 
-const createTeam = async (userId, { eventId, name }) => {
+const createTeam = async (userId, { eventId, name, answers = [] }) => {
   const event = await prisma.event.findUnique({
     where: { id: parseInt(eventId, 10) },
   });
@@ -61,6 +61,22 @@ const createTeam = async (userId, { eventId, name }) => {
         name: name.trim(),
         inviteCode,
         leaderId: userId,
+        ...(answers.length > 0 && {
+          submission: {
+            create: {
+              eventId: event.id,
+              title: `${name.trim()} Submission`,
+              description: "",
+              status: 'DRAFT',
+              answers: {
+                create: answers.map(a => ({
+                  questionId: a.questionId,
+                  answer: a.answer,
+                }))
+              }
+            }
+          }
+        })
       },
     });
 
@@ -393,6 +409,46 @@ const leaveTeam = async (userId, teamId) => {
   return { success: true, message: 'Left team successfully.' };
 };
 
+const removeMember = async (teamId, memberId, requestingUserId) => {
+  const team = await prisma.team.findUnique({
+    where: { id: parseInt(teamId, 10) },
+    include: {
+      members: true,
+    },
+  });
+
+  if (!team) {
+    const error = new Error('Team not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (team.leaderId !== parseInt(requestingUserId, 10)) {
+    const error = new Error('Only the team leader can remove members.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  if (team.leaderId === parseInt(memberId, 10)) {
+    const error = new Error('The team leader cannot be removed. You must leave the team to disband or transfer leadership.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const membership = team.members.find(m => m.userId === parseInt(memberId, 10));
+  if (!membership) {
+    const error = new Error('User is not a member of this team.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  await prisma.teamMember.delete({
+    where: { id: membership.id },
+  });
+
+  return { success: true, message: 'Member removed successfully.' };
+};
+
 module.exports = {
   createTeam,
   joinTeam,
@@ -402,4 +458,5 @@ module.exports = {
   getMyTeams,
   leaveTeam,
   completeRegistration,
+  removeMember,
 };

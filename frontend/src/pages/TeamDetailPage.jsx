@@ -20,6 +20,7 @@ import {
   Clock,
   AlertCircle,
   ExternalLink,
+  UserMinus,
 } from 'lucide-react';
 import { formatDate } from '../utils/formatters';
 
@@ -117,6 +118,25 @@ export const TeamDetailPage = ({ onOpenSubmit }) => {
         } catch (err) {
           setConfirmModal((m) => ({ ...m, isOpen: false }));
           showNotification('error', err.message || 'Failed to complete registration.');
+        }
+      },
+    });
+  };
+
+  const handleRemoveMember = async (memberId, memberName) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Remove Member',
+      message: `Are you sure you want to remove ${memberName} from the team?`,
+      onConfirm: async () => {
+        try {
+          await api.removeTeamMember(team.id, memberId);
+          setConfirmModal((m) => ({ ...m, isOpen: false }));
+          showNotification('success', `${memberName} removed from team.`);
+          await fetchTeam();
+        } catch (err) {
+          setConfirmModal((m) => ({ ...m, isOpen: false }));
+          showNotification('error', err.message || 'Failed to remove member.');
         }
       },
     });
@@ -283,11 +303,19 @@ export const TeamDetailPage = ({ onOpenSubmit }) => {
                     </div>
                   </div>
 
-                  {isMemLeader && (
+                  {isMemLeader ? (
                     <span className="px-2.5 py-1 bg-neo-pastel-orange border-2 border-neo-ink rounded-full font-black text-[10px] uppercase flex items-center gap-1">
                       <Crown className="w-3 h-3" /> Leader
                     </span>
-                  )}
+                  ) : isLeader && !team.isRegistered ? (
+                    <button 
+                      onClick={() => handleRemoveMember(m.userId, m.user?.name || 'Member')}
+                      className="p-1.5 text-neo-ink hover:text-red-600 transition-colors bg-white border-2 border-neo-ink rounded-full neo-shadow-sm hover:neo-active"
+                      title="Remove Member"
+                    >
+                      <UserMinus className="w-4 h-4" />
+                    </button>
+                  ) : null}
                 </div>
               );
             })}

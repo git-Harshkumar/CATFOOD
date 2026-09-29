@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
@@ -19,6 +20,7 @@ export const MyActivityPage = ({
   autoOpenJoin,
   onClearContext,
 }) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { showNotification } = useNotification();
   const [teams, setTeams] = useState([]);
@@ -190,11 +192,19 @@ export const MyActivityPage = ({
     const bgClass = ['bg-neo-pastel-yellow', 'bg-neo-pastel-green', 'bg-neo-pastel-blue'][i % 3];
 
     return (
-      <NeoCard key={tm.id} color={bgClass} className="flex flex-col justify-between">
+      <NeoCard 
+        key={tm.id} 
+        color={bgClass} 
+        className="flex flex-col justify-between cursor-pointer hover:-translate-y-1 transition-transform"
+        onClick={() => navigate(`/teams/${tm.id}`)}
+      >
         <div className="space-y-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <span className="text-xs font-black uppercase tracking-wider px-3 py-1 bg-white border-3 border-neo-ink rounded-full neo-shadow cursor-pointer hover:bg-black/5" onClick={() => onSelectEvent(tm.event.id)}>
+              <span 
+                className="text-xs font-black uppercase tracking-wider px-3 py-1 bg-white border-3 border-neo-ink rounded-full neo-shadow cursor-pointer hover:bg-black/5" 
+                onClick={(e) => { e.stopPropagation(); onSelectEvent(tm.event.id); }}
+              >
                 {tm.event.title}
               </span>
               <h3 className="text-4xl font-black text-neo-ink tracking-tight mt-4">{tm.name}</h3>
@@ -217,7 +227,7 @@ export const MyActivityPage = ({
                   </span>
                 </div>
                 <button
-                  onClick={() => copyToClipboard(tm.inviteCode, 'code')}
+                  onClick={(e) => { e.stopPropagation(); copyToClipboard(tm.inviteCode, 'code'); }}
                   className="w-10 h-10 rounded-full bg-neo-pastel-orange border-3 border-neo-ink flex items-center justify-center hover:neo-active neo-shadow text-neo-ink"
                   title="Copy invite code"
                 >
@@ -236,7 +246,7 @@ export const MyActivityPage = ({
                  </div>
                  <NeoButton 
                     variant="pill" 
-                    onClick={() => handleGenerateLink(tm.id)}
+                    onClick={(e) => { e.stopPropagation(); handleGenerateLink(tm.id); }}
                     color="bg-neo-ink" 
                     textColor="text-white"
                     className="!py-1.5 !px-3 !text-xs"
@@ -279,13 +289,13 @@ export const MyActivityPage = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <button onClick={() => handleLeaveTeam(tm.id)} className="w-12 h-12 bg-neo-pastel-pink border-3 border-neo-ink rounded-full flex items-center justify-center hover:neo-active neo-shadow text-neo-ink" title="Leave Team">
+              <button onClick={(e) => { e.stopPropagation(); handleLeaveTeam(tm.id); }} className="w-12 h-12 bg-neo-pastel-pink border-3 border-neo-ink rounded-full flex items-center justify-center hover:neo-active neo-shadow text-neo-ink" title="Leave Team">
                 <LogOut className="w-5 h-5" />
               </button>
 
               {type !== 'draft' && (
                 <NeoButton
-                  onClick={() => onOpenSubmit(tm.id, tm.submission)}
+                  onClick={(e) => { e.stopPropagation(); onOpenSubmit(tm.id, tm.submission); }}
                   disabled={isDeadlinePassed && !tm.submission}
                   color="bg-neo-ink" 
                   textColor="text-white"
@@ -299,7 +309,7 @@ export const MyActivityPage = ({
           
           {type === 'draft' && isLeader && (
             <NeoButton 
-              onClick={() => handleCompleteRegistration(tm.id)}
+              onClick={(e) => { e.stopPropagation(); handleCompleteRegistration(tm.id); }}
               color="bg-neo-ink" 
               textColor="text-white"
               className="w-full justify-center"

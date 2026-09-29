@@ -12,7 +12,7 @@ import NeoToggle from '../components/neo/NeoToggle';
 import { EventImage } from '../components/EventImage';
 import { CreateTeamModal } from './CreateTeamModal';
 import { JoinTeamModal } from './JoinTeamModal';
-import { getStatusBadge, formatDate } from '../utils/formatters';
+import { getStatusBadge, formatDate, getDerivedEventStatus } from '../utils/formatters';
 import { Trophy, FileText, Award, Github, Globe, Users, Lock, ArrowLeft, PlusCircle, ShieldCheck, Settings } from 'lucide-react';
 import JudgingProgressSection from '../components/JudgingProgressSection';
 import { isEventOrganizer, isEventJudge, canParticipate } from '../utils/permissions';
@@ -98,10 +98,12 @@ export const EventDetailPage = ({
   }
 
   const isDeadlinePassed = new Date(event.deadline) < new Date();
-  const statusBadge = getStatusBadge(event.status);
+  const derivedStatus = getDerivedEventStatus(event);
+  const statusBadge = getStatusBadge(derivedStatus);
   const userTeam = event.teams?.find((t) =>
     t.members?.some((m) => m.userId === user?.id) || t.leaderId === user?.id
   );
+  const isLeader = userTeam?.leaderId === user?.id;
   const hasEventOrganizerRole = isEventOrganizer(user, event);
   const hasEventJudgeRole = isEventJudge(user, event);
 
@@ -168,7 +170,11 @@ export const EventDetailPage = ({
             />
           )}
           <div className="bg-white border-3 border-neo-ink rounded-2xl p-4 text-center neo-shadow">
-            <CountdownTimer deadline={event.deadline} />
+            {derivedStatus === 'COMPLETED' ? (
+              <div className="font-black text-neo-ink text-xl uppercase">Event Concluded</div>
+            ) : (
+              <CountdownTimer deadline={event.deadline} />
+            )}
           </div>
           <div className="text-right font-bold text-sm text-neo-ink/70">
             <div>Deadline: {formatDate(event.deadline)}</div>
@@ -185,26 +191,38 @@ export const EventDetailPage = ({
               <Award className="w-5 h-5 mr-2" /> Judge Portal
             </NeoButton>
           ) : userTeam ? (
-            <NeoButton 
-              onClick={() => onOpenSubmit(userTeam.id, userTeam.submission)} 
-              disabled={isDeadlinePassed}
-              color="bg-neo-ink" 
-              textColor="text-white"
-              className="w-full justify-center mt-2"
-            >
-              <FileText className="w-5 h-5 mr-2" />
-              {userTeam.submission ? (isDeadlinePassed ? 'View Submission (Locked)' : 'Edit Submission') : 'Submit Project'}
-            </NeoButton>
+            <div className="flex flex-col gap-3 w-full mt-2">
+              <NeoButton 
+                onClick={() => onOpenSubmit(userTeam.id, userTeam.submission)} 
+                disabled={isDeadlinePassed || !isLeader}
+                color="bg-neo-ink" 
+                textColor="text-white"
+                className="w-full justify-center disabled:opacity-50"
+                title={!isLeader ? 'Only the team leader can submit the project' : ''}
+              >
+                <FileText className="w-5 h-5 mr-2" />
+                {!isLeader ? 'Only Leader Can Submit' : userTeam.submission ? (isDeadlinePassed ? 'View Submission (Locked)' : 'Edit Submission') : 'Submit Project'}
+              </NeoButton>
+              <NeoButton onClick={() => navigate(`/teams/${userTeam.id}`)} color="bg-white" textColor="text-neo-ink" className="w-full justify-center border-3 border-neo-ink neo-shadow">
+                <Users className="w-5 h-5 mr-2" /> Show Team
+              </NeoButton>
+            </div>
           ) : user ? (
             canParticipate(user) ? (
-              <div className="flex flex-col gap-3 w-full mt-2">
-                <NeoButton onClick={() => setIsCreateOpen(true)} color="bg-neo-ink" textColor="text-white" className="w-full justify-center">
-                  <PlusCircle className="w-5 h-5 mr-2" /> Register Team
-                </NeoButton>
-                <NeoButton onClick={() => setIsJoinOpen(true)} color="bg-white" textColor="text-neo-ink" className="w-full justify-center">
-                  <Users className="w-5 h-5 mr-2" /> Join with Code
-                </NeoButton>
-              </div>
+              isDeadlinePassed ? (
+                <div className="flex items-center gap-2 justify-center w-full mt-2 px-5 py-2.5 rounded-xl border-3 border-neo-ink bg-gray-100 font-bold text-neo-ink neo-shadow">
+                  <Lock className="w-4 h-4" /> Registration Closed
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3 w-full mt-2">
+                  <NeoButton onClick={() => setIsCreateOpen(true)} color="bg-neo-ink" textColor="text-white" className="w-full justify-center">
+                    <PlusCircle className="w-5 h-5 mr-2" /> Register Team
+                  </NeoButton>
+                  <NeoButton onClick={() => setIsJoinOpen(true)} color="bg-white" textColor="text-neo-ink" className="w-full justify-center">
+                    <Users className="w-5 h-5 mr-2" /> Join with Code
+                  </NeoButton>
+                </div>
+              )
             ) : null
           ) : (
             <NeoButton onClick={() => navigate('/login', { state: { from: location } })} color="bg-neo-ink" textColor="text-white" className="w-full justify-center mt-2">
@@ -239,6 +257,7 @@ export const EventDetailPage = ({
       <div className="flex items-center gap-3 overflow-x-auto py-2 pb-4 scrollbar-hide border-b-3 border-neo-ink">
         {[
           { key: 'overview', label: 'Rules & Guidelines' },
+          { key: 'prizes', label: `Prizes (${event.prizes?.length || 0})` },
           { key: 'criteria', label: `Judging Rubric (${event.criteria?.length || 0})` },
           { key: 'submissions', label: `Projects (${submissions?.length || 0})` },
           ...(hasEventOrganizerRole
@@ -317,6 +336,36 @@ export const EventDetailPage = ({
               </p>
             </NeoCard>
           ))}
+        </div>
+      )}
+
+      {/* Tab: Prizes */}
+      {activeTab === 'prizes' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {event.prizes && event.prizes.length > 0 ? (
+            event.prizes.map((p, i) => (
+              <NeoCard key={p.id || i} color={['bg-neo-pastel-pink', 'bg-neo-pastel-blue', 'bg-neo-pastel-yellow'][i%3]} className="space-y-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-black px-3 py-1 rounded-full bg-white border-3 border-neo-ink uppercase neo-shadow-sm">
+                    Award
+                  </span>
+                  {p.value && (
+                    <span className="font-black text-neo-ink text-lg">{p.value}</span>
+                  )}
+                </div>
+                <h4 className="font-black text-3xl text-neo-ink leading-tight">{p.name}</h4>
+                {p.description && (
+                  <p className="font-bold text-neo-ink/80 leading-relaxed border-t-2 border-neo-ink/20 pt-4 mt-4">
+                    {p.description}
+                  </p>
+                )}
+              </NeoCard>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-20 font-bold text-xl text-neo-ink/50 border-3 border-dashed border-neo-ink/20 rounded-2xl">
+              No prizes announced yet.
+            </div>
+          )}
         </div>
       )}
 

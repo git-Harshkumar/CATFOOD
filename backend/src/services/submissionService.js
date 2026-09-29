@@ -25,11 +25,11 @@ const createOrUpdateSubmission = async (userId, currentUser, teamId, data) => {
     if (member) eventRole = member.role;
   }
 
-  const isMember = team.members.some((m) => m.userId === userId);
+  const isLeader = team.leaderId === userId;
   const isOrganizer = currentUser?.isGlobalAdmin || eventRole === 'ORGANIZER' || team.event.organizerId === userId;
 
-  if (!isMember && !isOrganizer) {
-    const error = new Error('Unauthorized. You can only submit or edit projects for your own team.');
+  if (!isLeader && !isOrganizer) {
+    const error = new Error('Unauthorized. Only the team leader can submit or edit the project.');
     error.statusCode = 403;
     throw error;
   }

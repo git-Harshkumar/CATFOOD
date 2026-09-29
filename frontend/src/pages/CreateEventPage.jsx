@@ -23,6 +23,9 @@ export const CreateEventPage = () => {
     { name: 'Technical Depth & Architecture', maxScore: 10, weight: 1.0 },
     { name: 'UI / UX Design', maxScore: 10, weight: 0.8 },
   ]);
+  const [prizes, setPrizes] = useState([]);
+  const [tracks, setTracks] = useState([]);
+  const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const { showNotification } = useNotification();
 
@@ -38,6 +41,30 @@ export const CreateEventPage = () => {
     const updated = [...criteria];
     updated[idx][field] = value;
     setCriteria(updated);
+  };
+
+  const addPrize = () => setPrizes([...prizes, { name: '', description: '', value: '' }]);
+  const removePrize = (idx) => setPrizes(prizes.filter((_, i) => i !== idx));
+  const updatePrize = (idx, field, value) => {
+    const updated = [...prizes];
+    updated[idx][field] = value;
+    setPrizes(updated);
+  };
+
+  const addTrack = () => setTracks([...tracks, { name: '', description: '' }]);
+  const removeTrack = (idx) => setTracks(tracks.filter((_, i) => i !== idx));
+  const updateTrack = (idx, field, value) => {
+    const updated = [...tracks];
+    updated[idx][field] = value;
+    setTracks(updated);
+  };
+
+  const addQuestion = () => setQuestions([...questions, { question: '', isRequired: false }]);
+  const removeQuestion = (idx) => setQuestions(questions.filter((_, i) => i !== idx));
+  const updateQuestion = (idx, field, value) => {
+    const updated = [...questions];
+    updated[idx][field] = value;
+    setQuestions(updated);
   };
 
   const handleSubmit = async (e) => {
@@ -59,6 +86,9 @@ export const CreateEventPage = () => {
           maxScore: parseInt(c.maxScore, 10),
           weight: parseFloat(c.weight),
         })),
+        prizes,
+        tracks,
+        questions,
       });
 
       // Navigate to the newly created event detail page or organizer dashboard
@@ -253,6 +283,161 @@ export const CreateEventPage = () => {
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Prizes Section */}
+          <div className="space-y-6 pt-6 border-t-3 border-neo-ink">
+            <div className="flex items-center justify-between border-b-3 border-neo-ink/20 pb-2">
+              <h3 className="text-2xl font-black text-neo-ink">Prizes & Awards</h3>
+              <button type="button" onClick={addPrize} className="flex items-center text-sm font-bold text-neo-ink hover:text-neo-pink transition-colors">
+                <Plus className="w-4 h-4 mr-1" /> Add Prize
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {prizes.length === 0 ? (
+                <div className="text-center py-4 bg-white/50 rounded-xl border-2 border-dashed border-neo-ink/20">
+                  <p className="text-neo-ink/60 font-bold text-sm">No prizes configured. Click 'Add Prize' to configure awards.</p>
+                </div>
+              ) : (
+                prizes.map((p, idx) => (
+                  <div key={idx} className="p-4 bg-white rounded-xl border-3 border-neo-ink flex gap-4 items-start relative neo-shadow-sm">
+                    <div className="flex-1 space-y-3">
+                      <div>
+                        <label className="block text-xs font-black uppercase text-neo-ink mb-1">Prize Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={p.name}
+                          onChange={(e) => updatePrize(idx, 'name', e.target.value)}
+                          className={inputClass}
+                          placeholder="e.g. Grand Prize"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-black uppercase text-neo-ink mb-1">Prize Value (Optional)</label>
+                          <input
+                            type="text"
+                            value={p.value}
+                            onChange={(e) => updatePrize(idx, 'value', e.target.value)}
+                            className={inputClass}
+                            placeholder="e.g. $5000"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-black uppercase text-neo-ink mb-1">Description (Optional)</label>
+                          <input
+                            type="text"
+                            value={p.description}
+                            onChange={(e) => updatePrize(idx, 'description', e.target.value)}
+                            className={inputClass}
+                            placeholder="Details"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <button type="button" onClick={() => removePrize(idx)} className="mt-6 p-2 text-neo-ink/50 hover:text-red-500 transition-colors">
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Tracks Section */}
+          <div className="space-y-6 pt-6 border-t-3 border-neo-ink">
+            <div className="flex items-center justify-between border-b-3 border-neo-ink/20 pb-2">
+              <h3 className="text-2xl font-black text-neo-ink">Tracks (Optional)</h3>
+              <button type="button" onClick={addTrack} className="flex items-center text-sm font-bold text-neo-ink hover:text-neo-pink transition-colors">
+                <Plus className="w-4 h-4 mr-1" /> Add Track
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {tracks.length === 0 ? (
+                <div className="text-center py-4 bg-white/50 rounded-xl border-2 border-dashed border-neo-ink/20">
+                  <p className="text-neo-ink/60 font-bold text-sm">No tracks configured. All projects will be in one pool.</p>
+                </div>
+              ) : (
+                tracks.map((t, idx) => (
+                  <div key={idx} className="p-4 bg-white rounded-xl border-3 border-neo-ink flex gap-4 items-start relative neo-shadow-sm">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-black uppercase text-neo-ink mb-1">Track Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={t.name}
+                          onChange={(e) => updateTrack(idx, 'name', e.target.value)}
+                          className={inputClass}
+                          placeholder="e.g. Best Web3 App"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-black uppercase text-neo-ink mb-1">Description (Optional)</label>
+                        <input
+                          type="text"
+                          value={t.description}
+                          onChange={(e) => updateTrack(idx, 'description', e.target.value)}
+                          className={inputClass}
+                          placeholder="Short details"
+                        />
+                      </div>
+                    </div>
+                    <button type="button" onClick={() => removeTrack(idx)} className="mt-6 p-2 text-neo-ink/50 hover:text-red-500 transition-colors">
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Registration Questions Section */}
+          <div className="space-y-6 pt-6 border-t-3 border-neo-ink">
+            <div className="flex items-center justify-between border-b-3 border-neo-ink/20 pb-2">
+              <h3 className="text-2xl font-black text-neo-ink">Custom Registration Questions</h3>
+              <button type="button" onClick={addQuestion} className="flex items-center text-sm font-bold text-neo-ink hover:text-neo-pink transition-colors">
+                <Plus className="w-4 h-4 mr-1" /> Add Question
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {questions.length === 0 ? (
+                <div className="text-center py-4 bg-white/50 rounded-xl border-2 border-dashed border-neo-ink/20">
+                  <p className="text-neo-ink/60 font-bold text-sm">No custom questions configured.</p>
+                </div>
+              ) : (
+                questions.map((q, idx) => (
+                  <div key={idx} className="p-4 bg-white rounded-xl border-3 border-neo-ink flex gap-4 items-center relative neo-shadow-sm">
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        required
+                        value={q.question}
+                        onChange={(e) => updateQuestion(idx, 'question', e.target.value)}
+                        className={inputClass}
+                        placeholder="e.g. What is your t-shirt size?"
+                      />
+                    </div>
+                    <label className="flex items-center gap-2 font-bold text-sm text-neo-ink cursor-pointer shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={q.isRequired}
+                        onChange={(e) => updateQuestion(idx, 'isRequired', e.target.checked)}
+                        className="w-5 h-5 border-2 border-neo-ink rounded text-neo-ink"
+                      />
+                      Required
+                    </label>
+                    <button type="button" onClick={() => removeQuestion(idx)} className="p-2 text-neo-ink/50 hover:text-red-500 transition-colors">
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

@@ -8,6 +8,7 @@ const getAllEvents = async () => {
         select: { id: true, name: true, email: true },
       },
       criteria: true,
+      questions: true,
       _count: {
         select: { teams: true, submissions: true, judges: true },
       },
@@ -23,6 +24,9 @@ const getEventById = async (id) => {
         select: { id: true, name: true, email: true },
       },
       criteria: true,
+      prizes: true,
+      tracks: true,
+      questions: true,
       judges: {
         include: {
           user: {
@@ -38,9 +42,7 @@ const getEventById = async (id) => {
               user: { select: { id: true, name: true } },
             },
           },
-          submission: {
-            select: { id: true, title: true, submittedAt: true },
-          },
+          submission: true,
         },
       },
       _count: {
@@ -71,6 +73,9 @@ const createEvent = async (organizerId, data) => {
     judgingDeadline,
     status = 'ACTIVE',
     criteria = [],
+    prizes = [],
+    tracks = [],
+    questions = [],
   } = data;
 
   const event = await prisma.event.create({
@@ -103,6 +108,32 @@ const createEvent = async (organizerId, data) => {
               { name: 'Practical Impact & Utility', description: 'Real-world usefulness and problem-solving capability', maxScore: 10, weight: 1.2 },
             ],
           },
+      prizes: prizes.length > 0 
+        ? {
+            create: prizes.map((p) => ({
+              name: p.name,
+              description: p.description || null,
+              value: p.value || null,
+            })),
+          }
+        : undefined,
+      tracks: tracks.length > 0
+        ? {
+            create: tracks.map((t) => ({
+              name: t.name,
+              description: t.description || null,
+            })),
+          }
+        : undefined,
+      questions: questions.length > 0
+        ? {
+            create: questions.map((q, i) => ({
+              question: q.question,
+              isRequired: q.isRequired || false,
+              order: i,
+            })),
+          }
+        : undefined,
       members: {
         create: [
           {

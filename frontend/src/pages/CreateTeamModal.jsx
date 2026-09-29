@@ -9,6 +9,7 @@ export const CreateTeamModal = ({ isOpen, onClose, initialEventId, onSuccess }) 
   const [events, setEvents] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState('');
   const [teamName, setTeamName] = useState('');
+  const [answers, setAnswers] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -44,8 +45,19 @@ export const CreateTeamModal = ({ isOpen, onClose, initialEventId, onSuccess }) 
   const handleCreateTeam = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    
+    // Map answers object back to array
+    const answersArray = Object.keys(answers).map(qId => ({
+      questionId: parseInt(qId, 10),
+      answer: answers[qId]
+    }));
+
     try {
-      await api.createTeam({ eventId: parseInt(selectedEventId, 10), name: teamName });
+      await api.createTeam({ 
+        eventId: parseInt(selectedEventId, 10), 
+        name: teamName,
+        answers: answersArray
+      });
       showNotification('success', 'Team created successfully! Now invite your friends.');
       onSuccess(); // Trigger callback
       onClose();
@@ -57,6 +69,8 @@ export const CreateTeamModal = ({ isOpen, onClose, initialEventId, onSuccess }) 
   };
 
   const inputClass = "w-full px-4 py-3 font-bold bg-white border-3 border-neo-ink rounded-xl placeholder-neo-ink/40 neo-shadow focus:outline-none focus:neo-active transition-all";
+
+  const selectedEvent = events.find(e => String(e.id) === selectedEventId);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Form a New Team" maxWidth="max-w-xl">
@@ -94,6 +108,26 @@ export const CreateTeamModal = ({ isOpen, onClose, initialEventId, onSuccess }) 
             className={inputClass}
           />
         </div>
+
+        {selectedEvent && selectedEvent.questions && selectedEvent.questions.length > 0 && (
+          <div className="pt-4 border-t-3 border-neo-ink space-y-4">
+            <h3 className="font-black text-neo-ink text-xl mb-4">Registration Questions</h3>
+            {selectedEvent.questions.sort((a, b) => a.order - b.order).map((q) => (
+              <div key={q.id}>
+                <label className="block font-black text-neo-ink mb-2">
+                  {q.question} {q.isRequired && <span className="text-red-500">*</span>}
+                </label>
+                <input
+                  type="text"
+                  required={q.isRequired}
+                  value={answers[q.id] || ''}
+                  onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
+                  className={inputClass}
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="pt-6 flex justify-end gap-4">
           <NeoButton type="button" onClick={onClose} color="bg-white" textColor="text-neo-ink">

@@ -29,7 +29,7 @@ import { formatDate } from '../utils/formatters';
 import { isEventJudge } from '../utils/permissions';
 
 export const SubmissionDetailPage = () => {
-  const { id } = useParams();
+  const { id, eventId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -120,7 +120,7 @@ export const SubmissionDetailPage = () => {
     }
   };
 
-  const targetEventId = params.eventId || submission?.eventId;
+  const targetEventId = eventId || submission?.eventId;
 
   const handleBackToGallery = () => {
     if (targetEventId) {

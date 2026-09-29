@@ -52,3 +52,23 @@ export const getStatusBadge = (status) => {
       return { label: 'Draft', bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/30' };
   }
 };
+
+export const getDerivedEventStatus = (event) => {
+  if (!event) return 'DRAFT';
+  
+  const now = new Date();
+  const deadline = new Date(event.deadline);
+  
+  // If the deadline is in the future, the event is always ACTIVE
+  if (deadline > now) {
+    return 'ACTIVE';
+  }
+  
+  // If the deadline has passed, check if judging is currently ongoing
+  if (event.judgingDeadline && new Date(event.judgingDeadline) > now) {
+    return 'JUDGING';
+  }
+  
+  // Otherwise, if all deadlines have passed, the event is COMPLETED
+  return 'COMPLETED';
+};

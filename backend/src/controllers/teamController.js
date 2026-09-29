@@ -73,6 +73,15 @@ const completeRegistration = async (req, res, next) => {
   }
 };
 
+const removeMember = async (req, res, next) => {
+  try {
+    const result = await teamService.removeMember(req.params.id, req.params.memberId, req.user.id);
+    return success(res, result, 'Member removed successfully', 200);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createTeam,
   joinTeam,
@@ -82,4 +91,5 @@ module.exports = {
   getMyTeams,
   leaveTeam,
   completeRegistration,
+  removeMember,
 };

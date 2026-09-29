@@ -7,7 +7,7 @@ import StatCard from '../components/neo/StatCard';
 import FilterChipRow from '../components/neo/FilterChipRow';
 import NeoButton from '../components/neo/NeoButton';
 import { Trophy, Calendar, Users, FileText, ArrowRight, Search, Sparkles, PlusCircle } from 'lucide-react';
-import { getStatusBadge } from '../utils/formatters';
+import { getStatusBadge, getDerivedEventStatus } from '../utils/formatters';
 
 const PASTELS = ['bg-neo-pastel-purple', 'bg-neo-pastel-orange', 'bg-neo-pastel-yellow', 'bg-neo-pastel-green', 'bg-neo-pastel-pink'];
 
@@ -37,12 +37,13 @@ export const EventsPage = ({ onSelectEvent, onOpenCreateEvent }) => {
   };
 
   const filteredEvents = events.filter((ev) => {
+    const derivedStatus = getDerivedEventStatus(ev);
     const matchesSearch =
       ev.title.toLowerCase().includes(search.toLowerCase()) ||
       (ev.tagline && ev.tagline.toLowerCase().includes(search.toLowerCase()));
 
-    if (filter === 'ACTIVE') return matchesSearch && ev.status === 'ACTIVE';
-    if (filter === 'COMPLETED') return matchesSearch && ev.status === 'COMPLETED';
+    if (filter === 'ACTIVE') return matchesSearch && derivedStatus === 'ACTIVE';
+    if (filter === 'COMPLETED') return matchesSearch && derivedStatus === 'COMPLETED';
     return matchesSearch;
   });
 
@@ -64,7 +65,7 @@ export const EventsPage = ({ onSelectEvent, onOpenCreateEvent }) => {
           </div>
           
           <div className="flex flex-wrap gap-8 items-end">
-            <StatCard label="Active Hackathons" value={events.filter(e => e.status === 'ACTIVE').length} />
+            <StatCard label="Active Hackathons" value={events.filter(e => getDerivedEventStatus(e) === 'ACTIVE').length} />
             <StatCard label="Total Teams" value={totalTeams} />
             <StatCard label="Total Submissions" value={totalSubmissions} />
           </div>
@@ -115,9 +116,10 @@ export const EventsPage = ({ onSelectEvent, onOpenCreateEvent }) => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredEvents.map((ev, i) => {
+              const derivedStatus = getDerivedEventStatus(ev);
               const bg = PASTELS[i % PASTELS.length];
-              const statusBadge = getStatusBadge(ev.status);
-              const badgeBg = ev.status === 'ACTIVE' ? 'bg-neo-pastel-green' : 'bg-white';
+              const statusBadge = getStatusBadge(derivedStatus);
+              const badgeBg = derivedStatus === 'ACTIVE' ? 'bg-neo-pastel-green' : 'bg-white';
 
               return (
                 <NeoCard key={ev.id} color={bg} className="flex flex-col justify-between cursor-pointer group hover:-translate-y-1" onClick={() => onSelectEvent(ev.id)}>
@@ -127,7 +129,7 @@ export const EventsPage = ({ onSelectEvent, onOpenCreateEvent }) => {
                         {statusBadge.label}
                       </div>
                       <div className="bg-white px-3 py-1 rounded-full border-3 border-neo-ink font-bold text-sm">
-                        {new Date(ev.deadline) < new Date() ? 'Ended' : <CountdownTimer deadline={ev.deadline} compact />}
+                        {derivedStatus === 'COMPLETED' ? 'Ended' : <CountdownTimer deadline={ev.deadline} compact />}
                       </div>
                     </div>
 
