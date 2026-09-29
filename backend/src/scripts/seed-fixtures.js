@@ -326,6 +326,7 @@ async function main() {
         eventId: event.id,
         teamId: teamRecord.id,
         trackId: trackRecord ? trackRecord.id : null,
+        fixtureId: prj.id,
         title: prj.title,
         tagline: prj.summary,
         description: `${prj.summary}\n\nComprehensive technical documentation and architecture for ${prj.title}. Includes full repository, integration tests, and responsive frontend.`,
@@ -415,11 +416,30 @@ async function main() {
     isGlobalAdmin: false,
   });
 
+  const voterUser = await prisma.user.findFirst({
+    where: {
+      email: { not: participantUser.email },
+      eventMemberships: { some: { eventId: event.id, role: 'PARTICIPANT' } },
+      teamMemberships: { none: { team: { leaderId: participantUser.id } } },
+    },
+  });
+
+  const tokenVoter = voterUser
+    ? generateToken({
+        id: voterUser.id,
+        email: voterUser.email,
+        name: voterUser.name,
+        role: 'PARTICIPANT',
+        isGlobalAdmin: false,
+      })
+    : tokenParticipant;
+
   console.log('\nseeded. test logins:');
   console.log(`  organizer    Authorization: Bearer ${tokenOrg}`);
   console.log(`  judge_a      Authorization: Bearer ${tokenJudgeA}`);
   console.log(`  judge_b      Authorization: Bearer ${tokenJudgeB}`);
   console.log(`  participant  Authorization: Bearer ${tokenParticipant}`);
+  console.log(`  voter        Authorization: Bearer ${tokenVoter}`);
 
   // 12. Update .dogfood.toml with current tokens and routes
   const tomlContent = `# DOGFOOD 2026 Acceptance Checker Configuration
@@ -436,6 +456,7 @@ organizer   = "Authorization: Bearer ${tokenOrg}"
 judge_a     = "Authorization: Bearer ${tokenJudgeA}"
 judge_b     = "Authorization: Bearer ${tokenJudgeB}"
 participant = "Authorization: Bearer ${tokenParticipant}"
+voter       = "Authorization: Bearer ${tokenVoter}"
 
 [routes]
 gallery      = "/projects"
@@ -443,6 +464,10 @@ submit       = "/projects/new"
 judge_scores = "/api/judge/scores"
 peer_scores  = "/api/judge/scores?judge=judge_a"
 csv_export   = "/api/organizer/judging/export.csv"
+vote         = "/api/community/vote"
+results      = "/api/community/results"
+comments     = "/api/community/comments_proxy"
+audit_log    = "/api/events/audit-logs"
 `;
 
   try {

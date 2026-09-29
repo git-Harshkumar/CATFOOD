@@ -3,6 +3,7 @@ const judgingEngine = require('./judgingEngine');
 const auditService = require('./auditService');
 const { formatCsv } = require('../utils/csv');
 const { dispatchEvent } = require('./webhookService');
+const { canManageEvent } = require('../utils/permissions');
 
 /**
  * Submit judge scores for a submission with strict track and assignment isolation.
@@ -972,10 +973,9 @@ const getLeaderboard = async (eventId, currentUser) => {
     if (member) eventRole = member.role;
   }
 
-  const isOrganizer = currentUser?.isGlobalAdmin || eventRole === 'ORGANIZER' || event.organizerId === currentUser?.id;
-  const isJudge = eventRole === 'JUDGE';
+  const isOrganizer = currentUser?.isGlobalAdmin || (await canManageEvent(currentUser, event.id));
 
-  if (!event.isLeaderboardPublished && !isOrganizer && !isJudge) {
+  if (!event.isLeaderboardPublished && !isOrganizer) {
     const error = new Error('The final leaderboard for this hackathon has not been published yet.');
     error.statusCode = 403;
     throw error;
@@ -1145,6 +1145,13 @@ const getPairwiseStandings = async (eventId, currentUser) => {
   if (!event) {
     const error = new Error('Event not found.');
     error.statusCode = 404;
+    throw error;
+  }
+
+  const isOrganizer = currentUser?.isGlobalAdmin || (await canManageEvent(currentUser, event.id));
+  if (!event.isLeaderboardPublished && !isOrganizer) {
+    const error = new Error('Pairwise evaluation standings are sealed until the organizer publishes the leaderboard.');
+    error.statusCode = 403;
     throw error;
   }
 

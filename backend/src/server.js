@@ -14,6 +14,7 @@ const { errorHandler, notFoundHandler } = require('./middleware/errorMiddleware'
 const app = express();
 
 // Global Middlewares
+app.set('trust proxy', 'loopback');
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,

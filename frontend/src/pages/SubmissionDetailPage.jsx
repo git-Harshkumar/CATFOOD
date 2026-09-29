@@ -23,6 +23,7 @@ import {
   Layers,
   HelpCircle,
   Lock,
+  Trash2,
 } from 'lucide-react';
 import { formatDate } from '../utils/formatters';
 import { isEventJudge } from '../utils/permissions';
@@ -70,6 +71,8 @@ export const SubmissionDetailPage = () => {
     }
   };
 
+  const isTeamMember = user && submission?.team?.members?.some((m) => m.userId === user.id);
+
   const handleVote = async () => {
     if (!submission) return;
     setVoting(true);
@@ -103,6 +106,17 @@ export const SubmissionDetailPage = () => {
       showNotification('error', err.message || 'Failed to post comment.');
     } finally {
       setCommentSubmitting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+    try {
+      await api.deleteComment(commentId);
+      showNotification('success', 'Comment deleted successfully.');
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+    } catch (err) {
+      showNotification('error', err.message || 'Failed to delete comment.');
     }
   };
 
@@ -263,13 +277,13 @@ export const SubmissionDetailPage = () => {
             {/* Community Vote Button */}
             <NeoButton
               onClick={handleVote}
-              disabled={voting}
-              color="bg-neo-pastel-pink"
+              disabled={voting || isTeamMember}
+              color={isTeamMember ? 'bg-slate-200' : 'bg-neo-pastel-pink'}
               textColor="text-neo-ink"
               className="w-full justify-center !py-3 !text-base"
             >
               <Heart className="w-5 h-5 mr-2 fill-current text-neo-ink" />
-              {voting ? 'Recording Vote...' : 'Vote for this Project'}
+              {isTeamMember ? 'Self-Voting Restricted (Team Member)' : voting ? 'Recording Vote...' : 'Vote for this Project'}
             </NeoButton>
 
             {/* Judge Evaluation Shortcut for Authorized Judges */}
@@ -345,33 +359,39 @@ export const SubmissionDetailPage = () => {
               <div className="flex items-center gap-2">
                 <MessageSquare className="w-6 h-6 text-neo-ink" />
                 <h3 className="text-2xl font-black text-neo-ink uppercase">
-                  Community Discussion ({comments.length})
+                  Community Discussion ({comments.filter((c) => !c.isDeleted).length})
                 </h3>
               </div>
             </div>
 
             {/* Post Comment Form */}
-            <form onSubmit={handleAddComment} className="space-y-3">
-              <textarea
-                rows={3}
-                placeholder="Share your thoughts, ask questions, or provide feedback on this build..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="w-full p-4 font-bold bg-neo-bg border-3 border-neo-ink rounded-xl placeholder-neo-ink/40 neo-shadow focus:outline-none focus:neo-active transition-all"
-                required
-              />
-              <div className="flex justify-end">
-                <NeoButton
-                  type="submit"
-                  disabled={commentSubmitting}
-                  color="bg-neo-ink"
-                  textColor="text-white"
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  {commentSubmitting ? 'Posting...' : 'Post Comment'}
-                </NeoButton>
+            {!user ? (
+              <div className="p-4 bg-neo-pastel-yellow border-2 border-neo-ink rounded-xl font-bold text-sm text-neo-ink">
+                Please sign in with your account to participate in community discussions.
               </div>
-            </form>
+            ) : (
+              <form onSubmit={handleAddComment} className="space-y-3">
+                <textarea
+                  rows={3}
+                  placeholder={`Share feedback as ${user.name || user.email}...`}
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="w-full p-4 font-bold bg-neo-bg border-3 border-neo-ink rounded-xl placeholder-neo-ink/40 neo-shadow focus:outline-none focus:neo-active transition-all"
+                  required
+                />
+                <div className="flex justify-end">
+                  <NeoButton
+                    type="submit"
+                    disabled={commentSubmitting}
+                    color="bg-neo-ink"
+                    textColor="text-white"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    {commentSubmitting ? 'Posting...' : 'Post Comment'}
+                  </NeoButton>
+                </div>
+              </form>
+            )}
 
             {/* Comments List */}
             <div className="space-y-4 pt-4 border-t-2 border-neo-ink/20">
@@ -380,22 +400,49 @@ export const SubmissionDetailPage = () => {
                   No comments yet. Be the first to cheer on this team!
                 </div>
               ) : (
-                comments.map((c) => (
-                  <div
-                    key={c.id}
-                    className="p-4 rounded-xl border-3 border-neo-ink bg-neo-bg flex flex-col gap-2 neo-shadow"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-black text-sm text-neo-ink">
-                        {c.authorName || c.user?.name || 'Community Member'}
-                      </span>
-                      <span className="text-xs font-bold text-neo-ink/60">
-                        {formatDate(c.createdAt)}
-                      </span>
+                comments.map((c) => {
+                  const canDelete =
+                    user &&
+                    (user.id === c.authorId ||
+                      user.isGlobalAdmin ||
+                      user.role === 'ADMIN' ||
+                      (submission?.event?.organizerId && submission.event.organizerId === user.id) ||
+                      (submission?.team?.leaderId && submission.team.leaderId === user.id));
+
+                  return (
+                    <div
+                      key={c.id}
+                      className="p-4 rounded-xl border-3 border-neo-ink bg-neo-bg flex flex-col gap-2 neo-shadow"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-black text-sm text-neo-ink">
+                          {c.authorName || c.user?.name || 'Community Member'}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-neo-ink/60">
+                            {formatDate(c.createdAt)}
+                          </span>
+                          {canDelete && !c.isDeleted && (
+                            <button
+                              onClick={() => handleDeleteComment(c.id)}
+                              className="text-neo-ink hover:text-red-600 p-1 transition-colors"
+                              title="Delete comment"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <p
+                        className={`font-medium ${
+                          c.isDeleted ? 'text-neo-ink/40 italic' : 'text-neo-ink'
+                        } whitespace-pre-wrap`}
+                      >
+                        {c.isDeleted ? '[This comment has been removed by a moderator]' : c.content}
+                      </p>
                     </div>
-                    <p className="font-medium text-neo-ink whitespace-pre-wrap">{c.content}</p>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </NeoCard>

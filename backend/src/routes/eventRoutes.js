@@ -9,6 +9,7 @@ const { validateEvent, validateCriterion, validatePrize, validateEventQuestion }
 
 // Public routes (anyone can view active events)
 router.get('/', eventController.getAllEvents);
+router.get('/audit-logs', authenticate, requireRole('ORGANIZER'), judgingController.getAuditLogs);
 router.get('/:id', eventController.getEventById);
 
 // Protected routes (organizer only)
@@ -200,6 +201,13 @@ router.get(
     req.params.eventId = req.params.id;
     judgingController.getAuditLogs(req, res, next);
   }
+);
+
+router.get(
+  '/audit-logs',
+  authenticate,
+  requireRole('ORGANIZER'),
+  judgingController.getAuditLogs
 );
 
 module.exports = router;

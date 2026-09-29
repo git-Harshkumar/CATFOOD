@@ -286,12 +286,34 @@ class ApiService {
     window.URL.revokeObjectURL(downloadUrl);
   }
   // Community Voting & Comments
-  async castVote(eventId, submissionId) {
-    return this.request(`/community/${eventId}/vote`, { method: 'POST', body: { submissionId } });
+  async castVote(eventId, submissionId, options = {}) {
+    return this.request(`/community/${eventId}/vote`, {
+      method: 'POST',
+      body: {
+        submissionId,
+        credits: options.credits !== undefined ? options.credits : 1,
+        voterEmail: options.voterEmail,
+        verificationToken: options.verificationToken,
+      },
+    });
   }
 
   async getCommunityResults(eventId) {
     return this.request(`/community/${eventId}/results`);
+  }
+
+  async requestEmailVerification(eventId, email) {
+    return this.request(`/community/${eventId}/verify-email/request`, {
+      method: 'POST',
+      body: { email },
+    });
+  }
+
+  async confirmEmailVerification(eventId, email, token) {
+    return this.request(`/community/${eventId}/verify-email/confirm`, {
+      method: 'POST',
+      body: { email, token },
+    });
   }
 
   async addComment(submissionId, content) {
@@ -300,6 +322,10 @@ class ApiService {
 
   async getComments(submissionId) {
     return this.request(`/community/comments/${submissionId}`);
+  }
+
+  async deleteComment(commentId) {
+    return this.request(`/community/comments/${commentId}`, { method: 'DELETE' });
   }
 
   async updateVotingSettings(eventId, settings) {

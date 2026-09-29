@@ -96,6 +96,8 @@ export const OrganizerEventDashboard = () => {
   const [loadingCommunity, setLoadingCommunity] = useState(false);
   const [isVotingActive, setIsVotingActive] = useState(true);
   const [areResultsRevealed, setAreResultsRevealed] = useState(false);
+  const [communityVotingMode, setCommunityVotingMode] = useState('AUTHENTICATED');
+  const [communityVoteCreditBudget, setCommunityVoteCreditBudget] = useState(100);
 
   // 4. Developer Tools
   const [webhooks, setWebhooks] = useState([]);
@@ -154,8 +156,10 @@ export const OrganizerEventDashboard = () => {
         setEditDeadline(ev.deadline ? ev.deadline.substring(0, 16) : '');
         setEditMinTeam(ev.minTeamSize || 1);
         setEditMaxTeam(ev.maxTeamSize || 4);
-        setIsVotingActive(ev.isVotingActive ?? true);
-        setAreResultsRevealed(ev.areResultsRevealed ?? false);
+        setIsVotingActive(ev.isCommunityVotingOpen ?? ev.isVotingActive ?? true);
+        setAreResultsRevealed(ev.isCommunityResultsRevealed ?? ev.areResultsRevealed ?? false);
+        setCommunityVotingMode(ev.communityVotingMode || 'AUTHENTICATED');
+        setCommunityVoteCreditBudget(ev.communityVoteCreditBudget ?? 100);
       }
     } catch (err) {
       console.error('Failed to load event details:', err);
@@ -398,9 +402,19 @@ export const OrganizerEventDashboard = () => {
 
   const handleToggleVotingSettings = async (updates) => {
     try {
-      await api.updateVotingSettings(id, updates);
-      if (updates.isVotingActive !== undefined) setIsVotingActive(updates.isVotingActive);
-      if (updates.areResultsRevealed !== undefined) setAreResultsRevealed(updates.areResultsRevealed);
+      const canonicalUpdates = {
+        isCommunityVotingOpen: updates.isCommunityVotingOpen !== undefined ? updates.isCommunityVotingOpen : updates.isVotingActive,
+        isCommunityResultsRevealed: updates.isCommunityResultsRevealed !== undefined ? updates.isCommunityResultsRevealed : updates.areResultsRevealed,
+        communityVotingMode: updates.communityVotingMode !== undefined ? updates.communityVotingMode : communityVotingMode,
+        communityVoteCreditBudget: updates.communityVoteCreditBudget !== undefined ? parseInt(updates.communityVoteCreditBudget, 10) : undefined,
+      };
+      await api.updateVotingSettings(id, canonicalUpdates);
+      if (canonicalUpdates.isCommunityVotingOpen !== undefined) setIsVotingActive(canonicalUpdates.isCommunityVotingOpen);
+      if (canonicalUpdates.isCommunityResultsRevealed !== undefined) setAreResultsRevealed(canonicalUpdates.isCommunityResultsRevealed);
+      if (canonicalUpdates.communityVotingMode !== undefined) setCommunityVotingMode(canonicalUpdates.communityVotingMode);
+      if (canonicalUpdates.communityVoteCreditBudget !== undefined && !isNaN(canonicalUpdates.communityVoteCreditBudget)) {
+        setCommunityVoteCreditBudget(canonicalUpdates.communityVoteCreditBudget);
+      }
       showNotification('success', 'Voting settings updated successfully.');
       await fetchCommunityResults();
     } catch (err) {
@@ -1025,11 +1039,11 @@ export const OrganizerEventDashboard = () => {
                 <div>
                   <h4 className="font-black text-lg text-neo-ink">Community Voting</h4>
                   <p className="text-xs font-bold text-neo-ink/60">
-                    {isVotingActive ? 'Currently accepting public votes.' : 'Voting window closed.'}
+                    {isVotingActive ? 'Currently accepting community votes.' : 'Voting window closed.'}
                   </p>
                 </div>
                 <NeoButton
-                  onClick={() => handleToggleVotingSettings({ isVotingActive: !isVotingActive })}
+                  onClick={() => handleToggleVotingSettings({ isCommunityVotingOpen: !isVotingActive })}
                   color={isVotingActive ? 'bg-neo-pastel-pink' : 'bg-neo-pastel-green'}
                   textColor="text-neo-ink"
                   variant="pill"
@@ -1040,18 +1054,93 @@ export const OrganizerEventDashboard = () => {
 
               <div className="p-4 bg-neo-bg rounded-xl border-2 border-neo-ink flex items-center justify-between">
                 <div>
-                  <h4 className="font-black text-lg text-neo-ink">Results Sealed State</h4>
+                  <h4 className="font-black text-lg text-neo-ink">Results Visibility</h4>
                   <p className="text-xs font-bold text-neo-ink/60">
                     {areResultsRevealed ? 'Results publicly visible.' : 'Results sealed from non-organizers.'}
                   </p>
                 </div>
                 <NeoButton
-                  onClick={() => handleToggleVotingSettings({ areResultsRevealed: !areResultsRevealed })}
+                  onClick={() => handleToggleVotingSettings({ isCommunityResultsRevealed: !areResultsRevealed })}
                   color={areResultsRevealed ? 'bg-neo-pastel-yellow' : 'bg-neo-pastel-purple'}
                   textColor="text-neo-ink"
                   variant="pill"
                 >
                   {areResultsRevealed ? 'Seal Results' : 'Reveal Results'}
+                </NeoButton>
+              </div>
+            </div>
+
+            {/* Voting Mode Configuration */}
+            <div className="p-5 bg-neo-bg rounded-xl border-2 border-neo-ink space-y-4">
+              <div>
+                <h4 className="font-black text-lg text-neo-ink">Community Voting Identity Mode</h4>
+                <p className="text-xs font-bold text-neo-ink/60">Select identity assurance level required to cast community votes.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div
+                  onClick={() => handleToggleVotingSettings({ communityVotingMode: 'OPEN' })}
+                  className={`p-4 rounded-xl border-3 border-neo-ink cursor-pointer transition-all ${
+                    communityVotingMode === 'OPEN' ? 'bg-neo-pastel-yellow shadow-neo' : 'bg-white hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-black text-base text-neo-ink">OPEN</span>
+                    {communityVotingMode === 'OPEN' && <span className="text-[10px] font-black px-2 py-0.5 bg-neo-ink text-white rounded">ACTIVE</span>}
+                  </div>
+                  <p className="text-xs font-bold text-neo-ink/70">
+                    Lowest identity assurance. Anonymous voters receive unique server-issued voter tokens with rate limiting.
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => handleToggleVotingSettings({ communityVotingMode: 'EMAIL' })}
+                  className={`p-4 rounded-xl border-3 border-neo-ink cursor-pointer transition-all ${
+                    communityVotingMode === 'EMAIL' ? 'bg-neo-pastel-yellow shadow-neo' : 'bg-white hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-black text-base text-neo-ink">EMAIL</span>
+                    {communityVotingMode === 'EMAIL' && <span className="text-[10px] font-black px-2 py-0.5 bg-neo-ink text-white rounded">ACTIVE</span>}
+                  </div>
+                  <p className="text-xs font-bold text-neo-ink/70">
+                    Requires verified email ownership. Voters must verify a short-lived cryptographically secure token.
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => handleToggleVotingSettings({ communityVotingMode: 'AUTHENTICATED' })}
+                  className={`p-4 rounded-xl border-3 border-neo-ink cursor-pointer transition-all ${
+                    communityVotingMode === 'AUTHENTICATED' ? 'bg-neo-pastel-yellow shadow-neo' : 'bg-white hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-black text-base text-neo-ink">AUTHENTICATED</span>
+                    {communityVotingMode === 'AUTHENTICATED' && <span className="text-[10px] font-black px-2 py-0.5 bg-neo-ink text-white rounded">ACTIVE</span>}
+                  </div>
+                  <p className="text-xs font-bold text-neo-ink/70">
+                    Requires authenticated platform account. Enforces verified user ID and strict self-voting prevention.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 pt-2 border-t-2 border-neo-ink/10 flex-wrap">
+                <label className="font-black text-sm text-neo-ink">Quadratic Credit Budget per Voter:</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10000"
+                  value={communityVoteCreditBudget}
+                  onChange={(e) => setCommunityVoteCreditBudget(e.target.value)}
+                  className="w-28 px-3 py-1.5 rounded-lg border-2 border-neo-ink bg-white font-bold text-sm text-neo-ink"
+                />
+                <NeoButton
+                  onClick={() => handleToggleVotingSettings({ communityVoteCreditBudget })}
+                  color="bg-neo-pastel-green"
+                  textColor="text-neo-ink"
+                  variant="pill"
+                  className="!py-1.5 !px-4 text-xs font-black"
+                >
+                  Update Credit Budget
                 </NeoButton>
               </div>
             </div>

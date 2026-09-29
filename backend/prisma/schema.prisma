@@ -23,6 +23,9 @@ model User {
   ledTeams         Team[]            @relation("TeamLeader")
   teamMemberships  TeamMember[]
   auditLogs        AuditLog[]
+  comments         Comment[]
+  communityVotes   CommunityVote[]
+  voterBalances    VoterBalance[]
 }
 
 model Event {
@@ -55,9 +58,13 @@ model Event {
   judges              Judge[]
   normalizedScores    NormalizedScore[]
   communityVotes      CommunityVote[]
+  voterBalances       VoterBalance[]
+  emailVerifications  EmailVerification[]
+  auditLogs           AuditLog[]
   webhooks            Webhook[]
   pairwiseComparisons PairwiseComparison[]
   certificates        Certificate[]
+  communityVoteCreditBudget Int @default(100)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -226,6 +233,7 @@ model Submission {
   event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   
   status      String   @default("DRAFT") // "DRAFT", "SUBMITTED"
+  fixtureId   String?  @unique
 
   title       String
   tagline     String?
@@ -306,6 +314,8 @@ model NormalizedScore {
 
 model AuditLog {
   id          Int      @id @default(autoincrement())
+  eventId     Int?
+  event       Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
   actorId     Int?
   actor       User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
   action      String
@@ -315,37 +325,83 @@ model AuditLog {
   timestamp   DateTime @default(now())
   createdAt   DateTime @default(now())
 
+  @@index([eventId])
+  @@index([eventId, action])
   @@index([actorId])
   @@index([action])
   @@index([timestamp])
 }
 
 model CommunityVote {
-  id           Int        @id @default(autoincrement())
-  eventId      Int
-  event        Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  submissionId Int
-  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  voterEmail   String?
-  voterIp      String?
-  credits      Int        @default(1)
-  createdAt    DateTime   @default(now())
+  id              Int         @id @default(autoincrement())
+  eventId         Int
+  event           Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  submissionId    Int
+  submission      Submission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  voterIdentifier String      // Non-null canonical identity: e.g. "user:42", "email:foo@bar.com", or "token:<uuid>"
+  voterUserId     Int?
+  voterUser       User?       @relation(fields: [voterUserId], references: [id], onDelete: SetNull)
+  voterEmail      String?
+  voterIp         String?
+  credits         Int         @default(1)
+  createdAt       DateTime    @default(now())
 
-  @@unique([submissionId, voterEmail])
+  @@unique([submissionId, voterIdentifier])
   @@index([eventId])
-  @@index([voterEmail])
+  @@index([voterIdentifier])
+  @@index([submissionId])
+}
+
+model VoterBalance {
+  id               Int      @id @default(autoincrement())
+  eventId          Int
+  event            Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  voterIdentifier  String
+  voterUserId      Int?
+  voterUser        User?    @relation(fields: [voterUserId], references: [id], onDelete: SetNull)
+  totalCredits     Int      @default(100)
+  usedCredits      Int      @default(0)
+  remainingCredits Int      @default(100)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([eventId, voterIdentifier])
+  @@index([eventId])
+  @@index([voterIdentifier])
+}
+
+model EmailVerification {
+  id          Int       @id @default(autoincrement())
+  eventId     Int
+  event       Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  email       String
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  isVerified  Boolean   @default(false)
+  verifiedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([eventId, email])
+  @@index([tokenHash])
 }
 
 model Comment {
   id           Int        @id @default(autoincrement())
   submissionId Int
   submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  authorId     Int?
+  author       User?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
   authorName   String
   authorEmail  String
   content      String
+  isDeleted    Boolean    @default(false)
+  deletedAt    DateTime?
+  deletedBy    Int?
   createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
 
   @@index([submissionId])
+  @@index([authorId])
 }
 
 model Webhook {

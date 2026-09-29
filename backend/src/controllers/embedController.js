@@ -1,5 +1,30 @@
 const prisma = require('../utils/prisma');
 
+const escapeHtml = (str) => {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
+const sanitizeUrl = (url) => {
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return escapeHtml(trimmed);
+    }
+  } catch (e) {
+    if (/^https?:\/\//i.test(trimmed)) {
+      return escapeHtml(trimmed);
+    }
+  }
+  return null;
+};
+
 const renderEmbedGallery = async (req, res, next) => {
   try {
     let { eventId } = req.params;
@@ -22,33 +47,46 @@ const renderEmbedGallery = async (req, res, next) => {
         team: { select: { name: true } },
         track: true,
       },
-      orderBy: { submittedAt: 'desc' },
-      take: 50,
+      take: 100,
     });
 
+    // Unbiased Fisher-Yates shuffle for embed gallery
+    for (let i = submissions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [submissions[i], submissions[j]] = [submissions[j], submissions[i]];
+    }
+
     const cardsHtml = submissions
-      .map(
-        (s) => `
+      .map((s) => {
+        const safeRepoUrl = sanitizeUrl(s.repoUrl);
+        const safeTitle = escapeHtml(s.title);
+        const safeTeamName = escapeHtml(s.team?.name || 'Hackathon Team');
+        const safeTagline = escapeHtml(s.tagline || '');
+        const safeTrackName = escapeHtml(s.track?.name || 'General Track');
+
+        return `
       <div class="df-card">
-        <div class="df-card-track">${s.track?.name || 'General Track'}</div>
-        <h3 class="df-card-title">${s.title}</h3>
-        <p class="df-card-team">by ${s.team?.name || 'Hackathon Team'}</p>
-        <p class="df-card-tagline">${s.tagline || ''}</p>
+        <div class="df-card-track">${safeTrackName}</div>
+        <h3 class="df-card-title">${safeTitle}</h3>
+        <p class="df-card-team">by ${safeTeamName}</p>
+        <p class="df-card-tagline">${safeTagline}</p>
         ${
-          s.repoUrl
-            ? `<a href="${s.repoUrl}" target="_blank" rel="noopener" class="df-card-link">View Repository &rarr;</a>`
+          safeRepoUrl
+            ? `<a href="${safeRepoUrl}" target="_blank" rel="noopener noreferrer" class="df-card-link">View Repository &rarr;</a>`
             : ''
         }
       </div>
-    `
-      )
+    `;
+      })
       .join('');
+
+    const safeEventTitle = escapeHtml(event.title);
 
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>${event.title} - Project Gallery</title>
+  <title>${safeEventTitle} - Project Gallery</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -118,7 +156,7 @@ const renderEmbedGallery = async (req, res, next) => {
 </head>
 <body>
   <div class="df-header">
-    <h2>${event.title} Showcase</h2>
+    <h2>${safeEventTitle} Showcase</h2>
     <p>Live Hackathon Project Gallery (${submissions.length} projects)</p>
   </div>
   <div class="df-grid">

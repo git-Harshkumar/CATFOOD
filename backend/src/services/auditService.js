@@ -4,22 +4,24 @@ const prisma = require('../utils/prisma');
  * Log an auditable event in the platform.
  * 
  * @param {Object} params
- * @param {number|null} params.actorId - ID of user performing action
- * @param {string} params.action - Action identifier e.g. "JUDGE_INVITED", "SCORE_SUBMITTED", "NORMALIZATION_EXECUTED"
- * @param {string|null} params.targetType - Target entity type e.g. "Judge", "Submission", "Score"
- * @param {string|number|null} params.targetId - ID of target entity
- * @param {Object|null} params.metadata - Extra context for action
+ * @param {number|null} [params.eventId] - Event ID scope
+ * @param {number|null} [params.actorId] - ID of user performing action
+ * @param {string} params.action - Action identifier e.g. "COMMUNITY_VOTE_CAST", "COMMUNITY_VOTE_DUPLICATE_REJECTED"
+ * @param {string|null} [params.targetType] - Target entity type e.g. "Submission", "Score"
+ * @param {string|number|null} [params.targetId] - ID of target entity
+ * @param {Object|string|null} [params.metadata] - Extra context for action
  * @returns {Promise<Object>} Created audit log entry
  */
-const logAction = async ({ actorId = null, action, targetType = null, targetId = null, metadata = null }) => {
+const logAction = async ({ eventId = null, actorId = null, action, targetType = null, targetId = null, metadata = null }) => {
   try {
     const entry = await prisma.auditLog.create({
       data: {
+        eventId: eventId ? parseInt(eventId, 10) : null,
         actorId: actorId ? parseInt(actorId, 10) : null,
         action,
         targetType: targetType ? String(targetType) : null,
         targetId: targetId ? String(targetId) : null,
-        metadata: metadata ? JSON.stringify(metadata) : null,
+        metadata: metadata ? (typeof metadata === 'string' ? metadata : JSON.stringify(metadata)) : null,
         timestamp: new Date(),
       },
     });
@@ -32,16 +34,21 @@ const logAction = async ({ actorId = null, action, targetType = null, targetId =
 };
 
 /**
- * Retrieve audit logs, optionally filtered by action or targetType.
+ * Retrieve audit logs strictly filtered by event, action, or targetType.
  * 
  * @param {Object} filters
+ * @param {number} [filters.eventId]
  * @param {number} [filters.limit=100]
  * @param {string} [filters.action]
  * @param {string} [filters.targetType]
+ * @param {number} [filters.actorId]
  * @returns {Promise<Array>}
  */
 const getAuditLogs = async (filters = {}) => {
   const where = {};
+  if (filters.eventId !== undefined && filters.eventId !== null) {
+    where.eventId = parseInt(filters.eventId, 10);
+  }
   if (filters.action) where.action = filters.action;
   if (filters.targetType) where.targetType = filters.targetType;
   if (filters.actorId) where.actorId = parseInt(filters.actorId, 10);

@@ -299,7 +299,7 @@ const getPublicGallery = async (eventId, queryParams = {}) => {
     },
   });
 
-  // Fisher-Yates shuffle
+  // Unbiased Fisher-Yates shuffle for randomized ballot ordering
   for (let i = submissions.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [submissions[i], submissions[j]] = [submissions[j], submissions[i]];
@@ -316,9 +316,8 @@ const getPublicGallery = async (eventId, queryParams = {}) => {
     }
     return copy;
   });
-  
-  // T3 requirement: ballot ordering is randomised
-  return results.sort(() => Math.random() - 0.5);
+
+  return results;
 };
 
 module.exports = {

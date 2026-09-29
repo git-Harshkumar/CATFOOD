@@ -1,6 +1,7 @@
 const judgingService = require('../services/judgingService');
 const eventService = require('../services/eventService');
 const auditService = require('../services/auditService');
+const { canManageEvent } = require('../utils/permissions');
 const { success } = require('../utils/response');
 const prisma = require('../utils/prisma');
 
@@ -197,7 +198,31 @@ const updateJudgeStatus = async (req, res, next) => {
 
 const getAuditLogs = async (req, res, next) => {
   try {
+    let eventId = req.params.eventId || req.params.id || req.query.eventId;
+    if (eventId) {
+      eventId = parseInt(eventId, 10);
+      const isAllowed = await canManageEvent(req.user, eventId);
+      if (!isAllowed) {
+        const error = new Error('Forbidden. You do not have permission to view audit logs for this event.');
+        error.statusCode = 403;
+        throw error;
+      }
+    } else if (!req.user?.isGlobalAdmin) {
+      const organized = await prisma.event.findFirst({
+        where: { organizerId: req.user.id },
+        select: { id: true },
+      });
+      if (organized) {
+        eventId = organized.id;
+      } else {
+        const error = new Error('Event ID is required to access audit logs.');
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
     const logs = await auditService.getAuditLogs({
+      eventId,
       actorId: req.query.actorId,
       action: req.query.action,
       targetType: req.query.targetType,
@@ -234,7 +259,7 @@ const recordPairwiseComparison = async (req, res, next) => {
 
 const getPairwiseStandings = async (req, res, next) => {
   try {
-    let { eventId } = req.params;
+    let eventId = req.params.eventId || req.query.eventId;
     if (!eventId) {
       const evt = await prisma.event.findFirst({ orderBy: { id: 'asc' } });
       if (evt) eventId = evt.id;
