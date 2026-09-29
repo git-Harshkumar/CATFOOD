@@ -4,11 +4,13 @@ import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
-import { Award, Trophy, ArrowRight, RefreshCw, CheckCircle2, AlertCircle, ExternalLink, Github, Globe } from 'lucide-react';
+import { Award, Trophy, ArrowRight, RefreshCw, CheckCircle2, AlertCircle, ExternalLink, Github, Globe, ArrowLeft } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export const PairwiseJudgingPage = () => {
   const { eventId: paramEventId } = useParams();
   const navigate = useNavigate();
+  const { user, isGlobalAdmin } = useAuth();
 
   const [events, setEvents] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState(paramEventId || '');
@@ -32,15 +34,35 @@ export const PairwiseJudgingPage = () => {
 
   const fetchEvents = async () => {
     try {
-      const res = await api.getEvents();
-      if (res?.data && res.data.length > 0) {
-        setEvents(res.data);
-        if (!selectedEventId) {
-          setSelectedEventId(String(paramEventId || res.data[0].id));
+      let judgeAssignedEvents = [];
+      try {
+        const queueRes = await api.getJudgeQueue();
+        if (queueRes?.data && queueRes.data.length > 0) {
+          judgeAssignedEvents = queueRes.data.map((q) => ({ id: q.eventId, title: q.eventTitle }));
         }
+      } catch (e) {
+        console.warn('Queue fetch error:', e);
+      }
+
+      let accessibleEvents = judgeAssignedEvents;
+      if (isGlobalAdmin) {
+        const allRes = await api.getEvents();
+        accessibleEvents = allRes?.data || [];
+      } else if (accessibleEvents.length === 0 && user?.judgeProfiles?.length > 0) {
+        const allRes = await api.getEvents();
+        const allList = allRes?.data || [];
+        const profileIds = user.judgeProfiles.map((p) => p.eventId || p.event?.id);
+        accessibleEvents = allList.filter((e) => profileIds.includes(e.id));
+      }
+
+      setEvents(accessibleEvents);
+      if (paramEventId) {
+        setSelectedEventId(String(paramEventId));
+      } else if (accessibleEvents.length > 0) {
+        setSelectedEventId(String(accessibleEvents[0].id));
       }
     } catch (err) {
-      console.error('Failed to load events:', err);
+      console.error('Failed to load events for pairwise:', err);
     }
   };
 
@@ -116,6 +138,14 @@ export const PairwiseJudgingPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 space-y-10 pb-20 pt-6">
+      {/* Contextual Back Navigation */}
+      <button
+        onClick={() => navigate('/judge/queue')}
+        className="flex items-center gap-2 font-black text-neo-ink hover:underline decoration-3 underline-offset-4"
+      >
+        <ArrowLeft className="w-5 h-5" /> Back to Evaluation Queue
+      </button>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-3 border-neo-ink pb-6">
         <div>
@@ -133,7 +163,7 @@ export const PairwiseJudgingPage = () => {
         </div>
 
         {/* Event Picker */}
-        {events.length > 0 && (
+        {events.length > 0 ? (
           <div className="flex flex-col gap-2 min-w-[260px]">
             <label className="text-xs font-black uppercase text-neo-ink/70">
               Select Hackathon
@@ -152,6 +182,10 @@ export const PairwiseJudgingPage = () => {
                 </option>
               ))}
             </select>
+          </div>
+        ) : (
+          <div className="bg-white px-4 py-2 border-2 border-neo-ink rounded-xl text-xs font-bold text-neo-ink/60">
+            No assigned events
           </div>
         )}
       </div>

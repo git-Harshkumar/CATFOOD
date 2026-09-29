@@ -9,21 +9,94 @@ An enterprise-grade hackathon management and judgment engine engineered for **DO
 
 ---
 
-## The One Command Rule
+## Docker Quickstart (The One Command Rule)
 
-The entire portal boots offline with zero external cloud dependencies:
+The entire application boots offline with a single command:
 
 ```bash
 docker compose up
 ```
 
-This single command:
-1. Provisions the local embedded SQLite database.
-2. Runs database migrations automatically.
-3. Ingests `fixtures.json` (40 projects, 30 judges, 8 tracks, 118 evaluations).
-4. Executes cross-judge z-score normalization.
-5. Generates persistent authentication tokens and outputs `.dogfood.toml`.
-6. Launches the API portal on **`http://localhost:8080`** and Frontend on **`http://localhost:5173`**.
+Or to build and run in detached mode:
+
+```bash
+docker compose up --build -d
+```
+
+### What happens automatically on `docker compose up`:
+1. **Network & Storage Setup**: Initializes isolated bridge network `dogfood-network` and persistent volume `dogfood-backend-data`.
+2. **Database Provisioning**: Synchronizes SQLite schema via Prisma without data loss (`prisma db push`).
+3. **Smart Idempotent Seeding**: If the database is newly initialized, it automatically seeds `fixtures.json` (40 projects, 30 judges, 8 tracks, criteria, and demo accounts). If data already exists, it preserves your database.
+4. **Health Checks**: Backend health is verified on `GET /api/health` before frontend begins serving traffic.
+5. **Services Online**:
+   - **Frontend UI**: [http://localhost:5173](http://localhost:5173)
+   - **Backend API**: [http://localhost:8080](http://localhost:8080)
+   - **API Health Check**: [http://localhost:8080/api/health](http://localhost:8080/api/health)
+   - **Interactive API Docs (Swagger UI)**: [http://localhost:8080/api/docs](http://localhost:8080/api/docs)
+   - **OpenAPI 3.0 Spec**: [http://localhost:8080/api/openapi.json](http://localhost:8080/api/openapi.json)
+
+---
+
+## Docker Operations & Developer Guide
+
+### 1. Prerequisites
+- Docker Engine 24.0+ and Docker Compose v2+ installed.
+- No local ports conflicting on `8080` (API) or `5173` (Frontend).
+
+### 2. Environment Configuration
+Default environment values are pre-configured in `docker-compose.yml` so the application runs out-of-the-box. To customize settings:
+```bash
+cp .env.example .env
+```
+Key environment variables:
+- `PORT`: Backend port (default: `8080`)
+- `DATABASE_URL`: Database connection string (default: `file:/app/data/dev.db` for Docker volume persistence)
+- `JWT_SECRET`: Secret key for authentication tokens
+- `BACKEND_URL`: Internal Docker network proxy target for Vite (`http://backend:8080`)
+- `FORCE_SEED`: Set to `true` to force re-seeding fixtures on container boot
+
+### 3. Service Status & Health
+Check the status of running containers and health probes:
+```bash
+docker compose ps
+```
+Both `dogfood-backend` and `dogfood-frontend` report status `healthy`.
+
+### 4. Viewing Logs
+Stream logs from all services or a specific container:
+```bash
+# All services
+docker compose logs -f
+
+# Backend only
+docker compose logs -f backend
+
+# Frontend only
+docker compose logs -f frontend
+```
+
+### 5. Stopping Containers
+Stop the services while keeping database data intact:
+```bash
+docker compose down
+```
+
+### 6. Resetting the Local Database
+To wipe the persistent volume and re-seed from clean fixtures:
+```bash
+docker compose down -v
+docker compose up --build
+```
+Alternatively, force re-seeding on the next startup:
+```bash
+FORCE_SEED=true docker compose up
+```
+
+### 7. Running Acceptance Tests Against Docker
+Once containers are healthy, verify with the test harness from your host machine:
+```bash
+python3 tests/run.py .dogfood.toml
+```
 
 ---
 

@@ -1058,6 +1058,7 @@ const getLeaderboard = async (eventId, currentUser) => {
   return {
     eventId: event.id,
     eventTitle: event.title,
+    organizerId: event.organizerId,
     isLeaderboardPublished: event.isLeaderboardPublished,
     totalSubmissions: rankings.length,
     rankings,

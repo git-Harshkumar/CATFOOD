@@ -60,6 +60,11 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
   };
 
+  const isGlobalAdmin = !!user?.isGlobalAdmin || user?.role === 'ADMIN';
+  const isOrganizer = user?.role === 'ORGANIZER' || isGlobalAdmin;
+  const isJudge = user?.role === 'JUDGE' || isGlobalAdmin;
+  const isParticipant = user?.role === 'PARTICIPANT' || (!isGlobalAdmin && user?.role !== 'ORGANIZER' && user?.role !== 'JUDGE');
+
   return (
     <AuthContext.Provider
       value={{
@@ -71,10 +76,10 @@ export const AuthProvider = ({ children }) => {
         logout,
         refreshProfile: loadUserProfile,
         isAuthenticated: !!user,
-        isGlobalAdmin: !!user?.isGlobalAdmin,
-        isOrganizer: user?.role === 'ORGANIZER' || !!user?.isGlobalAdmin,
-        isJudge: user?.role === 'JUDGE' || !!user?.isGlobalAdmin,
-        isParticipant: user?.role === 'PARTICIPANT',
+        isGlobalAdmin,
+        isOrganizer,
+        isJudge,
+        isParticipant,
       }}
     >
       {children}

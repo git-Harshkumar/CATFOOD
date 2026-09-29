@@ -143,6 +143,11 @@ export const OrganizerEventDashboard = () => {
       const res = await api.getEventById(id);
       if (res?.data) {
         const ev = res.data;
+        // Strict Authorization: If user is not the event organizer and not Admin, redirect to unauthorized
+        if (user && !user.isGlobalAdmin && user.role !== 'ADMIN' && ev.organizerId && ev.organizerId !== user.id) {
+          navigate('/unauthorized', { replace: true, state: { attemptedPath: location.pathname } });
+          return;
+        }
         setEvent(ev);
         setEditTitle(ev.title || '');
         setEditDescription(ev.description || '');

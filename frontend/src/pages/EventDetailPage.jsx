@@ -15,6 +15,7 @@ import { JoinTeamModal } from './JoinTeamModal';
 import { getStatusBadge, formatDate } from '../utils/formatters';
 import { Trophy, FileText, Award, Github, Globe, Users, Lock, ArrowLeft, PlusCircle, ShieldCheck, Settings } from 'lucide-react';
 import JudgingProgressSection from '../components/JudgingProgressSection';
+import { isEventOrganizer, isEventJudge, canParticipate } from '../utils/permissions';
 
 export const EventDetailPage = ({
   eventId,
@@ -101,8 +102,8 @@ export const EventDetailPage = ({
   const userTeam = event.teams?.find((t) =>
     t.members?.some((m) => m.userId === user?.id) || t.leaderId === user?.id
   );
-  const isEventOrganizer = user && event.organizerId === user.id;
-  const isEventJudge = user && event.judges?.some(j => j.userId === user.id);
+  const hasEventOrganizerRole = isEventOrganizer(user, event);
+  const hasEventJudgeRole = isEventJudge(user, event);
 
   return (
     <div className="max-w-7xl mx-auto px-4 space-y-10 pb-16 pt-6">
@@ -116,7 +117,7 @@ export const EventDetailPage = ({
         </button>
 
         <div className="flex items-center gap-4">
-          {event.isLeaderboardPublished || isOrganizer || isJudge ? (
+          {event.isLeaderboardPublished || hasEventOrganizerRole || hasEventJudgeRole ? (
             <NeoButton onClick={() => onViewLeaderboard(event.id)} color="bg-neo-pastel-yellow" textColor="text-neo-ink">
               <Trophy className="w-5 h-5 mr-2" />
               {event.isLeaderboardPublished ? 'View Leaderboard' : 'Leaderboard Preview'}
@@ -127,8 +128,8 @@ export const EventDetailPage = ({
             </div>
           )}
           
-          <NeoButton onClick={() => onViewGallery()} color="bg-neo-pastel-purple" textColor="text-neo-ink">
-             Public Gallery
+          <NeoButton onClick={() => onViewGallery(event.id)} color="bg-neo-pastel-purple" textColor="text-neo-ink">
+             Project Gallery
           </NeoButton>
         </div>
       </div>
@@ -175,11 +176,11 @@ export const EventDetailPage = ({
           </div>
 
           {/* Action Buttons inside Hero */}
-          {isEventOrganizer ? (
+          {hasEventOrganizerRole ? (
             <NeoButton onClick={() => navigate(`/organizer/events/${event.id}/edit`)} color="bg-white" textColor="text-neo-ink" className="w-full justify-center mt-2 border-3 border-neo-ink neo-shadow">
               <ShieldCheck className="w-5 h-5 mr-2" /> Organizer Portal
             </NeoButton>
-          ) : isEventJudge ? (
+          ) : hasEventJudgeRole ? (
             <NeoButton onClick={() => navigate(`/judge/${event.id}/queue`)} color="bg-neo-pastel-green" textColor="text-neo-ink" className="w-full justify-center mt-2 border-3 border-neo-ink neo-shadow">
               <Award className="w-5 h-5 mr-2" /> Judge Portal
             </NeoButton>
@@ -195,14 +196,16 @@ export const EventDetailPage = ({
               {userTeam.submission ? (isDeadlinePassed ? 'View Submission (Locked)' : 'Edit Submission') : 'Submit Project'}
             </NeoButton>
           ) : user ? (
-            <div className="flex flex-col gap-3 w-full mt-2">
-              <NeoButton onClick={() => setIsCreateOpen(true)} color="bg-neo-ink" textColor="text-white" className="w-full justify-center">
-                <PlusCircle className="w-5 h-5 mr-2" /> Register Team
-              </NeoButton>
-              <NeoButton onClick={() => setIsJoinOpen(true)} color="bg-white" textColor="text-neo-ink" className="w-full justify-center">
-                <Users className="w-5 h-5 mr-2" /> Join with Code
-              </NeoButton>
-            </div>
+            canParticipate(user) ? (
+              <div className="flex flex-col gap-3 w-full mt-2">
+                <NeoButton onClick={() => setIsCreateOpen(true)} color="bg-neo-ink" textColor="text-white" className="w-full justify-center">
+                  <PlusCircle className="w-5 h-5 mr-2" /> Register Team
+                </NeoButton>
+                <NeoButton onClick={() => setIsJoinOpen(true)} color="bg-white" textColor="text-neo-ink" className="w-full justify-center">
+                  <Users className="w-5 h-5 mr-2" /> Join with Code
+                </NeoButton>
+              </div>
+            ) : null
           ) : (
             <NeoButton onClick={() => navigate('/login', { state: { from: location } })} color="bg-neo-ink" textColor="text-white" className="w-full justify-center mt-2">
               <Lock className="w-5 h-5 mr-2" /> Login to Participate
@@ -212,25 +215,25 @@ export const EventDetailPage = ({
       </NeoCard>
 
       {/* Organizer Controls and Evaluator Buttons */}
-      <div className="flex flex-wrap items-center justify-between gap-6 border-t-3 border-neo-ink pt-8">
-        <div className="flex items-center gap-4">
-          {/* Moved submit and register to the hero card above */}
+      {(hasEventJudgeRole || hasEventOrganizerRole) && (
+        <div className="flex flex-wrap items-center justify-between gap-6 border-t-3 border-neo-ink pt-8">
+          <div className="flex items-center gap-4">
+            {hasEventJudgeRole && (
+              <NeoButton onClick={() => onOpenScore(eventId)} color="bg-neo-pastel-green" textColor="text-neo-ink">
+                <Award className="w-5 h-5 mr-2" /> Evaluate Submissions
+              </NeoButton>
+            )}
+          </div>
 
-          {isJudge && (
-            <NeoButton onClick={() => onOpenScore(eventId)} color="bg-neo-pastel-green" textColor="text-neo-ink">
-              <Award className="w-5 h-5 mr-2" /> Evaluate Submissions
-            </NeoButton>
+          {hasEventOrganizerRole && (
+            <NeoToggle 
+              checked={event.isLeaderboardPublished}
+              onChange={handleToggleLeaderboard}
+              label="Publish Leaderboard"
+            />
           )}
         </div>
-
-        {isOrganizer && event.organizerId === user?.id && (
-          <NeoToggle 
-            checked={event.isLeaderboardPublished}
-            onChange={handleToggleLeaderboard}
-            label="Publish Leaderboard"
-          />
-        )}
-      </div>
+      )}
 
       {/* Tabs */}
       <div className="flex items-center gap-3 overflow-x-auto py-2 pb-4 scrollbar-hide border-b-3 border-neo-ink">
@@ -238,10 +241,10 @@ export const EventDetailPage = ({
           { key: 'overview', label: 'Rules & Guidelines' },
           { key: 'criteria', label: `Judging Rubric (${event.criteria?.length || 0})` },
           { key: 'submissions', label: `Projects (${submissions?.length || 0})` },
-          ...(isEventOrganizer
+          ...(hasEventOrganizerRole
             ? [{ key: 'teams', label: `Teams (${event.teams?.length || 0})` }]
             : []),
-          ...(isEventOrganizer
+          ...(hasEventOrganizerRole
             ? [{ key: 'judging', label: '⚖ Judging Progress' }]
             : []),
         ].map((tab) => (
@@ -279,7 +282,7 @@ export const EventDetailPage = ({
               <p className="font-bold text-neo-ink/70">No judges assigned yet.</p>
             )}
 
-            {isOrganizer && event.organizerId === user?.id && (
+            {hasEventOrganizerRole && (
               <form onSubmit={handleAssignJudge} className="pt-4 border-t-3 border-neo-ink space-y-3">
                 <input
                   type="email"
@@ -354,7 +357,7 @@ export const EventDetailPage = ({
                       )}
                     </div>
 
-                    {isJudge && (
+                    {hasEventJudgeRole && (
                       <NeoButton onClick={() => onOpenScore(eventId, sub.id)} color="bg-neo-pastel-green" textColor="text-neo-ink">
                         Score Project
                       </NeoButton>
@@ -389,12 +392,12 @@ export const EventDetailPage = ({
       )}
 
       {/* Tab: Judging Progress (Organizer only) */}
-      {activeTab === 'judging' && isOrganizer && event.organizerId === user?.id && (
+      {activeTab === 'judging' && hasEventOrganizerRole && (
         <JudgingProgressSection eventId={event.id} />
       )}
 
       {/* Organizer Floating Action Menu */}
-      {isEventOrganizer && (
+      {hasEventOrganizerRole && (
         <div className="fixed right-6 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-50">
           <button
             onClick={() => navigate(`/organizer/events/${event.id}/edit`)}

@@ -5,14 +5,27 @@ import { useNotification } from '../context/NotificationContext';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
 import { Trophy, Medal, Award, ArrowLeft, Lock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { isEventOrganizer } from '../utils/permissions';
 
 export const LeaderboardPage = ({ eventId, onBack }) => {
-  const { user, isOrganizer } = useAuth();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [leaderboard, setLeaderboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const { showNotification } = useNotification();
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else if (eventId) {
+      navigate(`/events/${eventId}`);
+    } else {
+      navigate('/events');
+    }
+  };
 
   useEffect(() => {
     fetchLeaderboard();
@@ -61,7 +74,7 @@ export const LeaderboardPage = ({ eventId, onBack }) => {
         </div>
         <h3 className="text-4xl font-black text-neo-ink">Leaderboard Hidden</h3>
         <p className="text-xl font-bold text-neo-ink/60 max-w-md mx-auto">This leaderboard is not currently public.</p>
-        <NeoButton onClick={onBack} color="bg-white" textColor="text-neo-ink">
+        <NeoButton onClick={handleBack} color="bg-white" textColor="text-neo-ink">
           <ArrowLeft className="w-5 h-5 mr-2" /> Back to Hackathon
         </NeoButton>
       </div>
@@ -69,6 +82,7 @@ export const LeaderboardPage = ({ eventId, onBack }) => {
   }
 
   const rankings = leaderboard.rankings || [];
+  const canManageThisLeaderboard = isEventOrganizer(user, leaderboard?.eventId || eventId);
 
   return (
     <div className="max-w-7xl mx-auto px-4 space-y-12 pb-24 pt-8">
@@ -76,7 +90,7 @@ export const LeaderboardPage = ({ eventId, onBack }) => {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <button
-            onClick={onBack}
+            onClick={handleBack}
             className="flex items-center gap-2 font-bold text-neo-ink hover:underline decoration-3 underline-offset-4 mb-4 w-max"
           >
             <ArrowLeft className="w-5 h-5" /> Back to Hackathon
@@ -89,7 +103,7 @@ export const LeaderboardPage = ({ eventId, onBack }) => {
           </div>
         </div>
 
-        {isOrganizer && (
+        {canManageThisLeaderboard && (
           <div className="flex flex-col gap-3">
              <div className="text-sm font-black text-neo-ink uppercase tracking-widest px-2">Organizer Controls</div>
              <NeoButton

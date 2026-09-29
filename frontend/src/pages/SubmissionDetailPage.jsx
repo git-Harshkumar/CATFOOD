@@ -25,6 +25,7 @@ import {
   Lock,
 } from 'lucide-react';
 import { formatDate } from '../utils/formatters';
+import { isEventJudge } from '../utils/permissions';
 
 export const SubmissionDetailPage = () => {
   const { id } = useParams();
@@ -105,6 +106,18 @@ export const SubmissionDetailPage = () => {
     }
   };
 
+  const targetEventId = params.eventId || submission?.eventId;
+
+  const handleBackToGallery = () => {
+    if (targetEventId) {
+      navigate(`/events/${targetEventId}/gallery`);
+    } else if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/events');
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-20 text-center font-bold text-2xl text-neo-ink/50">
@@ -122,8 +135,12 @@ export const SubmissionDetailPage = () => {
           <p className="font-bold text-neo-ink/70 mt-2 mb-6 max-w-md">
             This submission does not exist or may have been deleted.
           </p>
-          <NeoButton onClick={() => navigate(-1)} color="bg-white" textColor="text-neo-ink">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Go Back
+          <NeoButton 
+            onClick={() => targetEventId ? navigate(`/events/${targetEventId}/gallery`) : navigate('/events')} 
+            color="bg-white" 
+            textColor="text-neo-ink"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Project Gallery
           </NeoButton>
         </NeoCard>
       </div>
@@ -135,19 +152,19 @@ export const SubmissionDetailPage = () => {
       {/* Top Breadcrumb */}
       <div className="flex items-center justify-between">
         <button
-          onClick={() => navigate(-1)}
+          onClick={handleBackToGallery}
           className="flex items-center gap-2 font-bold text-neo-ink hover:underline decoration-3 underline-offset-4"
         >
-          <ArrowLeft className="w-5 h-5" /> Back to Gallery
+          <ArrowLeft className="w-5 h-5" /> Back to Project Gallery
         </button>
 
         {submission.event && (
-          <span
+          <button
             onClick={() => navigate(`/events/${submission.eventId}`)}
-            className="cursor-pointer font-black text-xs uppercase px-3 py-1.5 bg-white border-3 border-neo-ink rounded-full neo-shadow hover:neo-active"
+            className="cursor-pointer font-black text-xs uppercase px-3.5 py-1.5 bg-white border-3 border-neo-ink rounded-full neo-shadow hover:neo-active"
           >
             Hackathon: {submission.event.title}
-          </span>
+          </button>
         )}
       </div>
 
@@ -254,6 +271,19 @@ export const SubmissionDetailPage = () => {
               <Heart className="w-5 h-5 mr-2 fill-current text-neo-ink" />
               {voting ? 'Recording Vote...' : 'Vote for this Project'}
             </NeoButton>
+
+            {/* Judge Evaluation Shortcut for Authorized Judges */}
+            {isEventJudge(user, submission?.eventId) && (
+              <NeoButton
+                onClick={() => navigate(`/judge/submissions/${submission.id}/score`)}
+                color="bg-neo-pastel-green"
+                textColor="text-neo-ink"
+                className="w-full justify-center !py-3 !text-base border-3 border-neo-ink"
+              >
+                <Award className="w-5 h-5 mr-2" />
+                Score Project (Judge Portal)
+              </NeoButton>
+            )}
           </div>
         </div>
       </NeoCard>

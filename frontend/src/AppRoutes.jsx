@@ -33,6 +33,8 @@ import { MyCertificatesPage } from './pages/MyCertificatesPage';
 import { VerifyCertificatePage } from './pages/VerifyCertificatePage';
 import { JoinTeamByLinkPage } from './pages/JoinTeamByLinkPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { UnauthorizedPage } from './pages/UnauthorizedPage';
+import { TeamDetailPage } from './pages/TeamDetailPage';
 
 const NotFound = () => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-neo-bg text-neo-ink">
@@ -88,6 +90,10 @@ function LeaderboardWrapper() {
     eventId={id}
     onBack={() => navigate(`/events/${id}`)}
   />;
+}
+
+function TeamDetailWrapper({ handleOpenSubmit }) {
+  return <TeamDetailPage onOpenSubmit={handleOpenSubmit} />;
 }
 
 function MyActivityWrapper({ handleOpenSubmit }) {
@@ -162,25 +168,45 @@ export const AppRoutes = () => {
           <Route path="/events" element={<EventsWrapper />} />
           <Route path="/events/:id" element={<EventDetailWrapper handleOpenSubmit={handleOpenSubmit} />} />
           <Route path="/events/:id/leaderboard" element={<LeaderboardWrapper />} />
-          <Route path="/gallery" element={<PublicGalleryPage />} />
+          
+          {/* Hackathon-Scoped Project Gallery: Accessible strictly under event context */}
           <Route path="/events/:eventId/gallery" element={<PublicGalleryWrapper />} />
+          <Route path="/events/:eventId/projects" element={<PublicGalleryWrapper />} />
+          
+          {/* Project Details: Scoped to Hackathon */}
+          <Route path="/events/:eventId/projects/:id" element={<SubmissionDetailPage />} />
+          <Route path="/events/:eventId/submissions/:id" element={<SubmissionDetailPage />} />
           <Route path="/submissions/:id" element={<SubmissionDetailPage />} />
+          
+          {/* Team Details */}
+          <Route path="/teams/:id" element={<TeamDetailWrapper handleOpenSubmit={handleOpenSubmit} />} />
+
+          {/* Legacy standalone gallery paths redirect to events list */}
+          <Route path="/gallery" element={<Navigate to="/events" replace />} />
+          <Route path="/projects" element={<Navigate to="/events" replace />} />
+
           <Route path="/certificates/verify/:id" element={<VerifyCertificatePage />} />
           <Route path="/certificates/verify" element={<VerifyCertificatePage />} />
           <Route path="/join" element={<JoinTeamByLinkPage />} />
           <Route path="/teams/join/:token" element={<JoinTeamByLinkPage />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
         </Route>
 
-        {/* Protected Standalone Pages (with Navbar) */}
-        <Route element={<ProtectedRoute allowedRoles={[]} />}>
+        {/* Protected Standalone Pages (Role Guarded) */}
+        <Route element={<ProtectedRoute allowedRoles={['ORGANIZER', 'ADMIN']} />}>
           <Route element={<PublicLayout />}>
             <Route path="/organizer/events/new" element={<CreateEventPage />} />
+          </Route>
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={[]} />}>
+          <Route element={<PublicLayout />}>
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>
 
-        {/* 3. Participant Flow */}
-        <Route element={<ProtectedRoute allowedRoles={[]} />}>
+        {/* 3. Participant Flow (Requires Login, allows all authenticated roles) */}
+        <Route element={<ProtectedRoute allowedRoles={['PARTICIPANT', 'ORGANIZER', 'JUDGE', 'ADMIN']} />}>
           <Route element={<ParticipantLayout />}>
             <Route path="/teams/my" element={<MyActivityWrapper handleOpenSubmit={handleOpenSubmit} />} />
             <Route path="/teams/new" element={<MyActivityWrapper handleOpenSubmit={handleOpenSubmit} />} />
@@ -189,8 +215,8 @@ export const AppRoutes = () => {
           </Route>
         </Route>
 
-        {/* 4. Judge Flow */}
-        <Route element={<ProtectedRoute allowedRoles={[]} />}>
+        {/* 4. Judge Flow (Guarded for Judge & Admin) */}
+        <Route element={<ProtectedRoute allowedRoles={['JUDGE', 'ADMIN']} />}>
           <Route element={<JudgeLayout />}>
             <Route path="/judge/queue" element={<JudgeQueueWrapper />} />
             <Route path="/judge/:eventId/queue" element={<JudgeQueueWrapper />} />
@@ -201,8 +227,8 @@ export const AppRoutes = () => {
           </Route>
         </Route>
 
-        {/* 5. Organizer Event Management Flow */}
-        <Route element={<ProtectedRoute allowedRoles={[]} />}>
+        {/* 5. Organizer Event Management Flow (Guarded for Organizer & Admin) */}
+        <Route element={<ProtectedRoute allowedRoles={['ORGANIZER', 'ADMIN']} />}>
           <Route element={<OrganizerLayout />}>
             <Route path="/organizer/dashboard" element={<Navigate to="/organizer/events" replace />} />
             <Route path="/organizer/events" element={<OrganizerDashboard />} />

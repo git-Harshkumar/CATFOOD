@@ -221,6 +221,7 @@ async function main() {
   // 7. Create Teams & Participants
   console.log(`[Seed-Fixtures] Creating ${fixtures.teams.length} teams...`);
   const teamMap = {};
+  const seenTeamNames = new Set();
   let participantUser = null;
 
   for (const tm of fixtures.teams) {
@@ -247,10 +248,16 @@ async function main() {
     }
 
     const leader = memberUsers[0];
+    let uniqueName = tm.name;
+    if (seenTeamNames.has(uniqueName)) {
+      uniqueName = `${tm.name} (${tm.id.toUpperCase()})`;
+    }
+    seenTeamNames.add(uniqueName);
+
     const teamRecord = await prisma.team.create({
       data: {
         eventId: event.id,
-        name: tm.name,
+        name: uniqueName,
         inviteCode: `INV-${tm.id.toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`,
         leaderId: leader.id,
         isRegistered: true,
@@ -297,8 +304,21 @@ async function main() {
   // 8. Create Projects
   console.log(`[Seed-Fixtures] Creating ${fixtures.projects.length} submissions...`);
   const projectMap = {};
+  const usedTeamIds = new Set();
   for (const prj of fixtures.projects) {
-    const teamRecord = teamMap[prj.team];
+    let teamRecord = teamMap[prj.team];
+    if (!teamRecord || usedTeamIds.has(teamRecord.id)) {
+      teamRecord = await prisma.team.create({
+        data: {
+          eventId: event.id,
+          name: `${prj.title} Team (${prj.id.toUpperCase()})`,
+          inviteCode: `INV-${prj.id.toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`,
+          leaderId: organizer.id,
+          isRegistered: true,
+        },
+      });
+    }
+    usedTeamIds.add(teamRecord.id);
     const trackRecord = trackMap[prj.track];
 
     const submission = await prisma.submission.create({
@@ -425,9 +445,13 @@ peer_scores  = "/api/judge/scores?judge=judge_a"
 csv_export   = "/api/organizer/judging/export.csv"
 `;
 
-  const tomlPath = path.resolve(__dirname, '../../../.dogfood.toml');
-  fs.writeFileSync(tomlPath, tomlContent);
-  console.log(`[Seed-Fixtures] Successfully updated .dogfood.toml at ${tomlPath}`);
+  try {
+    const tomlPath = path.resolve(__dirname, '../../../.dogfood.toml');
+    fs.writeFileSync(tomlPath, tomlContent);
+    console.log(`[Seed-Fixtures] Successfully updated .dogfood.toml at ${tomlPath}`);
+  } catch (err) {
+    console.warn(`[Seed-Fixtures] Notice: Could not write .dogfood.toml (${err.message}). Skipping file update.`);
+  }
 }
 
 if (require.main === module) {

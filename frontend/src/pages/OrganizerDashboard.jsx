@@ -21,10 +21,11 @@ export const OrganizerDashboard = () => {
   const fetchMyEvents = async () => {
     try {
       setLoading(true);
-      // Fetch all events, filter by organizerId locally since backend might not have a specific endpoint for just my events
       const res = await api.getEvents();
       if (res?.data) {
-        const myEvents = res.data.filter(ev => ev.organizerId === user?.id);
+        const myEvents = (user?.isGlobalAdmin || user?.role === 'ADMIN')
+          ? res.data 
+          : res.data.filter(ev => ev.organizerId === user?.id);
         setEvents(myEvents);
       }
     } catch (err) {

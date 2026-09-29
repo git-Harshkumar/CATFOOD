@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
-import { Award, CheckCircle2, Clock, ArrowRight, Trophy } from 'lucide-react';
+import { Award, CheckCircle2, Clock, ArrowRight, Trophy, ArrowLeft } from 'lucide-react';
 import { formatDate } from '../utils/formatters';
 
 export const JudgeQueuePage = ({ eventId, onOpenScore }) => {
+  const navigate = useNavigate();
   const [queue, setQueue] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,6 +31,15 @@ export const JudgeQueuePage = ({ eventId, onOpenScore }) => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 space-y-10 pb-16 pt-6">
+      {eventId && (
+        <button
+          onClick={() => navigate(`/events/${eventId}`)}
+          className="flex items-center gap-2 font-black text-neo-ink hover:underline decoration-3 underline-offset-4"
+        >
+          <ArrowLeft className="w-5 h-5" /> Back to Hackathon
+        </button>
+      )}
+
       <div>
         <h1 className="text-4xl md:text-6xl font-black text-neo-ink tracking-tight mb-4">
           Judge Queue

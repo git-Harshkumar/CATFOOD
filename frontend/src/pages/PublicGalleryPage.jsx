@@ -5,7 +5,8 @@ import NeoCard from '../components/neo/NeoCard';
 import NeoButton from '../components/neo/NeoButton';
 import FilterChipRow from '../components/neo/FilterChipRow';
 import { EventImage } from '../components/EventImage';
-import { Search, Github, Globe, Video, ArrowLeft, Image as ImageIcon, Heart, ArrowRight, Filter } from 'lucide-react';
+import { Search, Github, Globe, ArrowLeft, Image as ImageIcon, Heart, ArrowRight } from 'lucide-react';
+import { getStatusBadge } from '../utils/formatters';
 
 const PASTELS = [
   'bg-neo-pastel-purple',
@@ -21,47 +22,42 @@ export const PublicGalleryPage = ({ eventId: propEventId, onBack }) => {
   const navigate = useNavigate();
   const currentEventId = propEventId || params.eventId || null;
 
+  const [event, setEvent] = useState(null);
   const [submissions, setSubmissions] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [selectedEventId, setSelectedEventId] = useState(currentEventId || 'ALL');
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeTrack, setActiveTrack] = useState('ALL');
   const [voteStatus, setVoteStatus] = useState({}); // { [submissionId]: 'voted' | 'error' | message }
 
-  const tracks = [
-    { label: 'All Tracks', value: 'ALL' },
-    { label: 'Web3 & Blockchain', value: 'Web3 & Blockchain' },
-    { label: 'AI & Machine Learning', value: 'AI & Machine Learning' },
-    { label: 'Fintech', value: 'Fintech' },
-  ];
-
+  // Redirect to /events if no eventId is provided (Project Gallery MUST be Hackathon-scoped)
   useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  useEffect(() => {
-    fetchGallery();
-  }, [selectedEventId]);
-
-  const fetchEvents = async () => {
-    try {
-      const res = await api.getEvents();
-      if (res?.data) {
-        setEvents(res.data);
-      }
-    } catch (e) {
-      console.warn('Failed to load events list:', e);
+    if (!currentEventId) {
+      navigate('/events', { replace: true });
     }
-  };
+  }, [currentEventId, navigate]);
 
-  const fetchGallery = async () => {
+  useEffect(() => {
+    if (currentEventId) {
+      loadEventAndGallery(currentEventId);
+    }
+  }, [currentEventId]);
+
+  const loadEventAndGallery = async (eventId) => {
     try {
       setLoading(true);
-      const targetId = selectedEventId === 'ALL' ? null : selectedEventId;
-      const res = await api.getGallery(targetId);
-      if (res?.data) {
-        setSubmissions(res.data);
+      const [evRes, galRes] = await Promise.all([
+        api.getEventById(eventId).catch((e) => {
+          console.warn('Failed to load event context:', e);
+          return null;
+        }),
+        api.getGallery(eventId),
+      ]);
+
+      if (evRes?.data) {
+        setEvent(evRes.data);
+      }
+      if (galRes?.data) {
+        setSubmissions(galRes.data);
       }
     } catch (err) {
       console.error('Failed to load gallery:', err);
@@ -83,6 +79,15 @@ export const PublicGalleryPage = ({ eventId: propEventId, onBack }) => {
     }
   };
 
+  const tracks = [
+    { label: 'All Tracks', value: 'ALL' },
+    ...(event?.tracks?.map((t) => ({ label: t.name, value: t.name })) || [
+      { label: 'Web3 & Blockchain', value: 'Web3 & Blockchain' },
+      { label: 'AI & Machine Learning', value: 'AI & Machine Learning' },
+      { label: 'Fintech', value: 'Fintech' },
+    ]),
+  ];
+
   const filtered = submissions.filter((sub) => {
     const matchesSearch =
       sub.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -97,62 +102,59 @@ export const PublicGalleryPage = ({ eventId: propEventId, onBack }) => {
     return matchesSearch && matchesTrack;
   });
 
+  const handleBackToHackathon = () => {
+    if (onBack) {
+      onBack();
+    } else if (currentEventId) {
+      navigate(`/events/${currentEventId}`);
+    } else {
+      navigate('/events');
+    }
+  };
+
+  const statusBadge = event ? getStatusBadge(event.status) : null;
+
   return (
-    <div className="max-w-7xl mx-auto px-4 space-y-10 pb-20 pt-6">
-      {/* Header */}
+    <div className="max-w-7xl mx-auto px-4 space-y-10 pb-20 pt-4">
+      {/* Contextual Back Navigation */}
       <div className="flex flex-col gap-6">
-        {onBack ? (
-          <button
-            onClick={onBack}
-            className="flex items-center w-max gap-2 font-bold text-neo-ink hover:underline decoration-3 underline-offset-4"
-          >
-            <ArrowLeft className="w-5 h-5" /> Back to Hackathon
-          </button>
-        ) : (
-          <button
-            onClick={() => navigate('/events')}
-            className="flex items-center w-max gap-2 font-bold text-neo-ink hover:underline decoration-3 underline-offset-4"
-          >
-            <ArrowLeft className="w-5 h-5" /> Back to Hackathons
-          </button>
-        )}
+        <button
+          onClick={handleBackToHackathon}
+          className="flex items-center w-max gap-2 font-black text-neo-ink hover:underline decoration-3 underline-offset-4"
+        >
+          <ArrowLeft className="w-5 h-5" /> Back to {event?.title ? event.title : 'Hackathon'}
+        </button>
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-3 border-neo-ink pb-6">
           <div>
-            <h1 className="text-5xl md:text-7xl font-black text-neo-ink tracking-tight mb-4">
+            {event && (
+              <div className="flex items-center gap-3 mb-3 flex-wrap">
+                <span className="px-3.5 py-1 rounded-full border-2 border-neo-ink font-black text-xs uppercase bg-white text-neo-ink neo-shadow-sm">
+                  {statusBadge?.label || 'ACTIVE'}
+                </span>
+                <span className="font-bold text-sm text-neo-ink/70">
+                  Hackathon: <strong className="text-neo-ink">{event.title}</strong>
+                </span>
+              </div>
+            )}
+            <h1 className="text-4xl md:text-6xl font-black text-neo-ink tracking-tight mb-2">
               Project Gallery
             </h1>
-            <p className="text-xl font-bold text-neo-ink/70 max-w-2xl">
-              Explore public deliverables, test live demos, and cast your community votes for the best innovations.
+            <p className="text-lg md:text-xl font-bold text-neo-ink/70 max-w-2xl">
+              Explore submissions for {event?.title || 'this hackathon'}, test live demos, and cast your community votes.
             </p>
           </div>
 
-          {/* Hackathon Event Selector (when in global view) */}
-          {events.length > 0 && (
-            <div className="flex flex-col gap-2 min-w-[260px]">
-              <label className="text-xs font-black uppercase text-neo-ink/70">
-                Filter by Hackathon
-              </label>
-              <select
-                value={selectedEventId}
-                onChange={(e) => setSelectedEventId(e.target.value)}
-                className="w-full px-4 py-2.5 font-bold bg-white border-3 border-neo-ink rounded-full neo-shadow focus:outline-none"
-              >
-                <option value="ALL">All Hackathons</option>
-                {events.map((ev) => (
-                  <option key={ev.id} value={ev.id}>
-                    {ev.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div className="bg-white px-5 py-3 border-3 border-neo-ink rounded-2xl neo-shadow text-center shrink-0">
+            <span className="text-[10px] font-black uppercase text-neo-ink/60 block">Submitted Projects</span>
+            <span className="text-3xl font-black text-neo-ink">{submissions.length}</span>
+          </div>
         </div>
       </div>
 
-      {/* Filters and Search */}
+      {/* Track Filters and Search */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
-        <div className="w-full md:w-auto">
+        <div className="w-full md:w-auto overflow-x-auto">
           <FilterChipRow
             options={tracks}
             activeOption={activeTrack}
@@ -175,13 +177,17 @@ export const PublicGalleryPage = ({ eventId: propEventId, onBack }) => {
       {/* Gallery Grid */}
       {loading ? (
         <div className="py-20 text-center font-bold text-2xl text-neo-ink/50">
-          Loading Gallery...
+          Loading hackathon projects...
         </div>
       ) : filtered.length === 0 ? (
         <NeoCard color="bg-white" className="text-center py-20 flex flex-col items-center justify-center">
           <ImageIcon className="w-16 h-16 text-neo-ink mb-6" />
           <h3 className="text-3xl font-black text-neo-ink mb-2">No projects found</h3>
-          <p className="font-bold text-neo-ink/60">Try adjusting your search or track filter.</p>
+          <p className="font-bold text-neo-ink/60">
+            {submissions.length === 0 
+              ? 'No projects have been submitted to this hackathon yet.' 
+              : 'Try adjusting your search query or track filter.'}
+          </p>
         </NeoCard>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -192,7 +198,7 @@ export const PublicGalleryPage = ({ eventId: propEventId, onBack }) => {
                 key={sub.id}
                 color={bg}
                 className="flex flex-col justify-between group cursor-pointer hover:-translate-y-1 transition-transform"
-                onClick={() => navigate(`/submissions/${sub.id}`)}
+                onClick={() => navigate(`/events/${currentEventId}/projects/${sub.id}`)}
               >
                 <div>
                   <EventImage
@@ -215,12 +221,12 @@ export const PublicGalleryPage = ({ eventId: propEventId, onBack }) => {
                     )}
                   </div>
 
-                  <h4 className="font-black text-3xl text-neo-ink mb-2 leading-tight">
+                  <h4 className="font-black text-2xl md:text-3xl text-neo-ink mb-2 leading-tight">
                     {sub.title}
                   </h4>
 
                   {sub.tagline && (
-                    <p className="font-bold text-lg text-neo-ink/80 mb-4 line-clamp-2">
+                    <p className="font-bold text-base md:text-lg text-neo-ink/80 mb-4 line-clamp-2">
                       {sub.tagline}
                     </p>
                   )}
@@ -274,7 +280,7 @@ export const PublicGalleryPage = ({ eventId: propEventId, onBack }) => {
                       </a>
                     )}
                     <button
-                      onClick={() => navigate(`/submissions/${sub.id}`)}
+                      onClick={() => navigate(`/events/${currentEventId}/projects/${sub.id}`)}
                       className="w-10 h-10 bg-neo-ink text-white border-3 border-neo-ink rounded-full flex items-center justify-center hover:neo-active neo-shadow"
                       title="View Details"
                     >
@@ -290,3 +296,5 @@ export const PublicGalleryPage = ({ eventId: propEventId, onBack }) => {
     </div>
   );
 };
+
+export default PublicGalleryPage;

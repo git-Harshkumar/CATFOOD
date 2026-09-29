@@ -77,8 +77,9 @@ export const CreateEventPage = () => {
     <div className="max-w-4xl mx-auto space-y-8 pb-16 pt-8 px-4">
       <div className="flex items-center gap-4">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/organizer/events')}
           className="flex items-center justify-center w-12 h-12 rounded-full border-3 border-neo-ink bg-white hover:bg-neo-pastel-pink transition-colors neo-shadow text-neo-ink"
+          title="Back to Organizer Dashboard"
         >
           <ArrowLeft className="w-6 h-6" />
         </button>

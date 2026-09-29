@@ -248,7 +248,7 @@ export const ProfilePage = () => {
                   <h3 className="text-2xl font-black text-neo-ink uppercase">Organizer Tools</h3>
                   <p className="text-sm font-bold text-neo-ink/70 mt-1">Manage your hackathons and events</p>
                 </div>
-                <NeoButton onClick={() => navigate('/events/create')} color="bg-neo-ink" textColor="text-white">
+                <NeoButton onClick={() => navigate('/organizer/events/new')} color="bg-neo-ink" textColor="text-white">
                   Create Event
                 </NeoButton>
               </div>

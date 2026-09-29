@@ -2,23 +2,41 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Install openssl for Prisma on Alpine
-RUN apk add --no-cache openssl python3 make g++
+# Install openssl for Prisma engines on Alpine
+RUN apk add --no-cache openssl
 
-# Copy package manifests
-COPY package*.json ./
-COPY prisma ./prisma/
+# Copy package manifests from backend directory
+COPY backend/package*.json ./
+COPY backend/prisma ./prisma/
 
-# Install dependencies and generate prisma client
-RUN npm install
+# Install dependencies cleanly respecting package-lock.json
+RUN npm ci
+
+# Generate Prisma Client
 RUN npx prisma generate
 
-# Copy application source
-COPY . .
+# Copy fixtures.json so initial seeding can load it
+COPY fixtures.json ./fixtures.json
 
-# Ensure fixtures.json is accessible if referenced relatively
-COPY ../fixtures.json ../fixtures.json 2>/dev/null || true
+# Copy backend source code and entrypoint
+COPY backend/src ./src/
+COPY backend/docker-entrypoint.sh ./docker-entrypoint.sh
 
+# Make entrypoint executable and prepare data directory with correct ownership
+RUN chmod +x ./docker-entrypoint.sh && \
+    mkdir -p /app/data && \
+    chown -R node:node /app
+
+# Run as non-root user
+USER node
+
+# Expose backend API port
 EXPOSE 8080
 
-CMD ["sh", "-c", "npx prisma db push && node src/scripts/seed-fixtures.js && node src/server.js"]
+# Set default runtime environment variables
+ENV PORT=8080 \
+    NODE_ENV=production \
+    DATABASE_URL=file:/app/data/dev.db
+
+# Entrypoint script synchronizes schema, checks for seeding, and launches the server
+ENTRYPOINT ["./docker-entrypoint.sh"]

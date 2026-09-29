@@ -11,13 +11,23 @@ services:
       - "8080:8080"
     environment:
       - PORT=8080
-      - DATABASE_URL=file:/app/prisma/dev.db
-      - JWT_SECRET=super-secure-hackathon-platform-secret-key-2026
-      - JWT_EXPIRES_IN=30d
-      - NODE_ENV=production
-      - FRONTEND_URL=http://localhost:5173
+      - NODE_ENV=${NODE_ENV:-production}
+      - DATABASE_URL=file:/app/data/dev.db
+      - JWT_SECRET=${JWT_SECRET:-super-secure-hackathon-platform-secret-key-2026}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-30d}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
+      - CERT_SECRET=${CERT_SECRET:-dogfood-certificate-signing-key-2026}
+      - FORCE_SEED=${FORCE_SEED:-false}
     volumes:
-      - backend-db:/app/prisma
+      - backend-data:/app/data
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:8080/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    networks:
+      - app-network
 
   frontend:
     build:
@@ -28,9 +38,25 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=http://localhost:8080
+      - BACKEND_URL=http://backend:8080
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-/api}
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:5173').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    networks:
+      - app-network
 
 volumes:
-  backend-db:
+  backend-data:
+    name: dogfood-backend-data
+
+networks:
+  app-network:
+    name: dogfood-network
+    driver: bridge
