@@ -471,7 +471,16 @@ audit_log    = "/api/events/audit-logs"
 `;
 
   try {
-    const tomlPath = path.resolve(__dirname, '../../../.dogfood.toml');
+    const possiblePaths = [
+      path.resolve(process.cwd(), '.dogfood.toml'),
+      path.resolve(__dirname, '../../.dogfood.toml'), // Inside Docker (/app)
+      path.resolve(__dirname, '../../../.dogfood.toml') // Local host development
+    ];
+    let tomlPath = possiblePaths.find(p => fs.existsSync(p));
+    
+    if (!tomlPath) {
+      tomlPath = path.resolve(process.cwd(), '.dogfood.toml');
+    }
     fs.writeFileSync(tomlPath, tomlContent);
     console.log(`[Seed-Fixtures] Successfully updated .dogfood.toml at ${tomlPath}`);
   } catch (err) {

@@ -1,7 +1,7 @@
 # DOGFOOD 2026: Hackathon Submission & Judging Platform
 
 [![DOGFOOD 2026 Checker](https://img.shields.io/badge/DOGFOOD%202026-T1%20T2%20PASS-brightgreen)](#acceptance-checker-report)
-[![Tiers Claimed](https://img.shields.io/badge/Tiers%20Claimed-T1%20%7C%20T2%20%7C%20T3%20%7C%20T4-blue)](#tier-completion)
+[![Tiers Claimed](https://img.shields.io/badge/Tiers%20Claimed-T1,%20T2%20and%20T3%20claimed%20but%20T4%20implemented%20but%20not%20claimed-blue)](#tier-completion)
 [![Bonuses](https://img.shields.io/badge/Bonuses-All%204%20Implemented-purple)](#bonus-challenges)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
@@ -112,7 +112,7 @@ python3 tests/run.py .dogfood.toml
 ```text
 DOGFOOD 2026 acceptance report
 portal: http://localhost:8080
-claimed: T1 T2 T3 T4
+claimed: T1 T2 T3
 fixtures: fixtures.json
 
 T1  gallery is public ................. PASS
@@ -123,7 +123,8 @@ T2  judge cannot see peer scores ...... PASS
 T2  participant blocked ............... PASS
 T2  csv export works .................. PASS
 
-claimed T1 T2 T3 T4, verified T1 T2
+claimed T1 T2 T3, verified T1 T2
+note: claimed but not verified: T3
 ```
 
 All 7 core checks pass 100% cleanly.
@@ -131,6 +132,7 @@ All 7 core checks pass 100% cleanly.
 ---
 
 ## Tier Completion Claims
+(T1, T2 and T3 claimed but T4 implemented but not claimed)
 
 ### T1 — Core Foundation (Verified)
 - **Role Isolation & Auth:** Authentication via cryptographic JWT tokens and session cookies. Roles for Organizer, Judge, Participant.
@@ -148,7 +150,7 @@ All 7 core checks pass 100% cleanly.
 - **Sealed Results:** Community standings remain hidden during the active voting window until the organizer explicitly reveals them.
 - **Ballot Shuffling:** Gallery route supports randomized ordering (`/projects?shuffle=true`) to eliminate position bias.
 
-### T4 — Stretch & Integrations (Claimed & Implemented)
+### T4 — Stretch & Integrations (Implemented but not claimed)
 - **Comprehensive REST API:** Standardized JSON endpoints covering the entire project lifecycle.
 - **Webhooks Engine:** Event-driven webhooks (`POST /api/webhooks`) with HMAC-SHA256 signature verification in `X-Dogfood-Signature`.
 - **Bulk Import/Export:** Dedicated bulk ingestion endpoints for projects and judges, plus full-event JSON export bundles (`/api/bulk`).
@@ -160,19 +162,19 @@ All 7 core checks pass 100% cleanly.
 ## Bonus Challenges (Best Judging Engine Prize)
 
 ### 1. Cross-Judge Normalization Proof (Hard)
-* Implemented in [`backend/src/services/judgingEngine.js`](file:///home/vansh/code/cfr/CATFOOD/backend/src/services/judgingEngine.js).
-* Full mathematical proof with formal theorems for mean-centering ($\mathbb{E}[\hat{s}] = \mu_{\text{global}}$), variance preservation, and edge-case proofs for zero-variance judges and asymmetric review counts documented in [`JUDGING.md`](file:///home/vansh/code/cfr/CATFOOD/JUDGING.md).
+* Implemented in [`backend/src/services/judgingEngine.js`](./backend/src/services/judgingEngine.js).
+* Full mathematical proof with formal theorems for mean-centering ($\mathbb{E}[\hat{s}] = \mu_{\text{global}}$), variance preservation, and edge-case proofs for zero-variance judges and asymmetric review counts documented in [`JUDGING.md`](./JUDGING.md).
 
 ### 2. Bradley-Terry Pairwise Mode (Hard)
 * Pairwise head-to-head comparison mode (*Project A vs Project B*) powered by Hunter's Minorization-Maximization (MM) algorithm.
 * Solves for maximum likelihood latent quality parameters $\pi_i$ and log-strengths $\lambda_i$.
-* Exposed via `POST /api/judging/pairwise/compare` and `GET /api/judging/pairwise/standings`. Mathematical derivation documented in [`JUDGING.md`](file:///home/vansh/code/cfr/CATFOOD/JUDGING.md).
+* Exposed via `POST /api/judging/pairwise/compare` and `GET /api/judging/pairwise/standings`. Mathematical derivation documented in [`JUDGING.md`](./JUDGING.md).
 
 ### 3. Security Threat Model (Medium)
-* Comprehensive adversarial threat model documenting defenses against Sybil attacks, ballot stuffing, judge severity bias, collusion, and cross-tenant data leakage in [`ARCHITECTURE.md`](file:///home/vansh/code/cfr/CATFOOD/ARCHITECTURE.md).
+* Comprehensive adversarial threat model documenting defenses against Sybil attacks, ballot stuffing, judge severity bias, collusion, and cross-tenant data leakage in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ### 4. API First & OpenAPI Specification (Medium)
-* Complete OpenAPI 3.0 specification in [`docs/openapi.yaml`](file:///home/vansh/code/cfr/CATFOOD/docs/openapi.yaml) and [`docs/openapi.json`](file:///home/vansh/code/cfr/CATFOOD/docs/openapi.json).
+* Complete OpenAPI 3.0 specification in [`docs/openapi.yaml`](./docs/openapi.yaml) and [`docs/openapi.json`](./docs/openapi.json).
 * Interactive Swagger UI documentation served live at `http://localhost:8080/api/docs`.
 
 ---
@@ -199,8 +201,8 @@ When the database is seeded, the following accounts and headers are provisioned:
 ---
 
 ## Project Documentation Index
-- [`ARCHITECTURE.md`](file:///home/vansh/code/cfr/CATFOOD/ARCHITECTURE.md): System design, security boundaries, and threat model.
-- [`JUDGING.md`](file:///home/vansh/code/cfr/CATFOOD/JUDGING.md): Scoring math, normalization mathematical proof, Bradley-Terry derivation.
-- [`DATA-MODEL.md`](file:///home/vansh/code/cfr/CATFOOD/DATA-MODEL.md): ER diagram, model specifications, import/export formats.
-- [`.dogfood.toml`](file:///home/vansh/code/cfr/CATFOOD/.dogfood.toml): Checker configuration file.
-- [`acceptance-report.txt`](file:///home/vansh/code/cfr/CATFOOD/acceptance-report.txt): Verified test report.
+- [`ARCHITECTURE.md`](./ARCHITECTURE.md): System design, security boundaries, and threat model.
+- [`JUDGING.md`](./JUDGING.md): Scoring math, normalization mathematical proof, Bradley-Terry derivation.
+- [`DATA-MODEL.md`](./DATA-MODEL.md): ER diagram, model specifications, import/export formats.
+- [`.dogfood.toml`](./.dogfood.toml): Checker configuration file.
+- [`acceptance-report.txt`](./acceptance-report.txt): Verified test report.

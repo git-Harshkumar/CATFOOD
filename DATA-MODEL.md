@@ -10,10 +10,13 @@ erDiagram
     User ||--o{ Team : leads
     User ||--o{ TeamMember : belongs_to
     User ||--o{ AuditLog : acts_in
+    User ||--o{ VoterBalance : holds
+    User ||--o| EmailVerification : verifies
 
     Event ||--o{ Track : contains
     Event ||--o{ Criterion : defines
     Event ||--o{ Prize : awards
+    Event ||--o{ EventQuestion : asks
     Event ||--o{ Team : registers
     Event ||--o{ Submission : collects
     Event ||--o{ Judge : assigns
@@ -32,6 +35,9 @@ erDiagram
     Submission ||--o{ CommunityVote : receives
     Submission ||--o{ Comment : has_discussion
     Submission ||--o{ PairwiseComparison : compared_in
+    Submission ||--o{ SubmissionAnswer : provides
+
+    EventQuestion ||--o{ SubmissionAnswer : receives
 
     Judge ||--o{ JudgeTrack : specializes_in
     Judge ||--o{ JudgeAssignment : evaluates
