@@ -25,6 +25,13 @@ router.get(
   webhookController.getWebhooks
 );
 
+router.patch(
+  '/:id',
+  authenticate,
+  requireRole('ORGANIZER'),
+  webhookController.updateWebhook
+);
+
 router.delete(
   '/:id',
   authenticate,
@@ -37,6 +44,13 @@ router.post(
   authenticate,
   requireRole('ORGANIZER'),
   webhookController.testWebhook
+);
+
+router.get(
+  '/:id/deliveries',
+  authenticate,
+  requireRole('ORGANIZER'),
+  webhookController.getDeliveries
 );
 
 module.exports = router;

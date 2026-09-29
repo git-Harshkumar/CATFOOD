@@ -365,6 +365,18 @@ class ApiService {
     return this.request(`/certificates/${eventId}/issue`, { method: 'POST', body: data });
   }
 
+  async getEventCertificates(eventId) {
+    return this.request(`/certificates/event/${eventId}`);
+  }
+
+  async revokeCertificate(id, reason) {
+    return this.request(`/certificates/${id}/revoke`, { method: 'POST', body: { reason } });
+  }
+
+  async issueJudgeRecord(eventId, judgeUserId) {
+    return this.request(`/certificates/judge-record/${eventId}`, { method: 'POST', body: { judgeUserId } });
+  }
+
   // Webhooks
   async registerWebhook(eventId, data) {
     return this.request(`/webhooks/${eventId}`, { method: 'POST', body: data });
@@ -382,7 +394,24 @@ class ApiService {
     return this.request(`/webhooks/${eventId}/test`, { method: 'POST', body: { webhookId } });
   }
 
+  async getWebhookDeliveries(webhookId) {
+    return this.request(`/webhooks/${webhookId}/deliveries`);
+  }
+
+  // Embed Configuration
+  async getEmbedConfig(eventId) {
+    return this.request(`/embed/${eventId}/config`);
+  }
+
+  async updateEmbedConfig(eventId, data) {
+    return this.request(`/embed/${eventId}/config`, { method: 'PUT', body: data });
+  }
+
   // Bulk Operations
+  async previewImport(eventId, data, type = 'projects') {
+    return this.request(`/bulk/${eventId}/import/preview`, { method: 'POST', body: { items: data, type } });
+  }
+
   async importProjects(eventId, data) {
     return this.request(`/bulk/${eventId}/import`, { method: 'POST', body: data });
   }
@@ -391,9 +420,14 @@ class ApiService {
     return this.request(`/bulk/import/judges/${eventId}`, { method: 'POST', body: data });
   }
 
-  async exportEvent(eventId) {
+  async importEventBundle(bundle) {
+    return this.request('/bulk/event/import', { method: 'POST', body: { bundle } });
+  }
+
+  async exportEvent(eventId, anonymizeJudges = false) {
     const token = this.getToken();
-    const url = `${API_BASE}/bulk/${eventId}/export`;
+    const q = anonymizeJudges ? '?anonymizeJudges=true' : '';
+    const url = `${API_BASE}/bulk/${eventId}/export${q}`;
     const response = await fetch(url, {
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),

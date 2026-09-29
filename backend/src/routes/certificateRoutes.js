@@ -7,9 +7,18 @@ const { requireRole } = require('../middleware/roleMiddleware');
 // Public verification
 router.get('/verify/:id', certificateController.verifyCertificate);
 router.get('/judge/:userId/verify', certificateController.verifyJudgeCertificate);
+router.get('/:id/artifact', certificateController.getCertificateArtifact);
 
-// User certificates
+// Authenticated user certificates
 router.get('/', authenticate, certificateController.getMyCertificates);
+
+// Organizer event certificates
+router.get(
+  '/event/:eventId',
+  authenticate,
+  requireRole('ORGANIZER'),
+  certificateController.getEventCertificates
+);
 
 // Issue certificate (Organizer only)
 router.post(
@@ -24,6 +33,22 @@ router.post(
   authenticate,
   requireRole('ORGANIZER'),
   certificateController.issueCertificate
+);
+
+// Issue judge record (Organizer only)
+router.post(
+  '/judge-record/:eventId',
+  authenticate,
+  requireRole('ORGANIZER'),
+  certificateController.issueJudgeRecord
+);
+
+// Revoke certificate (Organizer only)
+router.post(
+  '/:id/revoke',
+  authenticate,
+  requireRole('ORGANIZER'),
+  certificateController.revokeCertificate
 );
 
 module.exports = router;

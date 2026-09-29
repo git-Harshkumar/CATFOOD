@@ -35,6 +35,9 @@ app.get('/api', (req, res) => {
   res.json({ service: 'DOGFOOD 2026 REST API', version: '1.0' });
 });
 
+const { authenticate } = require('./middleware/authMiddleware');
+const { requireRole } = require('./middleware/roleMiddleware');
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
@@ -57,9 +60,17 @@ app.use('/api/webhooks', webhookRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/bulk', bulkRoutes);
 
+// Public Ed25519 signing keys for offline signature verification
+const certificateController = require('./controllers/certificateController');
+app.get('/.well-known/signing-keys', certificateController.getSigningKeys);
+app.get('/api/signing-keys', certificateController.getSigningKeys);
+
 // Embeddable gallery widget routes
-app.get('/api/embed/gallery', embedController.renderEmbedGallery);
-app.get('/api/embed/gallery/:eventId', embedController.renderEmbedGallery);
+app.get(['/api/embed/gallery', '/embed/gallery'], embedController.renderEmbedGallery);
+app.get(['/api/embed/gallery/:eventId', '/embed/gallery/:eventId'], embedController.renderEmbedGallery);
+app.get(['/api/embed/gallery/:eventId/data', '/embed/gallery/:eventId/data'], embedController.getEmbedGalleryData);
+app.get(['/api/embed/:eventId/config', '/embed/:eventId/config'], embedController.getEmbedConfig);
+app.put(['/api/embed/:eventId/config', '/embed/:eventId/config'], authenticate, requireRole('ORGANIZER'), embedController.updateEmbedConfig);
 app.get('/embed/gallery.js', embedController.renderEmbedScript);
 
 // Interactive OpenAPI Documentation (Bonus 4)
@@ -95,8 +106,6 @@ app.get('/api/docs', (req, res) => {
   return res.send(html);
 });
 
-const { authenticate } = require('./middleware/authMiddleware');
-const { requireRole } = require('./middleware/roleMiddleware');
 const submissionController = require('./controllers/submissionController');
 const judgingController = require('./controllers/judgingController');
 

@@ -2,19 +2,25 @@
  * RFC-4180 Compliant CSV Serializer
  * 
  * Safely escapes fields containing commas, double quotes, or newlines.
- * 
- * @param {Array<string>} headers
- * @param {Array<Array<any>>} rows
- * @returns {string} CSV string
+ * Neutralizes CSV formula injection starting with =, +, -, @, \t, \r.
  */
+
+const sanitizeFormula = (str) => {
+  if (typeof str !== 'string') return str;
+  if (['=', '+', '-', '@', '\t', '\r'].includes(str.charAt(0))) {
+    return `'${str}`;
+  }
+  return str;
+};
+
 const formatCsv = (headers, rows) => {
   const escapeCell = (val) => {
     if (val === null || val === undefined) return '';
-    const str = String(val);
-    if (str.includes('"') || str.includes(',') || str.includes('\n') || str.includes('\r')) {
-      return `"${str.replace(/"/g, '""')}"`;
+    const safeStr = typeof val === 'string' ? sanitizeFormula(val) : String(val);
+    if (safeStr.includes('"') || safeStr.includes(',') || safeStr.includes('\n') || safeStr.includes('\r')) {
+      return `"${safeStr.replace(/"/g, '""')}"`;
     }
-    return str;
+    return safeStr;
   };
 
   const headerLine = headers.map(escapeCell).join(',');
@@ -25,4 +31,6 @@ const formatCsv = (headers, rows) => {
 
 module.exports = {
   formatCsv,
+  sanitizeFormula,
+  sanitizeCsvCell: sanitizeFormula,
 };

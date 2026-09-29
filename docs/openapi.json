@@ -1,124 +1,484 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "DOGFOOD 2026 Hackathon Judgment Platform API",
-    "description": "Production-ready REST API for hackathon submission, multi-criterion judging, cross-judge z-score normalization, Bradley-Terry pairwise voting, community engagement, webhooks, and cryptographically verifiable certificates.",
-    "version": "1.0.0",
+    "title": "DOGFOOD 2026 / CATFOOD Hackathon Judgment Platform API",
+    "description": "Production-ready REST API for hackathon submission, multi-criterion judging, cross-judge z-score normalization, Bradley-Terry pairwise voting, community voting, reliable outbound webhooks, cryptographically verifiable Ed25519 certificates, embeddable galleries, and atomic bulk import/export.",
+    "version": "2.0.0",
     "contact": {
-      "name": "DOGFOOD 2026 Platform Team",
+      "name": "CATFOOD Core Team",
       "email": "organizer@hack.com"
     }
   },
   "servers": [
     {
       "url": "http://localhost:8080",
-      "description": "Local / Docker compose deployment"
+      "description": "Local development server"
     }
   ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "error": { "type": "string", "example": "Resource not found" },
+          "message": { "type": "string", "example": "Resource not found" }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "message": { "type": "string", "example": "Operation completed successfully" },
+          "data": { "type": "object" }
+        }
+      },
+      "Webhook": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "eventId": { "type": "integer", "example": 42 },
+          "url": { "type": "string", "format": "uri", "example": "https://client.org/webhook" },
+          "events": { "type": "string", "example": "submission.created,certificate.issued" },
+          "secret": { "type": "string", "example": "whsec_************************" },
+          "isActive": { "type": "boolean", "example": true },
+          "failureCount": { "type": "integer", "example": 0 },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "WebhookDelivery": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "cm8...uuid" },
+          "webhookId": { "type": "integer", "example": 1 },
+          "eventId": { "type": "integer", "example": 42 },
+          "eventType": { "type": "string", "example": "submission.created" },
+          "responseStatus": { "type": "integer", "example": 200 },
+          "status": { "type": "string", "enum": ["DELIVERED", "FAILED", "PENDING_RETRY"], "example": "DELIVERED" },
+          "attempts": { "type": "integer", "example": 1 },
+          "durationMs": { "type": "integer", "example": 45 },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Certificate": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "cert-uuid-42" },
+          "eventId": { "type": "integer", "example": 42 },
+          "recipientName": { "type": "string", "example": "Jane Doe" },
+          "recipientEmail": { "type": "string", "example": "jane@example.com" },
+          "role": { "type": "string", "enum": ["PARTICIPANT", "WINNER", "FINALIST", "JUDGE"], "example": "WINNER" },
+          "status": { "type": "string", "enum": ["ACTIVE", "REVOKED"], "example": "ACTIVE" },
+          "keyId": { "type": "string", "example": "catfood-ed25519-v1-key" },
+          "algorithm": { "type": "string", "example": "Ed25519" },
+          "signature": { "type": "string", "example": "c2lnbmF0dXJl..." },
+          "artifactPath": { "type": "string", "example": "/storage/certificates/42/cert-uuid-42.svg" },
+          "issuedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CertificateVerification": {
+        "type": "object",
+        "properties": {
+          "isValid": { "type": "boolean", "example": true },
+          "isAuthentic": { "type": "boolean", "example": true },
+          "status": { "type": "string", "example": "OFFICIALLY_VERIFIED" },
+          "verificationAlgorithm": { "type": "string", "example": "Ed25519" },
+          "keyId": { "type": "string", "example": "catfood-ed25519-v1-key" },
+          "certificateId": { "type": "string", "example": "cert-uuid-42" },
+          "recipient": { "type": "string", "example": "Jane Doe" },
+          "recipientEmailMasked": { "type": "string", "example": "j***@example.com" },
+          "event": { "type": "string", "example": "DOGFOOD 2026" },
+          "type": { "type": "string", "example": "WINNER" },
+          "issuedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "EmbedConfig": {
+        "type": "object",
+        "properties": {
+          "theme": { "type": "string", "example": "dark" },
+          "layout": { "type": "string", "example": "grid" },
+          "pageSize": { "type": "integer", "example": 24 },
+          "showTrack": { "type": "boolean", "example": true },
+          "showTeam": { "type": "boolean", "example": true },
+          "showDescription": { "type": "boolean", "example": true },
+          "showRepository": { "type": "boolean", "example": true },
+          "sort": { "type": "string", "example": "title" }
+        }
+      }
+    }
+  },
   "paths": {
     "/api/health": {
       "get": {
         "summary": "Health check",
-        "description": "Returns service status and current timestamp.",
+        "description": "Returns operational status and server time.",
         "responses": {
-          "200": {
-            "description": "API is operational"
-          }
+          "200": { "description": "Operational" }
         }
       }
     },
-    "/projects": {
-      "get": {
-        "summary": "Public project gallery",
-        "description": "Returns list of submitted projects for public browsing.",
-        "responses": {
-          "200": {
-            "description": "Project gallery list"
-          }
-        }
-      }
-    },
-    "/projects/new": {
+    "/api/auth/register": {
       "post": {
-        "summary": "Submit a project",
-        "description": "Creates a project submission. Strictly rejected with 403 once event deadline passes.",
-        "responses": {
-          "201": {
-            "description": "Project submitted successfully"
-          },
-          "403": {
-            "description": "Submission deadline has passed"
+        "summary": "Register a new user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password", "name"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 },
+                  "name": { "type": "string" },
+                  "role": { "type": "string", "enum": ["PARTICIPANT", "ORGANIZER"] }
+                }
+              }
+            }
           }
+        },
+        "responses": {
+          "201": { "description": "User created" },
+          "400": { "description": "Validation error or duplicate email" }
         }
       }
     },
-    "/api/judge/scores": {
-      "get": {
-        "summary": "Get judge scores",
-        "description": "Retrieves the scores submitted by the authenticated judge. Strictly blocks cross-judge inspection.",
-        "responses": {
-          "200": {
-            "description": "Judge's own scores"
-          },
-          "403": {
-            "description": "Access to peer scores forbidden"
-          }
-        }
-      }
-    },
-    "/api/organizer/judging/export.csv": {
-      "get": {
-        "summary": "Export judging results CSV",
-        "description": "Organizer-only CSV export of standings, raw scores, or progress.",
-        "responses": {
-          "200": {
-            "description": "CSV file download"
-          }
-        }
-      }
-    },
-    "/api/judging/pairwise/compare": {
+    "/api/auth/login": {
       "post": {
-        "summary": "Submit pairwise comparison",
-        "description": "Records judge preference between Project A and Project B for Bradley-Terry model estimation.",
-        "responses": {
-          "201": {
-            "description": "Comparison recorded"
+        "summary": "Authenticate user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
           }
+        },
+        "responses": {
+          "200": { "description": "JWT bearer token and profile returned" },
+          "401": { "description": "Invalid credentials" }
         }
       }
     },
-    "/api/judging/pairwise/standings": {
+    "/api/webhooks/{eventId}": {
       "get": {
-        "summary": "Get Bradley-Terry pairwise standings",
-        "description": "Computes maximum likelihood latent strength parameters and rankings via Hunter's MM algorithm.",
+        "summary": "List event webhooks",
+        "description": "Lists all configured webhooks for an event with masked secrets.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
         "responses": {
-          "200": {
-            "description": "Converged rankings and latent strengths"
+          "200": { "description": "List of webhooks with secrets masked" },
+          "403": { "description": "Access forbidden" }
+        }
+      },
+      "post": {
+        "summary": "Register outbound webhook",
+        "description": "Registers an outbound webhook URL with SSRF validation. The raw HMAC secret is returned ONCE.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["url"],
+                "properties": {
+                  "url": { "type": "string", "format": "uri" },
+                  "events": { "type": "array", "items": { "type": "string" } },
+                  "secret": { "type": "string" }
+                }
+              }
+            }
           }
+        },
+        "responses": {
+          "201": { "description": "Webhook registered with plaintext secret returned once" },
+          "400": { "description": "SSRF violation or invalid URL" }
         }
       }
     },
-    "/api/community/vote": {
-      "post": {
-        "summary": "Cast community vote",
-        "description": "Community voting with rate-limiting and duplicate prevention.",
-        "responses": {
-          "201": {
-            "description": "Vote recorded"
+    "/api/webhooks/{id}": {
+      "delete": {
+        "summary": "Delete webhook",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Webhook deleted" } }
+      },
+      "patch": {
+        "summary": "Update webhook status or subscribed events",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "isActive": { "type": "boolean" },
+                  "events": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
           }
+        },
+        "responses": { "200": { "description": "Webhook updated" } }
+      }
+    },
+    "/api/webhooks/{eventId}/test": {
+      "post": {
+        "summary": "Dispatch test ping webhook",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Test event dispatched to outbox queue" } }
+      }
+    },
+    "/api/webhooks/{id}/deliveries": {
+      "get": {
+        "summary": "Get webhook delivery history",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Delivery history records with status codes and retry timestamps" } }
+      }
+    },
+    "/api/certificates/{eventId}/issue": {
+      "post": {
+        "summary": "Issue digital certificate",
+        "description": "Issues an Ed25519-signed certificate with standalone SVG artifact.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["recipientName", "recipientEmail", "role"],
+                "properties": {
+                  "recipientName": { "type": "string" },
+                  "recipientEmail": { "type": "string", "format": "email" },
+                  "role": { "type": "string", "enum": ["PARTICIPANT", "WINNER", "FINALIST", "JUDGE"] },
+                  "metadata": { "type": "object" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Certificate issued and signed with active Ed25519 key" },
+          "403": { "description": "Forbidden" }
         }
+      }
+    },
+    "/api/certificates/event/{eventId}": {
+      "get": {
+        "summary": "List certificates for event",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "List of certificates with status and signature metadata" } }
+      }
+    },
+    "/api/certificates/{id}/revoke": {
+      "post": {
+        "summary": "Revoke certificate",
+        "description": "Transitions certificate to REVOKED status with reason and audit timestamp.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "reason": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Certificate revoked" } }
       }
     },
     "/api/certificates/verify/{id}": {
       "get": {
-        "summary": "Verify certificate",
-        "description": "Publicly verifies a digital participation or judging certificate using HMAC-SHA256.",
+        "summary": "Public certificate verification",
+        "description": "Public endpoint that cryptographically verifies Ed25519 signature and returns privacy-redacted DTO.",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Verification report with masked PII" } }
+      }
+    },
+    "/api/certificates/{id}/artifact": {
+      "get": {
+        "summary": "Download certificate SVG artifact",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
         "responses": {
           "200": {
-            "description": "Verification report with cryptographic validity"
+            "description": "Standalone SVG vector artifact",
+            "content": { "image/svg+xml": {} }
           }
         }
+      }
+    },
+    "/api/certificates/judge-record/{eventId}": {
+      "post": {
+        "summary": "Generate signed judge participation record",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["judgeUserId"],
+                "properties": { "judgeUserId": { "type": "integer" } }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Canonical RFC-8785 Ed25519-signed judge record" } }
+      }
+    },
+    "/api/certificates/judge/{userId}/verify": {
+      "get": {
+        "summary": "Public judge participation verification",
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "eventId", "in": "query", "required": false, "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Verified judge participation record" } }
+      }
+    },
+    "/.well-known/signing-keys": {
+      "get": {
+        "summary": "Public Ed25519 signing key registry",
+        "description": "RFC-style discovery endpoint for active and historical public verification keys.",
+        "responses": { "200": { "description": "Public keys with keyId, algorithm, and activation dates" } }
+      }
+    },
+    "/api/embed/gallery/{eventId}": {
+      "get": {
+        "summary": "Public standalone project gallery HTML",
+        "description": "Renders isolated responsive gallery iframe with CSP and clickjacking protections. Returns 404 for draft/invalid events.",
+        "parameters": [
+          { "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } },
+          { "name": "theme", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "HTML gallery page", "content": { "text/html": {} } },
+          "404": { "description": "Event not found or not published" }
+        }
+      }
+    },
+    "/api/embed/gallery/{eventId}/data": {
+      "get": {
+        "summary": "Public project gallery JSON data",
+        "description": "Safe sanitized DTO with pagination and search.",
+        "parameters": [
+          { "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Sanitized submissions array" } }
+      }
+    },
+    "/api/embed/{eventId}/config": {
+      "get": {
+        "summary": "Get embed customization configuration",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Current embed configuration" } }
+      },
+      "put": {
+        "summary": "Update embed customization configuration",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EmbedConfig" } } }
+        },
+        "responses": { "200": { "description": "Configuration saved" } }
+      }
+    },
+    "/embed/gallery.js": {
+      "get": {
+        "summary": "Embeddable script tag widget",
+        "description": "Dynamic JavaScript snippet that reads data-event-id and injects the secure iframe container.",
+        "responses": { "200": { "description": "JavaScript widget loader", "content": { "application/javascript": {} } } }
+      }
+    },
+    "/api/bulk/{eventId}/import": {
+      "post": {
+        "summary": "Atomic bulk import projects",
+        "description": "Imports projects and participants inside an atomic database transaction. Neutralizes default passwords and rolls back on any row error.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "201": { "description": "Projects and teams imported" } }
+      }
+    },
+    "/api/bulk/{eventId}/import/preview": {
+      "post": {
+        "summary": "Dry-run import validation preview",
+        "description": "Validates items and reports row-level errors without mutating the database.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Validation summary with errors list" } }
+      }
+    },
+    "/api/bulk/import/judges/{eventId}": {
+      "post": {
+        "summary": "Atomic bulk import judges",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "201": { "description": "Judges imported" } }
+      }
+    },
+    "/api/bulk/{eventId}/export": {
+      "get": {
+        "summary": "Export full versioned event bundle",
+        "description": "Exports a portable catfood-event-bundle v1 JSON package with sensitive secrets omitted and optional judge blind anonymization.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "anonymizeJudges", "in": "query", "schema": { "type": "boolean" } }
+        ],
+        "responses": { "200": { "description": "Complete versioned event bundle" } }
+      }
+    },
+    "/api/bulk/event/import": {
+      "post": {
+        "summary": "Restore / Re-import complete event bundle",
+        "description": "Full round-trip importer that parses, validates, and restores an entire event bundle atomically.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["bundle"],
+                "properties": { "bundle": { "type": "object" } }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Event restored into a new hackathon instance" } }
       }
     }
   }

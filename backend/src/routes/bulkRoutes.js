@@ -4,6 +4,23 @@ const bulkController = require('../controllers/bulkController');
 const { authenticate } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
 
+// Restore / Re-import complete event bundle (Round-trip data portability)
+router.post(
+  '/event/import',
+  authenticate,
+  requireRole('ORGANIZER'),
+  bulkController.importEventBundle
+);
+
+// Preview import without database mutation
+router.post(
+  '/:eventId/import/preview',
+  authenticate,
+  requireRole('ORGANIZER'),
+  bulkController.previewImport
+);
+
+// Atomic bulk import projects
 router.post(
   '/:eventId/import',
   authenticate,
@@ -11,6 +28,7 @@ router.post(
   bulkController.importProjects
 );
 
+// Atomic bulk import judges
 router.post(
   '/import/judges/:eventId',
   authenticate,
@@ -18,6 +36,7 @@ router.post(
   bulkController.importJudges
 );
 
+// Bulk export full versioned event bundle
 router.get(
   '/:eventId/export',
   authenticate,

@@ -22,7 +22,7 @@ const registerWebhook = async (req, res, next) => {
       currentUser: req.user,
     });
 
-    return success(res, webhook, 'Webhook registered successfully', 201);
+    return success(res, webhook, 'Webhook registered successfully. Save secret securely.', 201);
   } catch (err) {
     next(err);
   }
@@ -48,6 +48,16 @@ const deleteWebhook = async (req, res, next) => {
   }
 };
 
+const updateWebhook = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const updated = await webhookService.updateWebhook(id, req.body, req.user);
+    return success(res, updated, 'Webhook updated successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
 const testWebhook = async (req, res, next) => {
   try {
     const { eventId } = req.params;
@@ -61,9 +71,21 @@ const testWebhook = async (req, res, next) => {
   }
 };
 
+const getDeliveries = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const deliveries = await webhookService.getWebhookDeliveries(id, req.user, req.query.limit);
+    return success(res, deliveries, 'Webhook deliveries retrieved successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   registerWebhook,
   getWebhooks,
   deleteWebhook,
+  updateWebhook,
   testWebhook,
+  getDeliveries,
 };

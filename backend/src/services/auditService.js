@@ -14,9 +14,12 @@ const prisma = require('../utils/prisma');
  */
 const logAction = async ({ eventId = null, actorId = null, action, targetType = null, targetId = null, metadata = null }) => {
   try {
+    const parsedEventId = eventId || 
+      (metadata && typeof metadata === 'object' ? metadata.eventId : null) ||
+      (targetType === 'Event' && targetId ? targetId : null);
     const entry = await prisma.auditLog.create({
       data: {
-        eventId: eventId ? parseInt(eventId, 10) : null,
+        eventId: parsedEventId ? parseInt(parsedEventId, 10) : null,
         actorId: actorId ? parseInt(actorId, 10) : null,
         action,
         targetType: targetType ? String(targetType) : null,

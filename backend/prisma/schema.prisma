@@ -64,6 +64,10 @@ model Event {
   webhooks            Webhook[]
   pairwiseComparisons PairwiseComparison[]
   certificates        Certificate[]
+  webhookDeliveries   WebhookDelivery[]
+  embedConfig         EmbedConfig?
+  importJobs          ImportJob[]
+  exportJobs          ExportJob[]
   communityVoteCreditBudget Int @default(100)
 
   createdAt DateTime @default(now())
@@ -405,17 +409,42 @@ model Comment {
 }
 
 model Webhook {
-  id        Int      @id @default(autoincrement())
-  eventId   Int
-  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  url       String
-  secret    String
-  events    String   // Comma-separated list: "submission.created,score.submitted,judging.finalized"
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int               @id @default(autoincrement())
+  eventId      Int
+  event        Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  url          String
+  secret       String
+  events       String            // Comma-separated list: "submission.created,score.submitted,judging.finalized"
+  isActive     Boolean           @default(true)
+  failureCount Int               @default(0)
+  deliveries   WebhookDelivery[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   @@index([eventId])
+}
+
+model WebhookDelivery {
+  id             String    @id @default(uuid())
+  webhookId      Int
+  webhook        Webhook   @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  eventId        Int
+  event          Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventType      String
+  payload        String
+  responseStatus Int?
+  responseBody   String?
+  durationMs     Int?
+  status         String    @default("PENDING") // PENDING, SUCCESS, FAILED
+  attempts       Int       @default(0)
+  nextRetryAt    DateTime?
+  error          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([webhookId])
+  @@index([eventId])
+  @@index([status, nextRetryAt])
 }
 
 model PairwiseComparison {
@@ -435,17 +464,88 @@ model PairwiseComparison {
 }
 
 model Certificate {
-  id             String   @id // e.g. "cert-uuid" or hash
-  eventId        Int
-  event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  recipientName  String
-  recipientEmail String
-  role           String   // "JUDGE", "PARTICIPANT", "WINNER", "ORGANIZER"
-  signature      String   // HMAC-SHA256 digital signature
-  metadata       String?  // JSON string storing details (hours, track, score, etc.)
-  issuedAt       DateTime @default(now())
+  id               String    @id // e.g. "cert-uuid" or hash
+  eventId          Int
+  event            Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  recipientName    String
+  recipientEmail   String
+  role             String    // "JUDGE", "PARTICIPANT", "WINNER", "ORGANIZER"
+  signature        String    // Ed25519 or HMAC digital signature
+  metadata         String?   // JSON string storing details (hours, track, score, etc.)
+  status           String    @default("ACTIVE") // ACTIVE, REVOKED
+  revokedAt        DateTime?
+  revokedBy        Int?
+  revocationReason String?
+  keyId            String?
+  algorithm        String    @default("Ed25519")
+  artifactPath     String?
+  issuedAt         DateTime  @default(now())
 
   @@index([eventId])
   @@index([recipientEmail])
+  @@index([status])
 }
+
+model SigningKey {
+  id          Int       @id @default(autoincrement())
+  keyId       String    @unique
+  algorithm   String    @default("Ed25519")
+  publicKey   String
+  status      String    @default("ACTIVE") // ACTIVE, RETIRED
+  createdAt   DateTime  @default(now())
+  activatedAt DateTime  @default(now())
+  retiredAt   DateTime?
+}
+
+model EmbedConfig {
+  id          Int      @id @default(autoincrement())
+  eventId     Int      @unique
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  theme       String   @default("dark") // dark, light, auto
+  layout      String   @default("grid")
+  pageSize    Int      @default(24)
+  showTracks  Boolean  @default(true)
+  showTeam    Boolean  @default(true)
+  showRepo    Boolean  @default(true)
+  showDemo    Boolean  @default(true)
+  customCss   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ImportJob {
+  id             String    @id @default(uuid())
+  eventId        Int
+  event          Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  type           String    // PROJECTS, JUDGES, EVENT_BUNDLE
+  status         String    @default("QUEUED") // QUEUED, PROCESSING, COMPLETED, FAILED, CANCELLED
+  progress       Int       @default(0)
+  totalItems     Int       @default(0)
+  processedItems Int       @default(0)
+  errorCount     Int       @default(0)
+  errorLog       String?   // JSON array of row errors
+  artifactPath   String?
+  createdBy      Int?
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+
+  @@index([eventId])
+  @@index([status])
+}
+
+model ExportJob {
+  id             String    @id @default(uuid())
+  eventId        Int
+  event          Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  type           String    // EVENT_BUNDLE, JUDGING_CSV
+  status         String    @default("QUEUED") // QUEUED, PROCESSING, COMPLETED, FAILED
+  artifactPath   String?
+  createdBy      Int?
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+
+  @@index([eventId])
+  @@index([status])
+}
+
 

@@ -885,6 +885,30 @@ const exportJudgingCsv = async (eventId, type = 'results', requestingUser) => {
         j.status,
       ]);
     }
+  } else if (type === 'submissions' || type === 'projects') {
+    headers = [
+      'Submission ID',
+      'Project Title',
+      'Tagline',
+      'Description',
+      'Team Name',
+      'Track',
+      'Status',
+      'Submitted At',
+    ];
+
+    for (const sub of event.submissions) {
+      rows.push([
+        sub.id,
+        sub.title,
+        sub.tagline || '',
+        sub.description || '',
+        sub.team?.name || '',
+        sub.track?.name || 'General',
+        sub.status,
+        sub.submittedAt ? sub.submittedAt.toISOString() : '',
+      ]);
+    }
   } else {
     // Default: 'results' / 'final'
     headers = [

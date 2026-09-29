@@ -31,6 +31,9 @@ import {
   ListFilter,
   Check,
   ExternalLink,
+  Copy,
+  Code,
+  Eye,
 } from 'lucide-react';
 import JudgingProgressSection from '../components/JudgingProgressSection';
 import {
@@ -113,13 +116,32 @@ export const OrganizerEventDashboard = () => {
   // Bulk Operations
   const [importJson, setImportJson] = useState('');
   const [importing, setImporting] = useState(false);
+  const [bundleJson, setBundleJson] = useState('');
+  const [importingBundle, setImportingBundle] = useState(false);
 
-  // Certificates Issuance
+  // Certificates Issuance & Management
   const [certRecipientName, setCertRecipientName] = useState('');
   const [certRecipientEmail, setCertRecipientEmail] = useState('');
   const [certRole, setCertRole] = useState('JUDGE');
   const [issuedCertId, setIssuedCertId] = useState(null);
   const [issuingCert, setIssuingCert] = useState(false);
+  const [certificates, setCertificates] = useState([]);
+  const [loadingCerts, setLoadingCerts] = useState(false);
+
+  // Webhook Delivery Logs & Secret modal
+  const [newlyCreatedSecret, setNewlyCreatedSecret] = useState(null);
+  const [activeDeliveryWhId, setActiveDeliveryWhId] = useState(null);
+  const [deliveries, setDeliveries] = useState([]);
+  const [loadingDeliveries, setLoadingDeliveries] = useState(false);
+
+  // Embed Configuration
+  const [embedConfig, setEmbedConfig] = useState({
+    theme: 'light',
+    primaryColor: '#FFE500',
+    allowVoting: true,
+    showDescriptions: true,
+  });
+  const [savingEmbedConfig, setSavingEmbedConfig] = useState(false);
 
   // Audit Logs
   const [auditLogs, setAuditLogs] = useState([]);
@@ -137,6 +159,8 @@ export const OrganizerEventDashboard = () => {
     } else if (activeTab === 'developer') {
       fetchWebhooks();
       fetchAuditLogs();
+      fetchCertificates();
+      fetchEmbedConfig();
     }
   }, [activeTab, id]);
 
@@ -212,6 +236,89 @@ export const OrganizerEventDashboard = () => {
       console.warn('Audit logs fetch:', e.message);
     } finally {
       setLoadingLogs(false);
+    }
+  };
+
+  const fetchCertificates = async () => {
+    try {
+      setLoadingCerts(true);
+      const res = await api.getEventCertificates(id);
+      const list = res?.data || res || [];
+      setCertificates(Array.isArray(list) ? list : []);
+    } catch (e) {
+      console.warn('Certificates fetch:', e.message);
+    } finally {
+      setLoadingCerts(false);
+    }
+  };
+
+  const handleRevokeCert = async (certId) => {
+    const reason = window.prompt('Enter reason for revoking this certificate:');
+    if (reason === null) return;
+    try {
+      await api.revokeCertificate(certId, reason);
+      showNotification('success', 'Certificate revoked successfully.');
+      await fetchCertificates();
+    } catch (err) {
+      showNotification('error', err.message || 'Failed to revoke certificate.');
+    }
+  };
+
+  const handleViewDeliveries = async (whId) => {
+    if (activeDeliveryWhId === whId) {
+      setActiveDeliveryWhId(null);
+      return;
+    }
+    setActiveDeliveryWhId(whId);
+    setLoadingDeliveries(true);
+    try {
+      const res = await api.getWebhookDeliveries(whId);
+      setDeliveries(res?.data || res || []);
+    } catch (err) {
+      showNotification('error', err.message || 'Failed to fetch delivery logs.');
+    } finally {
+      setLoadingDeliveries(false);
+    }
+  };
+
+  const fetchEmbedConfig = async () => {
+    try {
+      const res = await api.getEmbedConfig(id);
+      if (res?.data) {
+        setEmbedConfig(res.data);
+      }
+    } catch (e) {
+      console.warn('Embed config fetch:', e.message);
+    }
+  };
+
+  const handleSaveEmbedConfig = async (e) => {
+    e.preventDefault();
+    setSavingEmbedConfig(true);
+    try {
+      await api.updateEmbedConfig(id, embedConfig);
+      showNotification('success', 'Embed gallery configuration saved.');
+    } catch (err) {
+      showNotification('error', err.message || 'Failed to save embed config.');
+    } finally {
+      setSavingEmbedConfig(false);
+    }
+  };
+
+  const handleImportBundle = async (e) => {
+    e.preventDefault();
+    if (!bundleJson.trim()) return;
+    setImportingBundle(true);
+    try {
+      const parsed = JSON.parse(bundleJson);
+      await api.importEventBundle(parsed);
+      setBundleJson('');
+      showNotification('success', 'Event bundle imported successfully!');
+      await fetchEventDetails();
+    } catch (err) {
+      showNotification('error', err.message || 'Failed to import event bundle.');
+    } finally {
+      setImportingBundle(false);
     }
   };
 
@@ -429,11 +536,15 @@ export const OrganizerEventDashboard = () => {
     setRegisteringHook(true);
     try {
       const eventsArr = webhookEvents.split(',').map(s => s.trim()).filter(Boolean);
-      await api.registerWebhook(id, {
+      const res = await api.registerWebhook(id, {
         url: webhookUrl.trim(),
         events: eventsArr,
         secret: webhookSecret.trim() || undefined,
       });
+      const created = res?.data || res;
+      if (created?.secret) {
+        setNewlyCreatedSecret(created.secret);
+      }
       setWebhookUrl('');
       setWebhookSecret('');
       showNotification('success', 'Webhook successfully registered!');
@@ -503,6 +614,7 @@ export const OrganizerEventDashboard = () => {
       showNotification('success', `Verifiable credential issued: ${cert.id}`);
       setCertRecipientName('');
       setCertRecipientEmail('');
+      await fetchCertificates();
     } catch (err) {
       showNotification('error', err.message || 'Failed to issue certificate.');
     } finally {
@@ -1230,6 +1342,32 @@ export const OrganizerEventDashboard = () => {
               </NeoButton>
             </div>
 
+            {/* Newly Created Secret Banner (shown only once) */}
+            {newlyCreatedSecret && (
+              <div className="p-4 bg-neo-pastel-yellow border-3 border-neo-ink rounded-2xl space-y-2 neo-shadow">
+                <div className="flex items-center justify-between">
+                  <span className="font-black text-xs uppercase text-neo-ink flex items-center gap-1.5">
+                    <Key className="w-4 h-4" /> Webhook Signing Secret Generated
+                  </span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(newlyCreatedSecret);
+                      showNotification('success', 'Secret copied to clipboard!');
+                    }}
+                    className="px-3 py-1 bg-white border-2 border-neo-ink rounded-lg font-black text-xs hover:neo-active flex items-center gap-1"
+                  >
+                    <Copy className="w-3.5 h-3.5" /> Copy Secret
+                  </button>
+                </div>
+                <p className="font-mono text-xs font-black bg-white p-2 border-2 border-neo-ink rounded-lg break-all">
+                  {newlyCreatedSecret}
+                </p>
+                <p className="text-[11px] font-bold text-neo-ink/80">
+                  CRITICAL: Save this secret now. For security purposes, catfood will never display this secret again.
+                </p>
+              </div>
+            )}
+
             {/* Test Results Banner */}
             {hookTestResults && (
               <div className="p-4 bg-neo-bg rounded-xl border-2 border-neo-ink space-y-2">
@@ -1257,18 +1395,82 @@ export const OrganizerEventDashboard = () => {
                 </div>
               ) : (
                 webhooks.map((wh) => (
-                  <div key={wh.id} className="p-4 bg-neo-bg rounded-xl border-2 border-neo-ink flex items-center justify-between gap-4">
-                    <div className="overflow-hidden">
-                      <p className="font-black text-base text-neo-ink font-mono truncate">{wh.url}</p>
-                      <p className="text-xs font-bold text-neo-ink/60">Events: {wh.events}</p>
+                  <div key={wh.id} className="p-4 bg-neo-bg rounded-xl border-2 border-neo-ink space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="overflow-hidden">
+                        <div className="flex items-center gap-2">
+                          <p className="font-black text-base text-neo-ink font-mono truncate">{wh.url}</p>
+                          <span className={`px-2 py-0.5 rounded border font-mono text-[10px] font-black ${wh.isActive ? 'bg-green-100 text-green-800 border-green-800' : 'bg-red-100 text-red-800 border-red-800'}`}>
+                            {wh.isActive ? 'ACTIVE' : 'SUSPENDED'}
+                          </span>
+                          {wh.failureCount > 0 && (
+                            <span className="px-2 py-0.5 bg-neo-pastel-pink border border-neo-ink rounded text-[10px] font-black">
+                              {wh.failureCount} Failures
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs font-bold text-neo-ink/60 mt-1">Events: {wh.events}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => handleViewDeliveries(wh.id)}
+                          className="px-3 py-1.5 bg-white border-2 border-neo-ink rounded-lg font-black text-xs hover:neo-active flex items-center gap-1.5"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          {activeDeliveryWhId === wh.id ? 'Hide Deliveries' : 'Delivery Logs'}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteWebhook(wh.id)}
+                          className="p-2 bg-neo-pastel-pink border-2 border-neo-ink rounded-lg hover:neo-active shrink-0"
+                          title="Delete webhook"
+                        >
+                          <Trash2 className="w-4 h-4 text-neo-ink" />
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => handleDeleteWebhook(wh.id)}
-                      className="p-2 bg-neo-pastel-pink border-2 border-neo-ink rounded-lg hover:neo-active shrink-0"
-                      title="Delete webhook"
-                    >
-                      <Trash2 className="w-4 h-4 text-neo-ink" />
-                    </button>
+
+                    {/* Deliveries Drawer */}
+                    {activeDeliveryWhId === wh.id && (
+                      <div className="mt-3 p-3 bg-white border-2 border-neo-ink rounded-xl space-y-2">
+                        <span className="font-black text-xs uppercase text-neo-ink block border-b pb-1">
+                          Recent Deliveries for Hook #{wh.id}
+                        </span>
+                        {loadingDeliveries ? (
+                          <p className="text-xs font-bold text-neo-ink/50 py-2">Loading deliveries...</p>
+                        ) : deliveries.length === 0 ? (
+                          <p className="text-xs font-bold text-neo-ink/50 py-2">No delivery attempts recorded yet.</p>
+                        ) : (
+                          <div className="overflow-x-auto max-h-48 text-xs">
+                            <table className="w-full text-left font-mono">
+                              <thead>
+                                <tr className="border-b text-[10px] text-neo-ink/60">
+                                  <th className="pb-1">Time</th>
+                                  <th className="pb-1">Event</th>
+                                  <th className="pb-1">Status</th>
+                                  <th className="pb-1">Duration</th>
+                                  <th className="pb-1">Attempts</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-neo-ink/10">
+                                {deliveries.map((d) => (
+                                  <tr key={d.id}>
+                                    <td className="py-1 text-neo-ink/70">{formatDate(d.createdAt)}</td>
+                                    <td className="py-1 font-bold">{d.eventType}</td>
+                                    <td className="py-1">
+                                      <span className={`px-1.5 py-0.5 rounded text-[10px] ${d.status === 'DELIVERED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                        {d.status} ({d.responseStatus || 'N/A'})
+                                      </span>
+                                    </td>
+                                    <td className="py-1">{d.durationMs}ms</td>
+                                    <td className="py-1">{d.attempts}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))
               )}
@@ -1310,18 +1512,129 @@ export const OrganizerEventDashboard = () => {
             </form>
           </NeoCard>
 
+          {/* Embeddable Public Gallery Widget */}
+          <NeoCard color="bg-white" className="space-y-6">
+            <div className="flex items-center gap-2 border-b-3 border-neo-ink pb-3">
+              <Code className="w-6 h-6 text-neo-ink" />
+              <h3 className="text-2xl font-black text-neo-ink uppercase">
+                Embeddable Public Gallery
+              </h3>
+            </div>
+
+            <form onSubmit={handleSaveEmbedConfig} className="bg-neo-bg p-4 rounded-2xl border-2 border-neo-ink space-y-4">
+              <h4 className="font-black text-sm uppercase text-neo-ink">Widget Configuration</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-black uppercase text-neo-ink mb-1">Color Theme</label>
+                  <select
+                    value={embedConfig.theme || 'light'}
+                    onChange={(e) => setEmbedConfig({ ...embedConfig, theme: e.target.value })}
+                    className={inputClass}
+                  >
+                    <option value="light">Light Mode</option>
+                    <option value="dark">Dark Mode</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-black uppercase text-neo-ink mb-1">Accent Color (Hex)</label>
+                  <input
+                    type="text"
+                    value={embedConfig.primaryColor || '#FFE500'}
+                    onChange={(e) => setEmbedConfig({ ...embedConfig, primaryColor: e.target.value })}
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-6 text-sm font-bold">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={embedConfig.allowVoting !== false}
+                    onChange={(e) => setEmbedConfig({ ...embedConfig, allowVoting: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <span>Allow Direct Community Voting</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={embedConfig.showDescriptions !== false}
+                    onChange={(e) => setEmbedConfig({ ...embedConfig, showDescriptions: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <span>Display Project Descriptions</span>
+                </label>
+              </div>
+
+              <div className="flex justify-end">
+                <NeoButton type="submit" disabled={savingEmbedConfig} color="bg-neo-pastel-green" textColor="text-neo-ink">
+                  Save Widget Settings
+                </NeoButton>
+              </div>
+            </form>
+
+            {/* Generated Code Snippets */}
+            <div className="space-y-4">
+              <div className="p-4 bg-neo-bg rounded-2xl border-2 border-neo-ink space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-black text-xs uppercase text-neo-ink">
+                    1. Responsive Iframe Snippet
+                  </span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`<iframe src="${window.location.origin}/api/embed/gallery/${id}" width="100%" height="800" frameborder="0"></iframe>`);
+                      showNotification('success', 'Iframe code copied!');
+                    }}
+                    className="px-2.5 py-1 bg-white border border-neo-ink rounded text-xs font-bold hover:neo-active flex items-center gap-1"
+                  >
+                    <Copy className="w-3 h-3" /> Copy
+                  </button>
+                </div>
+                <pre className="p-3 bg-white border border-neo-ink rounded font-mono text-xs overflow-x-auto text-neo-ink">
+                  {`<iframe src="${window.location.origin}/api/embed/gallery/${id}" width="100%" height="800" frameborder="0"></iframe>`}
+                </pre>
+              </div>
+
+              <div className="p-4 bg-neo-bg rounded-2xl border-2 border-neo-ink space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-black text-xs uppercase text-neo-ink">
+                    2. Dynamic JavaScript Tag Widget
+                  </span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`<div id="catfood-gallery"></div>\n<script src="${window.location.origin}/embed/gallery.js" data-event-id="${id}" data-target="#catfood-gallery"></script>`);
+                      showNotification('success', 'Script tag copied!');
+                    }}
+                    className="px-2.5 py-1 bg-white border border-neo-ink rounded text-xs font-bold hover:neo-active flex items-center gap-1"
+                  >
+                    <Copy className="w-3 h-3" /> Copy
+                  </button>
+                </div>
+                <pre className="p-3 bg-white border border-neo-ink rounded font-mono text-xs overflow-x-auto text-neo-ink">
+                  {`<div id="catfood-gallery"></div>\n<script src="${window.location.origin}/embed/gallery.js" data-event-id="${id}" data-target="#catfood-gallery"></script>`}
+                </pre>
+              </div>
+            </div>
+          </NeoCard>
+
           {/* Bulk Import / Export */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <NeoCard color="bg-neo-pastel-green" className="space-y-4 flex flex-col justify-between">
               <div>
                 <h4 className="text-xl font-black text-neo-ink uppercase">Export Event Bundle</h4>
                 <p className="text-sm font-bold text-neo-ink/80 mt-1">
-                  Download complete event schema, teams, submissions, and criteria as a structured JSON bundle.
+                  Download complete event schema, teams, submissions, and criteria as a structured JSON bundle, or export judging CSV with formula injection defense.
                 </p>
               </div>
-              <NeoButton onClick={() => api.exportEvent(id)} color="bg-white" textColor="text-neo-ink" className="w-full justify-center">
-                <Download className="w-5 h-5 mr-2" /> Download Event JSON
-              </NeoButton>
+              <div className="space-y-2">
+                <NeoButton onClick={() => api.exportEvent(id)} color="bg-white" textColor="text-neo-ink" className="w-full justify-center">
+                  <Download className="w-5 h-5 mr-2" /> Download Event Bundle JSON
+                </NeoButton>
+                <NeoButton onClick={() => api.exportJudgingCsv(id, 'submissions')} color="bg-neo-bg" textColor="text-neo-ink" className="w-full justify-center">
+                  <Download className="w-5 h-5 mr-2" /> Export Judging CSV
+                </NeoButton>
+              </div>
             </NeoCard>
 
             <NeoCard color="bg-white" className="space-y-4">
@@ -1342,15 +1655,41 @@ export const OrganizerEventDashboard = () => {
             </NeoCard>
           </div>
 
-          {/* Verifiable Credentials Issuer */}
+          {/* Event Bundle Full Restore / Migration */}
+          <NeoCard color="bg-neo-pastel-blue" className="space-y-4">
+            <h4 className="text-xl font-black text-neo-ink uppercase">Restore Full Event Bundle</h4>
+            <p className="text-sm font-bold text-neo-ink/80">
+              Import a complete <span className="font-mono">catfood-event-bundle</span> export. All tracks, criteria, teams, and submissions are imported within an atomic database transaction.
+            </p>
+            <form onSubmit={handleImportBundle} className="space-y-3">
+              <textarea
+                rows={3}
+                placeholder='Paste raw JSON of catfood-event-bundle export here...'
+                value={bundleJson}
+                onChange={(e) => setBundleJson(e.target.value)}
+                className={`${inputClass} font-mono text-xs`}
+                required
+              />
+              <div className="flex justify-end">
+                <NeoButton type="submit" disabled={importingBundle} color="bg-neo-ink" textColor="text-white">
+                  {importingBundle ? 'Restoring Bundle...' : 'Import Event Bundle'}
+                </NeoButton>
+              </div>
+            </form>
+          </NeoCard>
+
+          {/* Verifiable Credentials Issuer & Registry */}
           <NeoCard color="bg-neo-pastel-purple" className="space-y-6">
             <div className="flex items-center gap-2 border-b-3 border-neo-ink pb-3">
               <Award className="w-6 h-6 text-neo-ink" />
               <h3 className="text-2xl font-black text-neo-ink uppercase">
-                Issue Verifiable Digital Certificate
+                Verifiable Digital Credentials & Registry
               </h3>
             </div>
+
+            {/* Issuance Form */}
             <form onSubmit={handleIssueCertificate} className="space-y-4 bg-white p-6 rounded-2xl border-3 border-neo-ink neo-shadow">
+              <h4 className="font-black text-base uppercase text-neo-ink">Issue New Credential</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <input
                   type="text"
@@ -1399,6 +1738,86 @@ export const OrganizerEventDashboard = () => {
                 </NeoButton>
               </div>
             </form>
+
+            {/* Certificates Registry List */}
+            <div className="bg-white p-4 rounded-2xl border-3 border-neo-ink space-y-3">
+              <div className="flex items-center justify-between border-b-2 border-neo-ink pb-2">
+                <h4 className="font-black text-base uppercase text-neo-ink">
+                  Issued Event Certificates ({certificates.length})
+                </h4>
+                <button
+                  onClick={fetchCertificates}
+                  className="px-2.5 py-1 bg-neo-bg border border-neo-ink rounded text-xs font-bold hover:neo-active flex items-center gap-1"
+                >
+                  <RefreshCw className="w-3 h-3" /> Refresh
+                </button>
+              </div>
+
+              {loadingCerts ? (
+                <p className="text-center font-bold text-sm text-neo-ink/50 py-4">Loading certificates...</p>
+              ) : certificates.length === 0 ? (
+                <p className="text-center font-bold text-sm text-neo-ink/50 py-4">No certificates issued yet.</p>
+              ) : (
+                <div className="overflow-x-auto text-xs">
+                  <table className="w-full text-left font-bold">
+                    <thead>
+                      <tr className="border-b-2 border-neo-ink uppercase text-[10px] text-neo-ink/60">
+                        <th className="p-2">ID</th>
+                        <th className="p-2">Recipient</th>
+                        <th className="p-2">Role</th>
+                        <th className="p-2">Status</th>
+                        <th className="p-2 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neo-ink/10">
+                      {certificates.map((c) => (
+                        <tr key={c.id}>
+                          <td className="p-2 font-mono text-xs">
+                            <a
+                              href={`/certificates/verify/${c.id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="underline hover:text-neo-ink"
+                            >
+                              {c.id}
+                            </a>
+                          </td>
+                          <td className="p-2">{c.recipientName}</td>
+                          <td className="p-2">
+                            <span className="px-2 py-0.5 bg-neo-pastel-yellow border border-neo-ink rounded text-[10px] uppercase">
+                              {c.role}
+                            </span>
+                          </td>
+                          <td className="p-2">
+                            <span className={`px-2 py-0.5 rounded border text-[10px] uppercase ${c.status === 'ACTIVE' ? 'bg-green-100 text-green-800 border-green-800' : 'bg-red-100 text-red-800 border-red-800'}`}>
+                              {c.status}
+                            </span>
+                          </td>
+                          <td className="p-2 text-right space-x-2">
+                            <a
+                              href={`/api/certificates/${c.id}/artifact`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-2 py-1 bg-neo-bg border border-neo-ink rounded text-[10px] hover:neo-active inline-block"
+                            >
+                              SVG Artifact
+                            </a>
+                            {c.status === 'ACTIVE' && (
+                              <button
+                                onClick={() => handleRevokeCert(c.id)}
+                                className="px-2 py-1 bg-neo-pastel-pink border border-neo-ink rounded text-[10px] hover:neo-active inline-block"
+                              >
+                                Revoke
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </NeoCard>
 
           {/* Audit Logs Trail */}

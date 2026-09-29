@@ -52,6 +52,7 @@ export const VerifyCertificatePage = () => {
   };
 
   const isValid = verification?.isValid === true || verification?.status === 'OFFICIALLY_VERIFIED';
+  const isRevoked = verification?.status === 'REVOKED' || !!verification?.revocation;
 
   return (
     <div className="max-w-4xl mx-auto px-4 space-y-10 pb-20 pt-6">
@@ -112,7 +113,38 @@ export const VerifyCertificatePage = () => {
         </NeoCard>
       ) : verification ? (
         <div className="space-y-6">
-          {isValid ? (
+          {isRevoked ? (
+            /* Revocation Banner */
+            <div className="bg-neo-pastel-pink border-4 border-neo-ink rounded-3xl p-8 md:p-10 neo-shadow-lg space-y-6">
+              <div className="flex items-center gap-3 border-b-3 border-neo-ink pb-4">
+                <ShieldAlert className="w-10 h-10 text-neo-ink shrink-0" />
+                <div>
+                  <h3 className="text-3xl font-black text-neo-ink uppercase">Credential Revoked</h3>
+                  <p className="text-sm font-bold text-neo-ink/80">
+                    This certificate was officially revoked and is no longer valid.
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-bold">
+                <div>
+                  <span className="text-xs uppercase text-neo-ink/60 block">Certificate ID</span>
+                  <span className="font-mono text-base">{verification.certificateId}</span>
+                </div>
+                <div>
+                  <span className="text-xs uppercase text-neo-ink/60 block">Recipient</span>
+                  <span className="text-base">{verification.recipientName}</span>
+                </div>
+                <div>
+                  <span className="text-xs uppercase text-neo-ink/60 block">Revocation Date</span>
+                  <span>{formatDate(verification.revocation?.revokedAt || verification.revokedAt)}</span>
+                </div>
+                <div>
+                  <span className="text-xs uppercase text-neo-ink/60 block">Reason</span>
+                  <span className="text-neo-ink">{verification.revocation?.reason || verification.revocationReason || 'Revoked by organizer.'}</span>
+                </div>
+              </div>
+            </div>
+          ) : isValid ? (
             /* Official Credential Certificate Sheet */
             <div className="bg-white border-4 border-neo-ink rounded-3xl p-8 md:p-12 neo-shadow-lg relative overflow-hidden">
               {/* Background watermark icon */}
@@ -127,7 +159,7 @@ export const VerifyCertificatePage = () => {
                     </span>
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-neo-pastel-green border-3 border-neo-ink rounded-full font-black text-sm uppercase text-neo-ink neo-shadow-sm">
                       <CheckCircle2 className="w-5 h-5 text-neo-ink" />
-                      OFFICIALLY VERIFIED
+                      OFFICIALLY VERIFIED (AUTHENTIC)
                     </div>
                   </div>
 
@@ -150,9 +182,11 @@ export const VerifyCertificatePage = () => {
                     <h2 className="text-3xl md:text-5xl font-black text-neo-ink tracking-tight">
                       {verification.recipientName}
                     </h2>
-                    <p className="text-sm font-bold text-neo-ink/70 mt-1">
-                      {verification.recipientEmail}
-                    </p>
+                    {(verification.recipientEmailMasked || verification.recipientEmail) && (
+                      <p className="text-sm font-bold text-neo-ink/70 mt-1">
+                        {verification.recipientEmailMasked || verification.recipientEmail}
+                      </p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t-2 border-neo-ink/20">
@@ -195,11 +229,20 @@ export const VerifyCertificatePage = () => {
 
                   {/* Cryptographic Seal Details */}
                   <div className="p-4 bg-neo-bg rounded-2xl border-3 border-neo-ink space-y-2 mt-6">
-                    <div className="flex items-center justify-between text-xs font-black uppercase text-neo-ink">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-black uppercase text-neo-ink">
                       <span className="flex items-center gap-1.5">
-                        <Key className="w-4 h-4" /> Digital Cryptographic Signature
+                        <Key className="w-4 h-4" /> Asymmetric Digital Signature
                       </span>
-                      <span className="text-neo-ink/70">Algorithm: {verification.verificationAlgorithm || 'HMAC-SHA256'}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 bg-neo-pastel-purple rounded border border-neo-ink">
+                          {verification.verificationAlgorithm || 'Ed25519'}
+                        </span>
+                        {verification.keyId && (
+                          <span className="px-2 py-0.5 bg-white rounded border border-neo-ink font-mono text-[10px]">
+                            Key ID: {verification.keyId}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <p className="font-mono text-xs font-bold text-neo-ink/70 break-all">
                       {verification.signature}
@@ -207,8 +250,16 @@ export const VerifyCertificatePage = () => {
                   </div>
                 </div>
 
-                {/* Print button */}
-                <div className="pt-4 border-t-3 border-neo-ink flex justify-end">
+                {/* Print and Download Actions */}
+                <div className="pt-4 border-t-3 border-neo-ink flex flex-wrap justify-end gap-3">
+                  <a
+                    href={`/api/certificates/${verification.certificateId || paramId}/artifact`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-6 py-2.5 rounded-full border-3 border-neo-ink bg-neo-pastel-green font-black text-sm uppercase hover:neo-active neo-shadow inline-flex items-center gap-2"
+                  >
+                    Download SVG Artifact
+                  </a>
                   <button
                     onClick={() => window.print()}
                     className="px-6 py-2.5 rounded-full border-3 border-neo-ink bg-white font-black text-sm uppercase hover:neo-active neo-shadow"

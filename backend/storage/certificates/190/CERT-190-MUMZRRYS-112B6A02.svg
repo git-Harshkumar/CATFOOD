@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1000" height="700" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 38px; font-weight: 900; fill: #0f172a; text-anchor: middle; text-transform: uppercase; letter-spacing: 2px; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; font-weight: 700; fill: #64748b; text-anchor: middle; text-transform: uppercase; letter-spacing: 4px; }
+      .presented { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 15px; font-weight: 800; fill: #64748b; text-anchor: middle; text-transform: uppercase; letter-spacing: 2px; }
+      .recipient { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 46px; font-weight: 900; fill: #0f172a; text-anchor: middle; }
+      .event { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 22px; font-weight: 800; fill: #0284c7; text-anchor: middle; }
+      .badge { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; font-weight: 900; fill: #0f172a; text-anchor: middle; text-transform: uppercase; }
+      .meta { font-family: monospace; font-size: 11px; font-weight: 700; fill: #64748b; }
+      .sig { font-family: monospace; font-size: 9px; fill: #94a3b8; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1000" height="700" fill="#f8fafc" />
+
+  <!-- Outer Border (Neo-brutalist styling) -->
+  <rect x="25" y="25" width="950" height="650" fill="#ffffff" stroke="#0f172a" stroke-width="6" rx="16" />
+  <rect x="35" y="35" width="930" height="630" fill="none" stroke="#e2e8f0" stroke-width="2" rx="12" />
+
+  <!-- Decorative Corner Accents -->
+  <circle cx="60" cy="60" r="10" fill="#38bdf8" stroke="#0f172a" stroke-width="3" />
+  <circle cx="940" cy="60" r="10" fill="#f43f5e" stroke="#0f172a" stroke-width="3" />
+  <circle cx="60" cy="640" r="10" fill="#a855f7" stroke="#0f172a" stroke-width="3" />
+  <circle cx="940" cy="640" r="10" fill="#10b981" stroke="#0f172a" stroke-width="3" />
+
+  <!-- Seal / Badge Header -->
+  <rect x="380" y="70" width="240" height="34" rx="17" fill="#fef08a" stroke="#0f172a" stroke-width="3" />
+  <text x="500" y="93" class="badge">VERIFIABLE CREDENTIAL</text>
+
+  <!-- Title -->
+  <text x="500" y="160" class="title">CERTIFICATE OF RECOGNITION</text>
+  <text x="500" y="195" class="subtitle">OFFICIAL APPOINTED JUDGE</text>
+
+  <!-- Presentation text -->
+  <text x="500" y="260" class="presented">THIS IS PROUDLY PRESENTED TO</text>
+  <text x="500" y="325" class="recipient">Judge Turing</text>
+
+  <line x1="300" y1="350" x2="700" y2="350" stroke="#0f172a" stroke-width="3" />
+
+  <!-- Event recognition text -->
+  <text x="500" y="405" class="presented">FOR EXEMPLARY PARTICIPATION AND EXCELLENCE IN</text>
+  <text x="500" y="445" class="event">Ed25519 Hackathon Beta</text>
+
+  <!-- Bottom Details Grid -->
+  <g transform="translate(80, 520)">
+    <!-- Issue Date -->
+    <rect x="0" y="0" width="240" height="60" fill="#f1f5f9" stroke="#0f172a" stroke-width="2" rx="8" />
+    <text x="15" y="24" class="meta">ISSUE DATE</text>
+    <text x="15" y="45" font-family="-apple-system, sans-serif" font-size="14" font-weight="800" fill="#0f172a">September 29, 2026</text>
+
+    <!-- Certificate ID -->
+    <rect x="290" y="0" width="260" height="60" fill="#f1f5f9" stroke="#0f172a" stroke-width="2" rx="8" />
+    <text x="305" y="24" class="meta">CERTIFICATE IDENTIFIER</text>
+    <text x="305" y="45" font-family="monospace" font-size="13" font-weight="800" fill="#0f172a">CERT-190-MUMZRRYS-112B6A02</text>
+
+    <!-- Cryptographic Verification Seal -->
+    <rect x="580" y="0" width="260" height="60" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" rx="8" />
+    <text x="595" y="24" class="meta" fill="#16a34a">CRYPTOGRAPHIC STATUS</text>
+    <text x="595" y="45" font-family="-apple-system, sans-serif" font-size="13" font-weight="900" fill="#16a34a">DIGITALLY SIGNED &amp; VERIFIED</text>
+  </g>
+
+  <!-- Cryptographic Signature Footer -->
+  <text x="80" y="625" class="meta">ALGORITHM: Ed25519 | KEY: catfood-key-2026-v1</text>
+  <text x="80" y="642" class="sig">DIGITAL SIGNATURE: 0d663d4a9a68a39b7f513cab4e724c77b9315222ae8006e394de87eb95d072baa370a31c14534577c0e4811367fed4ea03b90c3efe2c7b6bea3b985cef478102</text>
+</svg>

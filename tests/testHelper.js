@@ -24,7 +24,12 @@ const stopTestServer = async () => {
 };
 
 const request = async (endpoint, options = {}) => {
-  const url = `${baseUrl}${endpoint}`;
+  const rootUrl = baseUrl.replace(/\/api$/, '');
+  const url = endpoint.startsWith('http')
+    ? endpoint
+    : (endpoint.startsWith('/.well-known') || endpoint.startsWith('/embed'))
+      ? `${rootUrl}${endpoint}`
+      : `${baseUrl}${endpoint}`;
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
@@ -75,4 +80,5 @@ module.exports = {
   stopTestServer,
   request,
   login,
+  getBaseUrl: () => baseUrl,
 };

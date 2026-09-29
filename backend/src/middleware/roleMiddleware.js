@@ -12,7 +12,7 @@ const requireRole = (...allowedRoles) => {
     }
 
     const flatRoles = allowedRoles.flat();
-    let eventIdParam = req.params.eventId || req.params.id || req.body.eventId || req.query.eventId;
+    let eventIdParam = req.params.eventId || req.body.eventId || req.query.eventId;
 
     if (!eventIdParam && req.params.submissionId) {
       const sub = await prisma.submission.findUnique({
@@ -21,6 +21,27 @@ const requireRole = (...allowedRoles) => {
       });
       if (sub) {
         eventIdParam = sub.eventId;
+      }
+    }
+
+    if (!eventIdParam && req.params.id) {
+      if (req.baseUrl.includes('webhooks')) {
+        const parsedWhId = parseInt(req.params.id, 10);
+        if (!isNaN(parsedWhId)) {
+          const wh = await prisma.webhook.findUnique({
+            where: { id: parsedWhId },
+            select: { eventId: true },
+          });
+          if (wh) eventIdParam = wh.eventId;
+        }
+      } else if (req.baseUrl.includes('certificates')) {
+        const cert = await prisma.certificate.findUnique({
+          where: { id: String(req.params.id) },
+          select: { eventId: true },
+        });
+        if (cert) eventIdParam = cert.eventId;
+      } else {
+        eventIdParam = req.params.id;
       }
     }
     
